@@ -7,7 +7,7 @@ AnyCloud is an Lambda alternative for Node.js that works with any cloud provider
 - Limited runtime (10-15m)
 - Stateless
 - Cumbersome to run locally
-- Unintuitive to version and remove inactive ones
+- Unintuitive to version and remove inactive functions
 - HTTPS support not included
 
 ## Documentation
