@@ -2,7 +2,7 @@ use std::env;
 
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 
-use crate::deploy::deploy::{info, new, terminate, upgrade};
+use anycloud::deploy::deploy::{info, new, terminate, upgrade};
 
 #[tokio::main]
 pub async fn main() {
