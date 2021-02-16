@@ -1,6 +1,6 @@
 # AnyCloud
 
-AnyCloud is an Lambda alternative for Node.js that works with any cloud provider. We’re building the features of Lambda while fixing the problems we have run into while using it. Namely:
+AnyCloud is a Lambda alternative for Node.js that works with any cloud provider. We’re building the features of Lambda while fixing the problems we have run into while using it. Namely:
 
 - Vendor lock-in
 - Cold starts
