@@ -7,7 +7,7 @@ use crate::deploy::deploy::{info, new, terminate, upgrade};
 mod deploy;
 
 #[tokio::main]
-async fn main() {
+pub async fn main() {
   let app = App::new(crate_name!())
     .version(crate_version!())
     .about("AnyCloud is a Lambda alternative that works with multiple cloud provider.")
