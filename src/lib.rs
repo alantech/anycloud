@@ -4,7 +4,7 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 
 use crate::deploy::deploy::{info, new, terminate, upgrade};
 
-mod deploy;
+pub mod deploy;
 
 #[tokio::main]
 pub async fn main() {
