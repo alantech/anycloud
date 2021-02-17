@@ -80,9 +80,9 @@ fn get_config() -> HashMap<String, AWSConfig> {
   config.unwrap()
 }
 
-pub async fn post(url: String, body: Value) -> Result<String, Box<dyn Error>> {
+pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, Box<dyn Error>> {
   let client = Client::builder().build::<_, Body>(hyper_tls::HttpsConnector::new());
-  let req = Request::post(url)
+  let req = Request::post(format!("{}/v1/{}", URL, endpoint))
     .header("Content-Type", "application/json")
     .body(body.to_string().into())?;
   let mut resp = client.request(req).await?;
@@ -111,7 +111,7 @@ pub async fn terminate(app_id: &str) {
     "appId": app_id,
   });
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", app_id)).start();
-  let resp = post(format!("{}/v1/terminate", URL), body).await;
+  let resp = post_v1("terminate", body).await;
   let res = match resp {
     Ok(_) => format!("Terminated app {} succesfully!", app_id),
     Err(err) => format!("Failed to terminate app {}. Error: {}", app_id, err),
@@ -129,7 +129,7 @@ pub async fn new(agz_file: &str, cloud_alias: &str) {
   });
   let body = json!(body);
   let sp = SpinnerBuilder::new(format!("Creating new app in {}", cloud_alias)).start();
-  let resp = post(format!("{}/v1/new", URL), body).await;
+  let resp = post_v1("new", body).await;
   let res = match resp {
     Ok(app_id) => format!("Created app with id {} in {} succesfully!", app_id, cloud_alias),
     Err(err) => format!("Failed to create a new app in {}. Error: {}", cloud_alias, err),
@@ -146,7 +146,7 @@ pub async fn upgrade(app_id: &str, agz_file: &str) {
     "agzB64": app_str,
   });
   let sp = SpinnerBuilder::new(format!("Upgrading app {} with {}", app_id, agz_file)).start();
-  let resp = post(format!("{}/v1/upgrade", URL), body).await;
+  let resp = post_v1("upgrade", body).await;
   let res = match resp {
     Ok(_) => format!("Upgraded app {} succesfully!", app_id),
     Err(err) => format!("Failed to upgrade app {} with {}. Error: {}", app_id, agz_file, err),
@@ -159,7 +159,7 @@ pub async fn info() {
   let body = json!({
     "deployConfig": get_config(),
   });
-  let resp = post(format!("{}/v1/info", URL), body).await;
+  let resp = post_v1("info", body).await;
   if let Err(err) = resp {
     println!("Displaying status for apps failed with error: {}", err);
     std::process::exit(1);
