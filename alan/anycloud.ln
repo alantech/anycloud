@@ -1,0 +1,35 @@
+from @std/app import start, print, eprint, exit
+from @std/cmd import exec
+from @std/http import connection, Connection, get, post, body, send, listen
+
+on start {
+  print('Starting Anycloud...');
+  const dockerRes = exec('docker build -t anycloud/app .');
+  if dockerRes.exitCode != 0 {
+    eprint('Docker container could not be built');
+    eprint(dockerRes.stderr);
+    emit exit dockerRes.exitCode;
+  }
+
+  const containerRes = exec('docker run -p 8088:8088 -d anycloud/app:latest');
+  if containerRes.exitCode != 0 {
+    eprint('Docker container could not be started');
+    eprint(containerRes.stderr);
+    emit exit containerRes.exitCode;
+  }
+
+  const serverRes = listen(80);
+  if serverRes.isErr() {
+    eprint('Could not listen on port 80');
+    emit exit 80;
+  } else {
+    print('Listening on port 80');
+  }
+}
+
+on connection fn (conn: Connection) {
+  const res = conn.res;
+  set(res.headers, 'Content-Type', 'text/plain');
+  res.body(get('http://localhost:8088' + conn.req.url).toString()).send();
+}
+
