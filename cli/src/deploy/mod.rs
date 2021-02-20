@@ -118,7 +118,7 @@ pub async fn terminate(cluster_id: &str) {
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
   let res = match resp {
-    Ok(_) => format!("Terminated app {} succesfully!", cluster_id),
+    Ok(_) => format!("Terminated app {} successfully!", cluster_id),
     Err(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
   };
   sp.message(res);
@@ -136,7 +136,7 @@ pub async fn new(agz_file: &str, cloud_alias: &str) {
   let sp = SpinnerBuilder::new(format!("Creating new app in {}", cloud_alias)).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(cluster_id) => format!("Created app with id {} in {} succesfully!", cluster_id, cloud_alias),
+    Ok(cluster_id) => format!("Created app with id {} in {} successfully!", cluster_id, cloud_alias),
     Err(err) => format!("Failed to create a new app in {}. Error: {}", cloud_alias, err),
   };
   sp.message(res);
@@ -153,7 +153,7 @@ pub async fn upgrade(cluster_id: &str, agz_file: &str) {
   let sp = SpinnerBuilder::new(format!("Upgrading app {} with {}", cluster_id, agz_file)).start();
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded app {} succesfully!", cluster_id),
+    Ok(_) => format!("Upgraded app {} successfully!", cluster_id),
     Err(err) => format!("Failed to upgrade app {} with {}. Error: {}", cluster_id, agz_file, err),
   };
   sp.message(res);
