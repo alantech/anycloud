@@ -13,7 +13,11 @@ use std::path::Path;
 use ascii_table::{AsciiTable, Column, Align};
 use base64;
 
-const URL: &str = "https://deploy.alantechnologies.com";
+const URL: &str = if cfg!(debug_assertions) {
+  "http://localhost:8080"
+} else {
+  "https://deploy.alantechnologies.com"
+};
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
@@ -37,6 +41,7 @@ struct App {
   url: String,
   cloudProvider: String,
   cloudAlias: String,
+  version: String,
 }
 
 const CONFIG_NAME: &str = ".alan/deploy.json";
@@ -105,16 +110,16 @@ fn get_app_str(agz_file: &str) -> String {
   return base64::encode(app);
 }
 
-pub async fn terminate(app_id: &str) {
+pub async fn terminate(cluster_id: &str) {
   let body = json!({
     "deployConfig": get_config(),
-    "appId": app_id,
+    "clusterId": cluster_id,
   });
-  let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", app_id)).start();
+  let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
   let res = match resp {
-    Ok(_) => format!("Terminated app {} succesfully!", app_id),
-    Err(err) => format!("Failed to terminate app {}. Error: {}", app_id, err),
+    Ok(_) => format!("Terminated app {} successfully!", cluster_id),
+    Err(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
   };
   sp.message(res);
   sp.close();
@@ -131,25 +136,25 @@ pub async fn new(agz_file: &str, cloud_alias: &str) {
   let sp = SpinnerBuilder::new(format!("Creating new app in {}", cloud_alias)).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(app_id) => format!("Created app with id {} in {} succesfully!", app_id, cloud_alias),
+    Ok(cluster_id) => format!("Created app with id {} in {} successfully!", cluster_id, cloud_alias),
     Err(err) => format!("Failed to create a new app in {}. Error: {}", cloud_alias, err),
   };
   sp.message(res);
   sp.close();
 }
 
-pub async fn upgrade(app_id: &str, agz_file: &str) {
+pub async fn upgrade(cluster_id: &str, agz_file: &str) {
   let app_str = get_app_str(agz_file);
   let body = json!({
     "deployConfig": get_config(),
-    "appId": app_id,
+    "clusterId": cluster_id,
     "agzB64": app_str,
   });
-  let sp = SpinnerBuilder::new(format!("Upgrading app {} with {}", app_id, agz_file)).start();
+  let sp = SpinnerBuilder::new(format!("Upgrading app {} with {}", cluster_id, agz_file)).start();
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded app {} succesfully!", app_id),
-    Err(err) => format!("Failed to upgrade app {} with {}. Error: {}", app_id, agz_file, err),
+    Ok(_) => format!("Upgraded app {} successfully!", cluster_id),
+    Err(err) => format!("Failed to upgrade app {} with {}. Error: {}", cluster_id, agz_file, err),
   };
   sp.message(res);
   sp.close();
@@ -172,7 +177,7 @@ pub async fn info() {
   }
 
   let mut ascii_table = AsciiTable::default();
-  ascii_table.max_width = 120;
+  ascii_table.max_width = 140;
 
   let mut column = Column::default();
   column.header = "App Id".into();
@@ -181,22 +186,27 @@ pub async fn info() {
 
   let mut column = Column::default();
   column.header = "Url".into();
-  column.align = Align::Right;
+  column.align = Align::Left;
   ascii_table.columns.insert(1, column);
 
   let mut column = Column::default();
   column.header = "Cloud".into();
-  column.align = Align::Right;
+  column.align = Align::Left;
   ascii_table.columns.insert(2, column);
 
   let mut column = Column::default();
   column.header = "Cloud Alias".into();
-  column.align = Align::Right;
+  column.align = Align::Left;
   ascii_table.columns.insert(3, column);
+
+  let mut column = Column::default();
+  column.header = "Version".into();
+  column.align = Align::Left;
+  ascii_table.columns.insert(4, column);
 
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for app in &mut apps {
-    data.push(vec![&app.id, &app.url, &app.cloudProvider, &app.cloudAlias]);
+    data.push(vec![&app.id, &app.url, &app.cloudProvider, &app.cloudAlias, &app.version]);
   }
 
   println!("Status of all apps deployed using the cloud credentials in ~/{}\n", CONFIG_NAME);
