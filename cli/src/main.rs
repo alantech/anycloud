@@ -1,19 +1,60 @@
 use std::env;
+use std::fs::read;
+use std::process::Command;
 
+use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
+use serde_json::json;
 
-use anycloud::deploy::{info, new, terminate, upgrade};
+use anycloud::deploy::{info, get_config, new, terminate, upgrade};
+
+fn get_dockerfile_b64() -> String {
+  let pwd = std::env::var("PWD").unwrap();
+  let dockerfile = read(format!("{}/Dockerfile", pwd)).expect(&format!("No Dockerfile in {}", pwd));
+  return base64::encode(dockerfile);
+}
+
+fn get_app_tar_gz_b64() -> String {
+  let output = Command::new("git")
+    .arg("archive")
+    .arg("--format=tar.gz")
+    .arg("-o")
+    .arg("app.tar.gz")
+    .arg("HEAD")
+    .output()
+    .unwrap();
+
+  if output.status.code().unwrap() != 0 {
+    eprintln!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
+    std::process::exit(output.status.code().unwrap());
+  }
+
+  let pwd = std::env::var("PWD").unwrap();
+  let app_tar_gz = read(format!("{}/app.tar.gz", pwd)).expect("app.tar.gz was not generated");
+
+  let output = Command::new("rm")
+    .arg("app.tar.gz")
+    .output()
+    .unwrap();
+
+  if output.status.code().unwrap() != 0 {
+    eprintln!("Somehow could not delete temporary app.tar.gz file");
+    std::process::exit(output.status.code().unwrap());
+  }
+
+  return base64::encode(app_tar_gz);
+}
 
 #[tokio::main]
 pub async fn main() {
+  let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
   let app = App::new(crate_name!())
     .version(crate_version!())
     .about("AnyCloud is a Lambda alternative that works with multiple cloud provider.")
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
-      .about("Deploys an .agz file to a new app in one of the cloud providers described in the deploy config at ~/.alan/deploy.json")
-      .arg_from_usage("<AGZ_FILE> 'Specifies the .agz file to deploy'")
-      .arg_from_usage("<CLOUD_ALIAS> 'Specifies the cloud provider to deploy to based on its alias'")
+      .about("Deploys your repository to a new app in one of the cloud providers described in the deploy config at ~/.alan/deploy.json")
+      .arg_from_usage("[CLOUD_ALIAS] 'Specifies the cloud provider to deploy to based on its alias, or the first definition if not specified'")
     )
     .subcommand(SubCommand::with_name("info")
       .about("Displays all the apps deployed in the cloud provider described in the deploy config at ~/.alan/deploy.json")
@@ -23,26 +64,41 @@ pub async fn main() {
       .arg_from_usage("<APP_ID> 'Specifies the alan app to terminate'")
     )
     .subcommand(SubCommand::with_name("upgrade")
-      .about("Deploys an .agz file to an existing app in the cloud provider described in the deploy config at ~/.alan/deploy.json")
+      .about("Deploys your repository to an existing app in the cloud provider described in the deploy config at ~/.alan/deploy.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
-      .arg_from_usage("<AGZ_FILE> 'Specifies the .agz file to deploy'")
     );
 
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new",  Some(matches)) => {
-      let agz_file = matches.value_of("AGZ_FILE").unwrap();
-      let cloud_alias = matches.value_of("CLOUD_ALIAS").unwrap();
-      new(agz_file, cloud_alias).await;
+      let config = get_config();
+      let cloud_alias = matches.value_of("CLOUD_ALIAS").unwrap_or(
+        config.keys().take(1).next().unwrap()
+      );
+      let body = json!({
+        "deployConfig": config,
+        "cloudAlias": cloud_alias,
+        "agzB64": anycloud_agz,
+        "DockerfileB64": get_dockerfile_b64(),
+        "appTarGzB64": get_app_tar_gz_b64(),
+      });
+      new(body).await;
     },
     ("terminate",  Some(matches)) => {
-      let app_id = matches.value_of("APP_ID").unwrap();
-      terminate(app_id).await;
+      let cluster_id = matches.value_of("APP_ID").unwrap();
+      terminate(cluster_id).await;
     },
     ("upgrade",  Some(matches)) => {
-      let app_id = matches.value_of("APP_ID").unwrap();
-      let agz_file = matches.value_of("AGZ_FILE").unwrap();
-      upgrade(app_id, agz_file).await;
+      let config = get_config();
+      let cluster_id = matches.value_of("APP_ID").unwrap();
+      let body = json!({
+        "clusterId": cluster_id,
+        "deployConfig": config,
+        "agzB64": anycloud_agz,
+        "DockerfileB64": get_dockerfile_b64(),
+        "appTarGzB64": get_app_tar_gz_b64(),
+      });
+      upgrade(body).await;
     },
     ("info",  _) => {
       info().await;
