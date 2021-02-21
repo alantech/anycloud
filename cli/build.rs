@@ -11,5 +11,10 @@ fn main() {
     .output()
     .unwrap();
 
-  std::process::exit(output.status.code().unwrap());
+  if output.status.code().unwrap() != 0 {
+    // The `alan` command doesn't exist on this machine. We'll guarantee that it does for building
+    // the `anycloud` binary, but for those using this repo as a library, we'll just bypass this
+    // piece since only `main.rs` uses the `anycloud.agz` file.
+    Command::new("sh").arg("-c").arg("cd alan && touch anycloud.agz");
+  }
 }
