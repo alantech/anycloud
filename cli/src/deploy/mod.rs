@@ -21,14 +21,14 @@ const URL: &str = if cfg!(debug_assertions) {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-struct AWSCredentials {
+pub struct AWSCredentials {
   accessKeyId: String,
   secretAccessKey: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-struct AWSConfig {
+pub struct AWSConfig {
   credentials: AWSCredentials,
   region: String,
   cloudProvider: String,
@@ -45,6 +45,7 @@ struct App {
 }
 
 const CONFIG_NAME: &str = ".alan/deploy.json";
+// TODO: Have a command to do this for them, especially since this schema only works with AWS
 const CONFIG_SCHEMA: &str = "Please define a deploy config with the following schema: \n{
   \"cloudAlias\": {
     \"cloudProvider\": \"string\",
@@ -63,7 +64,7 @@ To create an AWS access key follow this tutorial:\n\nhttps://aws.amazon.com/prem
 Then enable programmatic access for the IAM user, and attach the built-in 'AdministratorAccess' policy to your IAM user.
 ";
 
-fn get_config() -> HashMap<String, AWSConfig> {
+pub fn get_config() -> HashMap<String, AWSConfig> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CONFIG_NAME);
   let path = Path::new(file_name);
@@ -100,14 +101,9 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, Box<dyn Erro
   };
 }
 
-fn get_app_str(agz_file: &str) -> String {
-  let path = Path::new(agz_file);
-  if path.extension().is_none() || path.extension().unwrap() != "agz" {
-    println!("Deploy failed. The provided file must be an .agz file");
-    std::process::exit(1);
-  }
-  let app = read(agz_file).expect(&format!("Deploy failed parsing {}", agz_file));
-  return base64::encode(app);
+pub fn get_file_str(file: &str) -> String {
+  let f = read(file).expect(&format!("Deploy failed parsing {}", file));
+  return base64::encode(f);
 }
 
 pub async fn terminate(cluster_id: &str) {
@@ -125,36 +121,23 @@ pub async fn terminate(cluster_id: &str) {
   sp.close();
 }
 
-pub async fn new(agz_file: &str, cloud_alias: &str) {
-  let app_str = get_app_str(agz_file);
-  let body = json!({
-    "deployConfig": get_config(),
-    "agzB64": app_str,
-    "cloudAlias": cloud_alias,
-  });
-  let body = json!(body);
-  let sp = SpinnerBuilder::new(format!("Creating new app in {}", cloud_alias)).start();
+pub async fn new(body: Value) {
+  let sp = SpinnerBuilder::new(format!("Creating new app")).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(cluster_id) => format!("Created app with id {} in {} successfully!", cluster_id, cloud_alias),
-    Err(err) => format!("Failed to create a new app in {}. Error: {}", cloud_alias, err),
+    Ok(cluster_id) => format!("Created app with id {} successfully!", cluster_id),
+    Err(err) => format!("Failed to create a new app. Error: {}", err),
   };
   sp.message(res);
   sp.close();
 }
 
-pub async fn upgrade(cluster_id: &str, agz_file: &str) {
-  let app_str = get_app_str(agz_file);
-  let body = json!({
-    "deployConfig": get_config(),
-    "clusterId": cluster_id,
-    "agzB64": app_str,
-  });
-  let sp = SpinnerBuilder::new(format!("Upgrading app {} with {}", cluster_id, agz_file)).start();
+pub async fn upgrade(body: Value) {
+  let sp = SpinnerBuilder::new(format!("Upgrading app")).start();
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded app {} successfully!", cluster_id),
-    Err(err) => format!("Failed to upgrade app {} with {}. Error: {}", cluster_id, agz_file, err),
+    Ok(_) => format!("Upgraded app successfully!"),
+    Err(err) => format!("Failed to upgrade app. Error: {}", err),
   };
   sp.message(res);
   sp.close();
