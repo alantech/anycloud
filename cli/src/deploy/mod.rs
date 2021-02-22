@@ -28,32 +28,25 @@ pub struct AWSCredentials {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-pub struct AWSConfig {
-  credentials: AWSCredentials,
-  region: String,
-  cloudProvider: String,
-}
-
-#[derive(Deserialize, Debug, Serialize)]
 pub struct GCPCredentials {
-  private_key: String,
-  client_email: String,
-}
-
-#[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
-pub struct GCPConfig {
-  credentials: GCPCredentials,
-  region: String,
-  cloudProvider: String,
+  privateKey: String,
+  clientEmail: String,
   projectId: String,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
 #[serde(untagged)]
-pub enum Config {
-  GCP(GCPConfig),
-  AWS(AWSConfig),
+pub enum Credentials {
+  GCP(GCPCredentials),
+  AWS(AWSCredentials),
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Config {
+  credentials: Credentials,
+  region: String,
+  cloudProvider: String,
 }
 
 #[allow(non_snake_case)]
