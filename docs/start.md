@@ -119,7 +119,7 @@ Take a look at the exported JSON file from your GCP [credentials](credentials.md
   "credentials": {
     "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
     "clientEmail": "#########-compute@developer.gserviceaccount.com",
-    "projectId": "alan-deploy"
+    "projectId": "my-gcp-project"
   }
 }
 ```
