@@ -70,7 +70,7 @@ const CONFIG_NAME: &str = ".anycloud/deploy.json";
 // TODO: Have a command to do this for users
 const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-pub fn get_config() -> HashMap<String, Config> {
+pub fn get_config() -> HashMap<String, Vec<Config>> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CONFIG_NAME);
   let path = Path::new(file_name);
