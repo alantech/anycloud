@@ -28,8 +28,23 @@ pub struct AWSCredentials {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-pub struct AWSConfig {
-  credentials: AWSCredentials,
+pub struct GCPCredentials {
+  privateKey: String,
+  clientEmail: String,
+  projectId: String,
+}
+
+#[derive(Deserialize, Debug, Serialize)]
+#[serde(untagged)]
+pub enum Credentials {
+  GCP(GCPCredentials),
+  AWS(AWSCredentials),
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct Config {
+  credentials: Credentials,
   region: String,
   cloudProvider: String,
 }
@@ -40,47 +55,29 @@ struct App {
   id: String,
   url: String,
   cloudProvider: String,
-  cloudAlias: String,
+  deployName: String,
   version: String,
 }
 
-const CONFIG_NAME: &str = ".alan/deploy.json";
-// TODO: Have a command to do this for them, especially since this schema only works with AWS
-const CONFIG_SCHEMA: &str = "Please define a deploy config with the following schema: \n{
-  \"cloudAlias\": {
-    \"cloudProvider\": \"string\",
-    \"region\": \"string\",
-    \"credentials\": {
-      \"accessKeyId\": \"string\",
-      \"secretAccessKey\": \"string\",
-    }
-  },
-  \"cloudAlias\": {
-    ...
-  }
-}";
-const HOW_TO_AWS: &str = "
-To create an AWS access key follow this tutorial:\n\nhttps://aws.amazon.com/premiumsupport/knowledge-center/create-access-key/\n
-Then enable programmatic access for the IAM user, and attach the built-in 'AdministratorAccess' policy to your IAM user.
-";
+const CONFIG_NAME: &str = ".anycloud/deploy.json";
+// TODO: Have a command to do this for users
+const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-pub fn get_config() -> HashMap<String, AWSConfig> {
+pub fn get_config() -> HashMap<String, Vec<Config>> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CONFIG_NAME);
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
     println!("Cannot access deploy config at {}. Error: {}", file_name, err);
-    println!("{}", CONFIG_SCHEMA);
-    println!("{}", HOW_TO_AWS);
+    println!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
     println!("Invalid deploy config. Error: {}", err);
-    println!("{}", CONFIG_SCHEMA);
-    println!("{}", HOW_TO_AWS);
+    println!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   config.unwrap()
@@ -189,7 +186,7 @@ pub async fn info() {
 
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for app in &mut apps {
-    data.push(vec![&app.id, &app.url, &app.cloudProvider, &app.cloudAlias, &app.version]);
+    data.push(vec![&app.id, &app.url, &app.cloudProvider, &app.deployName, &app.version]);
   }
 
   println!("Status of all apps deployed using the cloud credentials in ~/{}\n", CONFIG_NAME);

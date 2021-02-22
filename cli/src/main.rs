@@ -53,18 +53,18 @@ pub async fn main() {
     .about("AnyCloud is a Lambda alternative that works with multiple cloud provider.")
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
-      .about("Deploys your repository to a new app in one of the cloud providers described in the deploy config at ~/.alan/deploy.json")
-      .arg_from_usage("[CLOUD_ALIAS] 'Specifies the cloud provider to deploy to based on its alias, or the first definition if not specified'")
+      .about("Deploys your repository to a new app with one of the deploy configs at ~/.anycloud/deploy.json")
+      .arg_from_usage("[DEPLOY_NAME] 'Specifies the name of the deploy config to use, or the first definition if not specified'")
     )
     .subcommand(SubCommand::with_name("info")
-      .about("Displays all the apps deployed in the cloud provider described in the deploy config at ~/.alan/deploy.json")
+      .about("Displays all the apps deployed with  described in the deploy config at ~/.anycloud/deploy.json")
     )
     .subcommand(SubCommand::with_name("terminate")
-      .about("Terminate an app with the provided id in the cloud provider described in the deploy config at ~/.alan/deploy.json")
+      .about("Terminate an app with the provided id hosted in one of the deploy configs at ~/.anycloud/deploy.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to terminate'")
     )
     .subcommand(SubCommand::with_name("upgrade")
-      .about("Deploys your repository to an existing app in the cloud provider described in the deploy config at ~/.alan/deploy.json")
+      .about("Deploys your repository to an existing app hosted in one of the deploy configs at ~/.anycloud/deploy.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
     );
 
@@ -72,12 +72,12 @@ pub async fn main() {
   match matches.subcommand() {
     ("new",  Some(matches)) => {
       let config = get_config();
-      let cloud_alias = matches.value_of("CLOUD_ALIAS").unwrap_or(
+      let deploy_name = matches.value_of("DEPLOY_NAME").unwrap_or(
         config.keys().take(1).next().unwrap()
       );
       let body = json!({
         "deployConfig": config,
-        "cloudAlias": cloud_alias,
+        "deployName": deploy_name,
         "agzB64": anycloud_agz,
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
