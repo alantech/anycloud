@@ -105,6 +105,8 @@ jobs:
 
     - name: Generate Anycloud tar.gz
       run: |
+        cd cli
+        cargo build --release
         cd ./target/release
         gtar -czf /tmp/anycloud-macos.tar.gz anycloud
 
