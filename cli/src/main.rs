@@ -57,7 +57,7 @@ pub async fn main() {
       .arg_from_usage("[DEPLOY_NAME] 'Specifies the name of the deploy config to use, or the first definition if not specified'")
     )
     .subcommand(SubCommand::with_name("info")
-      .about("Displays all the apps deployed with  described in the deploy config at ~/.anycloud/deploy.json")
+      .about("Displays all the apps deployed with described in the deploy config at ~/.anycloud/deploy.json")
     )
     .subcommand(SubCommand::with_name("terminate")
       .about("Terminate an app with the provided id hosted in one of the deploy configs at ~/.anycloud/deploy.json")
