@@ -97,14 +97,14 @@ jobs:
 
     - name: Acquire alan
       run: |
+        brew install gnu-tar
         curl -OL https://github.com/alantech/alan/releases/latest/download/alan-macos.tar.gz
-        tar -xzf alan-macos.tar.gz
+        gtar -xzf alan-macos.tar.gz
         sudo mkdir -p /usr/local/bin
         sudo mv alan /usr/local/bin/alan
 
     - name: Generate Anycloud tar.gz
       run: |
-        brew install gnu-tar
         cd ./target/release
         gtar -czf /tmp/anycloud-macos.tar.gz anycloud
 
