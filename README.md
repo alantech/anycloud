@@ -34,8 +34,8 @@ Our aim is to give developers a much better experience when using AnyClloud than
 
 AnyCloud is hosted directly in your account with the preferred cloud provider. Cloud providers currently supported:
 - [x] AWS
-- [x] Azure
-- [ ] GCP (coming soon)
+- [x] GCP
+- [ ] Azure (coming soon)
 
 You start using Anycloud without signing up.
 
