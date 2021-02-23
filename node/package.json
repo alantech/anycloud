@@ -1,11 +1,15 @@
 {
   "name": "anycloud",
-  "version": "0.0.1",
+  "version": "0.1.1",
   "description": "Lambda alternative that works with multiple cloud providers",
   "main": "dist/index.js",
+  "bin": {
+    "anycloud": "./bin/anycloud"
+  },
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "preinstall": "./get-anycloud.js"
   },
   "repository": {
     "type": "git",
