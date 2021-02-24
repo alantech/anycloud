@@ -10,7 +10,7 @@ use std::fs::{File, read};
 use std::io::BufReader;
 use std::path::Path;
 
-use ascii_table::{AsciiTable, Column, Align};
+use ascii_table::{AsciiTable, Column};
 use base64;
 
 const URL: &str = if cfg!(debug_assertions) {
