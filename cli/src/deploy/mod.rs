@@ -160,29 +160,35 @@ pub async fn info() {
   let mut clusters = AsciiTable::default();
   clusters.max_width = 140;
 
-  let mut column = Column::default();
-  column.header = "App Id".into();
-  column.align = Align::Left;
+  let column = Column {
+    header: "App Id".into(),
+    align: Align::Left,
+    ..Column::default()
+  };
   clusters.columns.insert(0, column);
 
-  let mut column = Column::default();
-  column.header = "Url".into();
-  column.align = Align::Left;
+  let column = Column {
+    header: "Url".into(),
+    ..Column::default()
+  };
   clusters.columns.insert(1, column);
 
-  let mut column = Column::default();
-  column.header = "Deploy Config".into();
-  column.align = Align::Left;
+  let column = Column {
+    header: "Deploy Config".into(),
+    ..Column::default()
+  };
   clusters.columns.insert(2, column);
 
-  let mut column = Column::default();
-  column.header = "Size".into();
-  column.align = Align::Left;
+  let column = Column {
+    header: "Size".into(),
+    ..Column::default()
+  };
   clusters.columns.insert(3, column);
 
-  let mut column = Column::default();
-  column.header = "Version".into();
-  column.align = Align::Left;
+  let column = Column {
+    header: "Version".into(),
+    ..Column::default()
+  };
   clusters.columns.insert(4, column);
 
   let mut deploy_names = Vec::new();
@@ -200,19 +206,22 @@ pub async fn info() {
   deploy.max_width = 140;
 
   for deploy_name in deploy_names {
-    let mut column = Column::default();
-    column.header = "Deploy Config".into();
-    column.align = Align::Left;
+    let column = Column {
+      header: "Deploy Config".into(),
+      ..Column::default()
+    };
     deploy.columns.insert(0, column);
 
-    let mut column = Column::default();
-    column.header = "Cloud Provider".into();
-    column.align = Align::Left;
+    let column = Column {
+      header: "Cloud Provider".into(),
+      ..Column::default()
+    };
     deploy.columns.insert(1, column);
 
-    let mut column = Column::default();
-    column.header = "Region".into();
-    column.align = Align::Left;
+    let column = Column {
+      header: "Region".into(),
+      ..Column::default()
+    };
     deploy.columns.insert(2, column);
 
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
