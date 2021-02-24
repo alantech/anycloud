@@ -3,7 +3,9 @@
 const { exec, } = require('child_process');
 const path = require('path');
 
-const anycloudUrlBase = 'https://github.com/alantech/anycloud/releases/download/v0.1.1/';
+const pjson = require('./package.json');
+
+const anycloudUrlBase = `https://github.com/alantech/anycloud/releases/download/v${pjson.version}/`;
 let extract = '';
 let file = 'anycloud-ubuntu.tar.gz';
 if (process.platform === 'darwin') {
