@@ -43,6 +43,19 @@ exec('mkdir bin', (error, stdout, stderr) => {
         console.error(stderr);
         process.exit(3);
       }
+      if (shell === 'powershell.exe') {
+        // Windows-specific mangling
+        const fs = require('fs');
+        fs.writeFileSync('./bin/anycloud', `#!/usr/bin/env node
+
+const { exec, } = require('child_process');
+exec('anycloud.exe ' + process.argv.join(' '), (error, stdout, stderr) => {
+  console.log(stdout);
+  console.error(stderr);
+  process.exit(error);
+});
+        `);
+      }
     });
   });
 });
