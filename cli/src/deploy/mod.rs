@@ -162,7 +162,6 @@ pub async fn info() {
 
   let column = Column {
     header: "App Id".into(),
-    align: Align::Left,
     ..Column::default()
   };
   clusters.columns.insert(0, column);
