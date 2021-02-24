@@ -54,9 +54,9 @@ pub struct Config {
 struct App {
   id: String,
   url: String,
-  cloudProvider: String,
   deployName: String,
   version: String,
+  size: usize,
 }
 
 const CONFIG_NAME: &str = ".anycloud/deploy.json";
@@ -141,8 +141,9 @@ pub async fn upgrade(body: Value) {
 }
 
 pub async fn info() {
+  let deploy_configs = get_config();
   let body = json!({
-    "deployConfig": get_config(),
+    "deployConfig": deploy_configs,
   });
   let resp = post_v1("info", body).await;
   if let Err(err) = resp {
@@ -156,39 +157,74 @@ pub async fn info() {
     return;
   }
 
-  let mut ascii_table = AsciiTable::default();
-  ascii_table.max_width = 140;
+  let mut clusters = AsciiTable::default();
+  clusters.max_width = 140;
 
   let mut column = Column::default();
   column.header = "App Id".into();
   column.align = Align::Left;
-  ascii_table.columns.insert(0, column);
+  clusters.columns.insert(0, column);
 
   let mut column = Column::default();
   column.header = "Url".into();
   column.align = Align::Left;
-  ascii_table.columns.insert(1, column);
+  clusters.columns.insert(1, column);
 
   let mut column = Column::default();
-  column.header = "Cloud".into();
+  column.header = "Deploy Config".into();
   column.align = Align::Left;
-  ascii_table.columns.insert(2, column);
+  clusters.columns.insert(2, column);
 
   let mut column = Column::default();
-  column.header = "Cloud Alias".into();
+  column.header = "Size".into();
   column.align = Align::Left;
-  ascii_table.columns.insert(3, column);
+  clusters.columns.insert(3, column);
 
   let mut column = Column::default();
   column.header = "Version".into();
   column.align = Align::Left;
-  ascii_table.columns.insert(4, column);
+  clusters.columns.insert(4, column);
 
+  let mut deploy_names = Vec::new();
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for app in &mut apps {
-    data.push(vec![&app.id, &app.url, &app.cloudProvider, &app.deployName, &app.version]);
+    deploy_names.push(&app.deployName);
+    data.push(vec![&app.id, &app.url, &app.deployName, &app.size, &app.version]);
   }
 
   println!("Status of all apps deployed using the cloud credentials in ~/{}\n", CONFIG_NAME);
-  ascii_table.print(data);
+  clusters.print(data);
+
+  let mut data: Vec<Vec<&dyn Display>> = vec![];
+  let mut deploy = AsciiTable::default();
+  deploy.max_width = 140;
+
+  for deploy_name in deploy_names {
+    let mut column = Column::default();
+    column.header = "Deploy Config".into();
+    column.align = Align::Left;
+    deploy.columns.insert(0, column);
+
+    let mut column = Column::default();
+    column.header = "Cloud Provider".into();
+    column.align = Align::Left;
+    deploy.columns.insert(1, column);
+
+    let mut column = Column::default();
+    column.header = "Region".into();
+    column.align = Align::Left;
+    deploy.columns.insert(2, column);
+
+    let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
+    for (i, cloud_config) in cloud_configs.iter().enumerate() {
+      if i == 0 {
+        data.push(vec![deploy_name, &cloud_config.cloudProvider, &cloud_config.region])
+      } else {
+        data.push(vec![&"", &cloud_config.cloudProvider, &cloud_config.region])
+      };
+    }
+  }
+
+  println!("\nDeployment configurations used from ~/{}\n", CONFIG_NAME);
+  deploy.print(data);
 }
