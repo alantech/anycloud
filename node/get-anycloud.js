@@ -50,12 +50,12 @@ exec('mkdir bin', (error, stdout, stderr) => {
 
 const { exec, } = require('child_process');
 const path = require('path');
-const args = () => {
+const args = (() => {
   let argv = [ ...process.argv, ];
   argv.shift();
   argv.shift();
   return argv;
-}();
+})();
 exec(
   '& "' + path.join(__dirname, '\\anycloud.exe') + '" ' + args.join(' '),
   { shell: 'powershell.exe', },
