@@ -49,7 +49,7 @@ exec('mkdir bin', (error, stdout, stderr) => {
         fs.writeFileSync('./bin/anycloud', `#!/usr/bin/env node
 
 const { exec, } = require('child_process');
-exec('anycloud.exe ' + process.argv.join(' '), (error, stdout, stderr) => {
+exec(__dirname + '/anycloud.exe ' + process.argv.join(' '), (error, stdout, stderr) => {
   console.log(stdout);
   console.error(stderr);
   process.exit(error);
