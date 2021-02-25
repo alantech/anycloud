@@ -60,8 +60,8 @@ exec(
   '& "' + path.join(__dirname, '\\anycloud.exe') + '" ' + args.join(' '),
   { shell: 'powershell.exe', },
   (error, stdout, stderr) => {
-    console.log(stdout);
-    console.error(stderr);
+    if (stdout.length > 0) console.log(stdout);
+    if (stderr.length > 0) console.error(stderr);
     process.exit(error);
   }
 );
