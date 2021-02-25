@@ -51,7 +51,7 @@ exec('mkdir bin', (error, stdout, stderr) => {
 const { exec, } = require('child_process');
 const path = require('path');
 exec(
-  path.join(__dirname, '/anycloud.exe').replaceAll(' ', '\\\\ ') + ' ' + process.argv.join(' '),
+  path.join(__dirname, '/anycloud.exe').replace(/ /g, '\\\\ ') + ' ' + process.argv.join(' '),
   (error, stdout, stderr) => {
     console.log(stdout);
     console.error(stderr);
