@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, from_str, json, Value};
 use spinner::SpinnerBuilder;
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt::Display;
 use std::fs::{File, read};
@@ -191,10 +191,10 @@ pub async fn info() {
   };
   clusters.columns.insert(4, column);
 
-  let mut deploy_names = Vec::new();
+  let mut deploy_names = HashSet::new();
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for app in &mut apps {
-    deploy_names.push(&app.deployName);
+    deploy_names.insert(&app.deployName);
     data.push(vec![&app.id, &app.url, &app.deployName, &app.size, &app.version]);
   }
 
