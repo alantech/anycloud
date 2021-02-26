@@ -47,6 +47,7 @@ pub struct Config {
   credentials: Credentials,
   region: String,
   cloudProvider: String,
+  vmType: String,
 }
 
 #[allow(non_snake_case)]
@@ -223,12 +224,18 @@ pub async fn info() {
     };
     deploy.columns.insert(2, column);
 
+    let column = Column {
+      header: "VM Type".into(),
+      ..Column::default()
+    };
+    deploy.columns.insert(3, column);
+
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
     for (i, cloud_config) in cloud_configs.iter().enumerate() {
       if i == 0 {
-        data.push(vec![deploy_name, &cloud_config.cloudProvider, &cloud_config.region])
+        data.push(vec![deploy_name, &cloud_config.cloudProvider, &cloud_config.region, &cloud_config.vmType])
       } else {
-        data.push(vec![&"", &cloud_config.cloudProvider, &cloud_config.region])
+        data.push(vec![&"", &cloud_config.cloudProvider, &cloud_config.region, &cloud_config.vmType])
       };
     }
   }
