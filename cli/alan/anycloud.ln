@@ -1,6 +1,6 @@
 from @std/app import start, print, eprint, exit
 from @std/cmd import exec
-from @std/http import connection, Connection, get, post, body, send, listen
+from @std/http import connection, Connection, fetch, Request, Response, body, send, listen
 
 on start {
   print('Starting Anycloud...');
@@ -28,8 +28,22 @@ on start {
 }
 
 on connection fn (conn: Connection) {
+  const req = conn.req;
+  const innerRes = fetch(new Request {
+    method: req.method,
+    headers: req.headers,
+    body: req.body,
+    url: 'http://localhost:8088' + req.url,
+  });
   const res = conn.res;
-  set(res.headers, 'Content-Type', 'text/plain');
-  res.body(get('http://localhost:8088' + conn.req.url).toString()).send();
+  if innerRes.isErr() {
+    res.status = 500;
+    res.body('Internal Server Error').send();
+  } else {
+    const unwrappedRes = innerRes.getOrExit(); // Safe because of conditional checking
+    res.status = unwrappedRes.status;
+    res.headers = unwrappedRes.headers;
+    res.body(unwrappedRes.body).send();
+  }
 }
 
