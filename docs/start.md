@@ -10,6 +10,7 @@ The schema for the `~/.anycloud/deploy.json` is as follows:
     {
       "cloudProvider": "string",
       "region": "string",
+      "vmType": "string",
       "credentials" {
         ...
       }
@@ -19,6 +20,7 @@ The schema for the `~/.anycloud/deploy.json` is as follows:
     {
       "cloudProvider": "string",
       "region": "string",
+      "vmType": "string",
       "credentials" {
         ...
       }
@@ -26,6 +28,7 @@ The schema for the `~/.anycloud/deploy.json` is as follows:
     {
       "cloudProvider": "string",
       "region": "string",
+      "vmType": "string",
       "credentials" {
         ...
       }
@@ -43,6 +46,7 @@ Each cloud provider configuration within the deployment array has a different co
     {
       "cloudProvider": "AWS",
       "region": "us-west-1",
+      "vmType": "t2.micro",
       "credentials": {
         ...
       },
@@ -50,6 +54,7 @@ Each cloud provider configuration within the deployment array has a different co
     {
       "cloudProvider": "AWS",
       "region": "us-west-2",
+      "vmType": "t2.micro",
       "credentials": {
         ...
       },
@@ -68,6 +73,7 @@ The schema for the AWS deployment config is as follows:
   {
     "cloudProvider": "string",
     "region": "string",
+    "vmType": "string",
     "credentials": {
       "accessKeyId": "string",
       "secretAccessKey": "string",
@@ -85,6 +91,7 @@ Follow the steps at [credentials](credentials.md#aws) to get the `accessKeyId` a
   {
     "cloudProvider": "AWS",
     "region": "us-west-1",
+    "vmType": "t2.micro",
     "credentials": {
       "accessKeyId": "#####################",
       "secretAccessKey": "###################"
@@ -102,6 +109,7 @@ The schema for a GCP deployment config is as follows:
 {
   "cloudProvider": "string",
   "region": "string",
+  "vmType": "string",
   "credentials": {
     "privateKey": "string",
     "clientEmail": "string",
@@ -116,6 +124,7 @@ Take a look at the exported JSON file from your GCP [credentials](credentials.md
 {
   "cloudProvider": "GCP",
   "region": "us-west1-c",
+  "vmType": "e2-standard-2",
   "credentials": {
     "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
     "clientEmail": "#########-compute@developer.gserviceaccount.com",
