@@ -1,6 +1,6 @@
 # Get Started
 
-Anycloud deployments are configured using a local file in `~/.anycloud/deploy.json`. Each deployment will be keyed by a name and contain an array of cloud provider configurations with `credentials`, `region` and `cloudProvider`. Possible values for `cloudProvider` are [`AWS`](start.md#aws), [`GCP`](start.md#gcp) and [`Azure`](start.md#azure) and the other two fields will have a different possible values depending on which cloud provider it is.
+Anycloud deployments are configured using a local file in `~/.anycloud/deploy.json`. Each deployment will be keyed by a name and contain an array of cloud provider configurations with `credentials`, `region`, `vmType` and `cloudProvider`. Possible values for `cloudProvider` are [`AWS`](start.md#aws), [`GCP`](start.md#gcp) and [`Azure`](start.md#azure) and the other fields will have a different possible values depending on which cloud provider it is.
 
 The schema for the `~/.anycloud/deploy.json` is as follows:
 
