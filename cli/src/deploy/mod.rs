@@ -37,10 +37,10 @@ pub struct GCPCredentials {
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
 pub struct AzureCredentials {
-  clientId: String,
+  applicationId: String,
   secret: String,
   subscriptionId: String,
-  domain: String,
+  directoryId: String,
 }
 
 #[derive(Deserialize, Debug, Serialize)]
