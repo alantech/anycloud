@@ -151,7 +151,7 @@ The schema for an Azure deployment config is as follows:
 }
 ```
 
-Take a look at the Azure [credentials](credentials.md#azure) and grab your `clientId`, `secret`, `subscriptionId` and `domain`. An example of an Azure cloud configuration will look something like this:
+Take a look at the Azure [credentials](credentials.md#azure) and grab your `applicationId`, `secret`, `subscriptionId` and `directoryId`. An example of an Azure cloud configuration will look something like this:
 
 ```javascript
 {
@@ -159,10 +159,10 @@ Take a look at the Azure [credentials](credentials.md#azure) and grab your `clie
   "region": "westus2",
   "vmType": "Standard_B1ls",
   "credentials": {
-    "clientId": "#####################",
-    "secret": "#####################",
-    "subscriptionId": "#####################",
-    "domain": "#####################"
+    "applicationId": "########-####-####-####-############",
+    "secret": "##################################",
+    "subscriptionId": "########-####-####-####-############",
+    "directoryId": "########-####-####-####-############"
   }
 }
 ```
