@@ -34,11 +34,21 @@ pub struct GCPCredentials {
   projectId: String,
 }
 
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct AzureCredentials {
+  clientId: String,
+  secret: String,
+  subscriptionId: String,
+  domain: String,
+}
+
 #[derive(Deserialize, Debug, Serialize)]
 #[serde(untagged)]
 pub enum Credentials {
   GCP(GCPCredentials),
   AWS(AWSCredentials),
+  Azure(AzureCredentials),
 }
 
 #[allow(non_snake_case)]
