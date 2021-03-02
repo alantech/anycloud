@@ -13,12 +13,11 @@ use std::path::Path;
 use ascii_table::{AsciiTable, Column};
 use base64;
 
-const URL: &str = "http://localhost:8080";
-// const URL: &str = if cfg!(debug_assertions) {
-//   "http://localhost:8080"
-// } else {
-//   "https://deploy.alantechnologies.com"
-// };
+const URL: &str = if cfg!(debug_assertions) {
+  "http://localhost:8080"
+} else {
+  "https://deploy.alantechnologies.com"
+};
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
