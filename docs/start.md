@@ -1,6 +1,6 @@
 # Get Started
 
-Anycloud deployments are configured using a local file in `~/.anycloud/deploy.json`. Each deployment will be keyed by a name and contain an array of cloud provider configurations with `credentials`, `region` and `cloudProvider`. Possible values for `cloudProvider` are [`AWS`](start.md#aws) and [`GCP`](start.md#gcp) and the other two fields will have a different possible values depending on which cloud provider it is.
+Anycloud deployments are configured using a local file in `~/.anycloud/deploy.json`. Each deployment will be keyed by a name and contain an array of cloud provider configurations with `credentials`, `region` and `cloudProvider`. Possible values for `cloudProvider` are [`AWS`](start.md#aws), [`GCP`](start.md#gcp) and [`Azure`](start.md#azure) and the other two fields will have a different possible values depending on which cloud provider it is.
 
 The schema for the `~/.anycloud/deploy.json` is as follows:
 
@@ -133,3 +133,36 @@ Take a look at the exported JSON file from your GCP [credentials](credentials.md
 }
 ```
 
+## Azure
+
+The schema for an Azure deployment config is as follows:
+
+```javascript
+{
+  "cloudProvider": "string",
+  "region": "string",
+  "vmType": "string",
+  "credentials": {
+    "clientId": "string",
+    "secret": "string",
+    "subscriptionId": "string",
+    "domain": "string"
+  }
+}
+```
+
+Take a look at the Azure [credentials](credentials.md#azure) and grab your `clientId`, `secret`, `subscriptionId` and `domain`. An example of an Azure cloud configuration will look something like this:
+
+```javascript
+{
+  "cloudProvider": "Azure",
+  "region": "westus2",
+  "vmType": "Standard_B1ls",
+  "credentials": {
+    "clientId": "#####################",
+    "secret": "#####################",
+    "subscriptionId": "#####################",
+    "domain": "#####################"
+  }
+}
+```
