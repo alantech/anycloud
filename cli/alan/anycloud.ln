@@ -4,6 +4,13 @@ from @std/http import connection, Connection, fetch, Request, Response, body, se
 
 on start {
   print('Starting Anycloud...');
+  const untarRes = exec('tar -xzf app.tar.gz');
+  if untarRes.exitCode != 0 {
+    eprint('app.tar.gz could not be unpacked');
+    eprint(untarRes.stderr);
+    emit exit untarRes.exitCode;
+  }
+
   const dockerRes = exec('docker build -t anycloud/app .');
   if dockerRes.exitCode != 0 {
     eprint('Docker container could not be built');
