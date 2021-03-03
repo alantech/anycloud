@@ -23,7 +23,7 @@ fn get_app_tar_gz_b64() -> String {
 
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
-    eprintln!("Please stash, commit or .gitignore your changes before deploying and try again: {}", msg);
+    eprintln!("Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg);
     std::process::exit(1);
   }
 
