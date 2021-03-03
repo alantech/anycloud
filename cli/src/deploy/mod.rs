@@ -15,6 +15,8 @@ use base64;
 
 const REQUEST_TIMEOUT: &str = "Sorry, the cloud provider didn't get back to us in the expected time. \
   Operation is still in progress. Please check the \"info\" command to see the status of your cluster.";
+const FORBIDDEN_OPERATION: &str = "Please review your credentials. Make sure you have follow all the \
+  configuration steps: https://alantech.gitbook.io/anycloud/";
 const URL: &str = if cfg!(debug_assertions) {
   "http://localhost:8080"
 } else {
@@ -108,6 +110,8 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, Box<dyn Erro
     Ok(data_str)
   } else if resp.status() == StatusCode::REQUEST_TIMEOUT {
     Ok(REQUEST_TIMEOUT.into())
+  } else if resp.status() == StatusCode::FORBIDDEN {
+    Ok(FORBIDDEN_OPERATION.into())
   } else {
     Err(data_str.into())
   };
@@ -129,6 +133,8 @@ pub async fn terminate(cluster_id: &str) {
     Ok(res) => {
       if res == REQUEST_TIMEOUT {
         format!("{}", REQUEST_TIMEOUT)
+      } else if res == FORBIDDEN_OPERATION {
+        format!("{}", FORBIDDEN_OPERATION)
       } else {
         format!("Terminated app {} successfully!", cluster_id)
       }
@@ -146,6 +152,8 @@ pub async fn new(body: Value) {
     Ok(res) => {
       if res == REQUEST_TIMEOUT {
         format!("{}", REQUEST_TIMEOUT)
+      } else if res == FORBIDDEN_OPERATION {
+        format!("{}", FORBIDDEN_OPERATION)
       } else {
         format!("Created app with id {} successfully!", res)
       }
@@ -163,6 +171,8 @@ pub async fn upgrade(body: Value) {
     Ok(res) => {
       if res == REQUEST_TIMEOUT {
         format!("{}", REQUEST_TIMEOUT)
+      } else if res == FORBIDDEN_OPERATION {
+        format!("{}", FORBIDDEN_OPERATION)
       } else {
         format!("Upgraded app successfully!")
       }
@@ -183,6 +193,9 @@ pub async fn info() {
     Ok(res) => {
       if res == REQUEST_TIMEOUT {
         println!("{}", REQUEST_TIMEOUT);
+        std::process::exit(1);
+      } else if res == FORBIDDEN_OPERATION {
+        println!("{}", FORBIDDEN_OPERATION);
         std::process::exit(1);
       }
     },
