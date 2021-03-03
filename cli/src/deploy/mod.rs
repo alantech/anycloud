@@ -1,4 +1,4 @@
-use hyper::{client::Client, Body, Request};
+use hyper::{client::Client, Body, Request, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, from_str, json, Value};
 use spinner::SpinnerBuilder;
@@ -13,6 +13,8 @@ use std::path::Path;
 use ascii_table::{AsciiTable, Column};
 use base64;
 
+const REQUEST_TIMEOUT: &str = "Sorry, the cloud provider didn't get back to us in the expected time. \
+  Operation is still in progress. Please check the \"info\" command to see the status of your cluster.";
 const URL: &str = if cfg!(debug_assertions) {
   "http://localhost:8080"
 } else {
@@ -104,6 +106,8 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, Box<dyn Erro
   let data_str = String::from_utf8(data.to_vec())?;
   return if resp.status().is_success() {
     Ok(data_str)
+  } else if resp.status() == StatusCode::REQUEST_TIMEOUT {
+    Ok(REQUEST_TIMEOUT.into())
   } else {
     Err(data_str.into())
   };
@@ -122,7 +126,13 @@ pub async fn terminate(cluster_id: &str) {
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
   let res = match resp {
-    Ok(_) => format!("Terminated app {} successfully!", cluster_id),
+    Ok(res) => {
+      if res == REQUEST_TIMEOUT {
+        format!("{}", REQUEST_TIMEOUT)
+      } else {
+        format!("Terminated app {} successfully!", cluster_id)
+      }
+    },
     Err(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
   };
   sp.message(res);
@@ -133,7 +143,13 @@ pub async fn new(body: Value) {
   let sp = SpinnerBuilder::new(format!("Creating new app")).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(cluster_id) => format!("Created app with id {} successfully!", cluster_id),
+    Ok(res) => {
+      if res == REQUEST_TIMEOUT {
+        format!("{}", REQUEST_TIMEOUT)
+      } else {
+        format!("Created app with id {} successfully!", res)
+      }
+    },
     Err(err) => format!("Failed to create a new app. Error: {}", err),
   };
   sp.message(res);
@@ -144,8 +160,14 @@ pub async fn upgrade(body: Value) {
   let sp = SpinnerBuilder::new(format!("Upgrading app")).start();
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded app successfully!"),
-    Err(err) => format!("Failed to upgrade app. Error: {}", err),
+    Ok(res) => {
+      if res == REQUEST_TIMEOUT {
+        format!("{}", REQUEST_TIMEOUT)
+      } else {
+        format!("Upgraded app successfully!")
+      }
+    },
+    Err(err) => format!("Failed to create a new app. Error: {}", err),
   };
   sp.message(res);
   sp.close();
@@ -157,10 +179,18 @@ pub async fn info() {
     "deployConfig": deploy_configs,
   });
   let resp = post_v1("info", body).await;
-  if let Err(err) = resp {
-    println!("Displaying status for apps failed with error: {}", err);
-    std::process::exit(1);
-  }
+  match &resp {
+    Ok(res) => {
+      if res == REQUEST_TIMEOUT {
+        println!("{}", REQUEST_TIMEOUT);
+        std::process::exit(1);
+      }
+    },
+    Err(err) => {
+      println!("Displaying status for apps failed with error: {}", err);
+      std::process::exit(1);
+    },
+  };
   let mut apps: Vec<App> = from_str(resp.unwrap().as_str()).unwrap();
 
   if apps.len() == 0 {
