@@ -13,8 +13,8 @@ use std::path::Path;
 use ascii_table::{AsciiTable, Column};
 use base64;
 
-const REQUEST_TIMEOUT: &str = "Sorry, the cloud provider didn't get back to us in the expected time. \
-  Operation is still in progress. Please check the \"info\" command to see the status of your cluster.";
+const REQUEST_TIMEOUT: &str = "Operation is still in progress. It might take a few more minutes for \
+  the cloud provider to finish up.";
 const FORBIDDEN_OPERATION: &str = "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://alantech.gitbook.io/anycloud/";
 const URL: &str = if cfg!(debug_assertions) {
