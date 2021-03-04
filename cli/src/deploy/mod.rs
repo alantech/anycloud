@@ -74,6 +74,12 @@ struct App {
   size: usize,
 }
 
+pub enum PostV1Error {
+  Timeout,
+  Forbidden,
+  Other(Box<dyn Error>),
+}
+
 const CONFIG_NAME: &str = ".anycloud/deploy.json";
 // TODO: Have a command to do this for users
 const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
@@ -98,23 +104,36 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
   config.unwrap()
 }
 
-pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, Box<dyn Error>> {
+pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error> {
   let client = Client::builder().build::<_, Body>(hyper_tls::HttpsConnector::new());
   let req = Request::post(format!("{}/v1/{}", URL, endpoint))
     .header("Content-Type", "application/json")
-    .body(body.to_string().into())?;
-  let mut resp = client.request(req).await?;
-  let data = hyper::body::to_bytes(resp.body_mut()).await?;
-  let data_str = String::from_utf8(data.to_vec())?;
-  return if resp.status().is_success() {
-    Ok(data_str)
-  } else if resp.status() == StatusCode::REQUEST_TIMEOUT {
-    Ok(REQUEST_TIMEOUT.into())
-  } else if resp.status() == StatusCode::FORBIDDEN {
-    Ok(FORBIDDEN_OPERATION.into())
-  } else {
-    Err(data_str.into())
+    .body(body.to_string().into());
+  let req = match req {
+      Ok(req) => req,
+      Err(e) => return Err(PostV1Error::Other(e.into())),
   };
+  let resp = client.request(req).await;
+  let mut resp = match resp {
+    Ok(resp) => resp,
+    Err(e) => return Err(PostV1Error::Other(e.into())),
+  };
+  let data = hyper::body::to_bytes(resp.body_mut()).await;
+  let data = match data {
+    Ok(data) => data,
+    Err(e) => return Err(PostV1Error::Other(e.into())),
+  };
+  let data_str = String::from_utf8(data.to_vec());
+  let data_str = match data_str {
+    Ok(data_str) => data_str,
+    Err(e) => return Err(PostV1Error::Other(e.into())),
+  };
+  return match resp.status() {
+    st if st.is_success() => Ok(data_str),
+    StatusCode::REQUEST_TIMEOUT => Err(PostV1Error::Timeout),
+    StatusCode::FORBIDDEN => Err(PostV1Error::Forbidden),
+    _ => Err(PostV1Error::Other(data_str.into())),
+  }
 }
 
 pub fn get_file_str(file: &str) -> String {
@@ -130,16 +149,12 @@ pub async fn terminate(cluster_id: &str) {
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
   let res = match resp {
-    Ok(res) => {
-      if res == REQUEST_TIMEOUT {
-        format!("{}", REQUEST_TIMEOUT)
-      } else if res == FORBIDDEN_OPERATION {
-        format!("{}", FORBIDDEN_OPERATION)
-      } else {
-        format!("Terminated app {} successfully!", cluster_id)
-      }
-    },
-    Err(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
+    Ok(_) => format!("Terminated app {} successfully!", cluster_id),
+    Err(err) => match err {
+      PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
+      PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
+      PostV1Error::Other(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
+    }
   };
   sp.message(res);
   sp.close();
@@ -149,16 +164,12 @@ pub async fn new(body: Value) {
   let sp = SpinnerBuilder::new(format!("Creating new app")).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(res) => {
-      if res == REQUEST_TIMEOUT {
-        format!("{}", REQUEST_TIMEOUT)
-      } else if res == FORBIDDEN_OPERATION {
-        format!("{}", FORBIDDEN_OPERATION)
-      } else {
-        format!("Created app with id {} successfully!", res)
-      }
-    },
-    Err(err) => format!("Failed to create a new app. Error: {}", err),
+    Ok(res) => format!("Created app with id {} successfully!", res),
+    Err(err) => match err {
+      PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
+      PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
+      PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
+    }
   };
   sp.message(res);
   sp.close();
@@ -168,16 +179,12 @@ pub async fn upgrade(body: Value) {
   let sp = SpinnerBuilder::new(format!("Upgrading app")).start();
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(res) => {
-      if res == REQUEST_TIMEOUT {
-        format!("{}", REQUEST_TIMEOUT)
-      } else if res == FORBIDDEN_OPERATION {
-        format!("{}", FORBIDDEN_OPERATION)
-      } else {
-        format!("Upgraded app successfully!")
-      }
-    },
-    Err(err) => format!("Failed to create a new app. Error: {}", err),
+    Ok(_) => format!("Upgraded app successfully!"),
+    Err(err) => match err {
+      PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
+      PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
+      PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
+    }
   };
   sp.message(res);
   sp.close();
@@ -189,22 +196,24 @@ pub async fn info() {
     "deployConfig": deploy_configs,
   });
   let resp = post_v1("info", body).await;
-  match &resp {
-    Ok(res) => {
-      if res == REQUEST_TIMEOUT {
+  let resp = match &resp {
+    Ok(resp) => resp,
+    Err(err) => match err {
+      PostV1Error::Timeout => {
         println!("{}", REQUEST_TIMEOUT);
         std::process::exit(1);
-      } else if res == FORBIDDEN_OPERATION {
+      },
+      PostV1Error::Forbidden => {
         println!("{}", FORBIDDEN_OPERATION);
         std::process::exit(1);
-      }
-    },
-    Err(err) => {
-      println!("Displaying status for apps failed with error: {}", err);
-      std::process::exit(1);
-    },
+      },
+      PostV1Error::Other(err) => {
+        println!("Displaying status for apps failed with error: {}", err);
+        std::process::exit(1);
+      },
+    }
   };
-  let mut apps: Vec<App> = from_str(resp.unwrap().as_str()).unwrap();
+  let mut apps: Vec<App> = from_str(resp).unwrap();
 
   if apps.len() == 0 {
     println!("No apps deployed using the cloud credentials in {}", CONFIG_NAME);
