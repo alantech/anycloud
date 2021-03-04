@@ -48,7 +48,7 @@ fn get_app_tar_gz_b64() -> String {
 #[tokio::main]
 pub async fn main() {
   let pwd = std::env::var("PWD").unwrap();
-  let anycloud_agz = base64::encode(include_bytes!("/alan/anycloud.agz"));
+  let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
   let app = App::new(crate_name!())
     .version(crate_version!())
     .about("AnyCloud is a Lambda alternative that works with multiple cloud provider.")
