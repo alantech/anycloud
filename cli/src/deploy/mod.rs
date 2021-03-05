@@ -200,15 +200,15 @@ pub async fn info() {
     Ok(resp) => resp,
     Err(err) => match err {
       PostV1Error::Timeout => {
-        println!("{}", REQUEST_TIMEOUT);
+        eprintln!("{}", REQUEST_TIMEOUT);
         std::process::exit(1);
       },
       PostV1Error::Forbidden => {
-        println!("{}", FORBIDDEN_OPERATION);
+        eprintln!("{}", FORBIDDEN_OPERATION);
         std::process::exit(1);
       },
       PostV1Error::Other(err) => {
-        println!("Displaying status for apps failed with error: {}", err);
+        eprintln!("Displaying status for apps failed with error: {}", err);
         std::process::exit(1);
       },
     }
