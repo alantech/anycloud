@@ -8,6 +8,9 @@ class Anycloud < Formula
   
     depends_on "rust" => :build
   
+    # In order to go to homebrew-core we will need to review this.
+    # The options will be create it own formula for alan or build it here from source.
+    # We cannot use the binary for homebrew-core
     resource "alan" do
       url "https://github.com/alantech/alan/releases/download/v0.1.30/alan-macos.tar.gz"
       sha256 "dd2ac8f9f056c1ea906ed26300d9168da29c3ee0511ea43a96040fcc5f4c7ea6"
