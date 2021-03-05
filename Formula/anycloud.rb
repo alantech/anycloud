@@ -8,7 +8,7 @@ class Anycloud < Formula
     depends_on "rust" => :build
   
     resource "alan" do
-      url "https://github.com/alantech/alan/releases/download/v0.1.31/alan-macos.tar.gz"
+      url "https://github.com/alantech/alan/releases/download/v0.1.30/alan-macos.tar.gz"
       sha256 "456a801d9f4c0b4e2e4e926ee2f98ea0afc12f93b4e860306cbb0bb109b5ae9d"
     end
   
