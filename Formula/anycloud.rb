@@ -4,6 +4,7 @@ class Anycloud < Formula
     url "https://github.com/alantech/anycloud/archive/v0.1.2.tar.gz"
     sha256 "3ca6c849aace024c75e5429db95b37e1a5592902557439996508b469cc706370"
     license "Apache-2.0"
+    revision 1
   
     depends_on "rust" => :build
   
