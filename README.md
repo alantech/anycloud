@@ -1,53 +1,41 @@
-# AnyCloud
+<div align="center">
+  <img src="./assets/anycloud.png" alt="drawing" width="180"/>
+  <h1>AnyCloud scales webservers in any cloud provider</h2>
+</div>
+<br/>
 
-AnyCloud is a Lambda alternative for Node.js that works with multiple cloud providers. We’re building the features of Lambda while fixing the problems we have run into while using it. Namely:
+Our aim is to easily allow developers run their webservers on any cloud provider while also providing a much better experience to alternative services offered in AWS (Lambda, Elastic Beanstalk, ECS/Fargate, EC2) or GCP (Cloud Functions, App Engine, Cloud Run, Compute Engine).
 
-- Vendor lock-in
-- Cold starts
-- Limited runtime (10-15m)
-- Stateless
-- Cumbersome to run locally
-- Unintuitive to version and remove inactive functions
-- HTTPS support not included
+- [x] Automatically scales your HTTP server based on request load and system stats
+- [x] Vendor portability across cloud providers
+- [x] No need to provision and manage virtual machines
+- [x] Runs in your local dev environment as-is
+- [x] HTTPS support included out of the box
+- [x] Supports multi-region and multi-cloud deployments
+- [ ] In-memory distributed datastore
+- [ ] Web socket support
+- [ ] Cron job support
 
-## Documentation
 
-Visit our [docs](https://alantech.gitbook.io/anycloud)
+## Project Status
 
-## Status
-- [ ] Public Alpha: Anyone can sign up, but go easy on us
-- [ ] Public Beta: Stable enough for most non-enterprise use-cases
-- [ ] Public: Production-ready
+- [x] Alpha: We are working with closed set of customers. Drop us a line at hello at anycloudapp dot com if you are interested
+- [ ] Beta: Anyone can sign up. Stable enough for most use-cases
+- [ ] Public: Production-ready for enterprise use-cases
 
 ## How it works
 
-AnyCloud is a serverless framework built on the Alan and Rust programming languages that:
+AnyCloud is built on the Rust and Alan programming languages. It is accessed via a CLI that takes IAM cloud provider credentials and a Dockerfile with a webserver listening on port 8088 as input. Your container/server is deployed to the account with the specified credentials and runs with a sidecar process that manages your server across multiple regions and cloud providers via DNS and figures out when to scale up or down.
 
-- [x] Automatically scales your http server across many machines based on request load and system stats
-- [x] Works on multiple cloud providers so you are not locked into AWS
-- [x] Runs locally as-is without special configuration of your local dev environment
-- [ ] In-memory distributed datastore
+## Supported Cloud Providers
 
-Our aim is to give developers a much better experience when using AnyClloud than Lambda.
+AnyCloud is hosted directly in your own account with any of the following cloud providers:
 
-**Public Cloud Providers**
-
-AnyCloud is hosted directly in your account with the preferred cloud provider. Cloud providers currently supported:
 - [x] AWS
 - [x] GCP
-- [ ] Azure (coming soon)
+- [x] Azure
+- [ ] Digital Ocean
 
-You start using Anycloud without signing up.
+## Documentation
 
-**Client libraries**
-
-AnyCloud currently supports the current client libraries:
-- [x] Node.js
-- [ ] Deno
-- [ ] Python
-- [ ] Ruby
-- [ ] Java
-
-## Architecure
-
-TODO: insert DNS, Alan and Rust diagram
+To get started visit our [docs](https://docs.anycloudapp.com)
