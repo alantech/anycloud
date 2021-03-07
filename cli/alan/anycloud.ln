@@ -1,6 +1,6 @@
 from @std/app import start, print, eprint, exit
 from @std/cmd import exec
-from @std/http import connection, Connection, fetch, Request, Response, body, send, listen
+from @std/httpserver import connection, Connection, fetch, Request, Response, body, send, listen
 
 on start {
   print('Starting Anycloud...');
@@ -23,14 +23,6 @@ on start {
     eprint('Docker container could not be started');
     eprint(containerRes.stderr);
     emit exit containerRes.exitCode;
-  }
-
-  const serverRes = listen(80);
-  if serverRes.isErr() {
-    eprint('Could not listen on port 80');
-    emit exit 80;
-  } else {
-    print('Listening on port 80');
   }
 }
 
