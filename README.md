@@ -25,7 +25,7 @@ Our aim is to easily allow developers run their webservers on any cloud provider
 
 ## How it works
 
-AnyCloud is built on the [Rust](rust-lang.org ) and [Alan](alan-lang.org) programming languages. It is accessed via a CLI that takes cloud provider credentials and a Dockerfile with a webserver listening on port 8088 as input. Your container/server is deployed to the account with the specified credentials and runs with a sidecar process that manages your server across multiple regions and cloud providers via DNS and figures out when to scale up or down.
+AnyCloud is built on the [Rust](rust-lang.org) and [Alan](alan-lang.org) programming languages. It is accessed via a CLI that takes cloud provider credentials and a Dockerfile with a webserver listening on port 8088 as input. Your container/server is deployed to the account with the specified credentials and runs with a sidecar process that manages your server across multiple regions and cloud providers via DNS and figures out when to scale up or down.
 
 ## Supported Cloud Providers
 
