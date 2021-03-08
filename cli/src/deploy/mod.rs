@@ -99,7 +99,7 @@ pub enum PostV1Error {
 const DEPLOY_CONFIG_FILE: &str = "anycloud.json";
 const CREDENTIALS_CONFIG_FILE: &str = ".anycloud/credentials.json";
 // TODO: Have a command to do this for users
-const CONFIG_SETUP: &str = "To create valid Anycloud configuration follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
+const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
 pub fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let home = std::env::var("HOME").unwrap();
