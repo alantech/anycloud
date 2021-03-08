@@ -1,1 +1,1 @@
-Please view our documentation at https://alantech.gitbook.io/anycloud
+Please view our documentation at https://docs.anycloudapp.com

@@ -16,6 +16,18 @@ fn get_dockerfile_b64() -> String {
 
 fn get_app_tar_gz_b64() -> String {
   let output = Command::new("git")
+    .arg("status")
+    .arg("--porcelain")
+    .output()
+    .unwrap();
+
+  let msg = String::from_utf8(output.stdout).unwrap();
+  if msg.contains("M ") {
+    eprintln!("Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg);
+    std::process::exit(1);
+  }
+
+  let output = Command::new("git")
     .arg("archive")
     .arg("--format=tar.gz")
     .arg("-o")
@@ -54,7 +66,7 @@ pub async fn main() {
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
       .about("Deploys your repository to a new app with one of the deploy configs at ~/.anycloud/deploy.json")
-      .arg_from_usage("[DEPLOY_NAME] 'Specifies the name of the deploy config to use, or the first definition if not specified'")
+      .arg_from_usage("<DEPLOY_NAME> 'Specifies the name of the deploy config to use'")
     )
     .subcommand(SubCommand::with_name("info")
       .about("Displays all the apps deployed with described in the deploy config at ~/.anycloud/deploy.json")
@@ -72,9 +84,7 @@ pub async fn main() {
   match matches.subcommand() {
     ("new",  Some(matches)) => {
       let config = get_config();
-      let deploy_name = matches.value_of("DEPLOY_NAME").unwrap_or(
-        config.keys().take(1).next().unwrap()
-      );
+      let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
       let body = json!({
         "deployConfig": config,
         "deployName": deploy_name,
