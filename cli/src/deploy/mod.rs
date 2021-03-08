@@ -67,7 +67,6 @@ pub struct CredentialsConfig {
 pub struct DeployConfig {
   credentials: String,
   region: String,
-  cloudProvider: String,
   vmType: String,
 }
 
