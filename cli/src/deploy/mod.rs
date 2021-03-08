@@ -101,7 +101,7 @@ const CREDENTIALS_CONFIG_FILE: &str = ".anycloud/credentials.json";
 // TODO: Have a command to do this for users
 const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-pub fn get_credentials() -> HashMap<String, CredentialsConfig> {
+fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CREDENTIALS_CONFIG_FILE);
   let path = Path::new(file_name);
@@ -121,7 +121,7 @@ pub fn get_credentials() -> HashMap<String, CredentialsConfig> {
   config.unwrap()
 }
 
-pub fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
+fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   let home = std::env::var("PWD").unwrap();
   let file_name = &format!("{}/{}", home, DEPLOY_CONFIG_FILE);
   let path = Path::new(file_name);
