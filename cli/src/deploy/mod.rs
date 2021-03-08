@@ -57,6 +57,22 @@ pub enum Credentials {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
+pub struct CredentialsConfig {
+  credentials: Credentials,
+  cloudProvider: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct DeployConfig {
+  credentials: String,
+  region: String,
+  cloudProvider: String,
+  vmType: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
 pub struct Config {
   credentials: Credentials,
   region: String,
@@ -80,13 +96,34 @@ pub enum PostV1Error {
   Other(Box<dyn Error>),
 }
 
-const CONFIG_NAME: &str = ".anycloud/deploy.json";
+const DEPLOY_CONFIG_FILE: &str = "anycloud.json";
+const CREDENTIALS_CONFIG_FILE: &str = ".anycloud/credentials.json";
 // TODO: Have a command to do this for users
-const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
+const CONFIG_SETUP: &str = "To create valid Anycloud configuration follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-pub fn get_config() -> HashMap<String, Vec<Config>> {
+pub fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let home = std::env::var("HOME").unwrap();
-  let file_name = &format!("{}/{}", home, CONFIG_NAME);
+  let file_name = &format!("{}/{}", home, CREDENTIALS_CONFIG_FILE);
+  let path = Path::new(file_name);
+  let file = File::open(path);
+  if let Err(err) = file {
+    println!("Cannot access credentials at {}. Error: {}", file_name, err);
+    println!("{}", CONFIG_SETUP);
+    std::process::exit(1);
+  }
+  let reader = BufReader::new(file.unwrap());
+  let config = from_reader(reader);
+  if let Err(err) = config {
+    println!("Invalid credentials. Error: {}", err);
+    println!("{}", CONFIG_SETUP);
+    std::process::exit(1);
+  }
+  config.unwrap()
+}
+
+pub fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
+  let home = std::env::var("PWD").unwrap();
+  let file_name = &format!("{}/{}", home, DEPLOY_CONFIG_FILE);
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
@@ -102,6 +139,34 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
     std::process::exit(1);
   }
   config.unwrap()
+}
+
+pub fn get_config() -> HashMap<String, Vec<Config>> {
+  let anycloud_config = get_deploy_config();
+  let cred_configs = get_credentials();
+  let deploy_config = HashMap::new();
+  for (deploy_id, deploy_configs) in anycloud_config.into_iter() {
+    let configs = Vec::new();
+    for deploy_config in deploy_configs {
+      let credentials = cred_configs
+        .get(&deploy_config.credentials)
+        .expect(
+          format!("Credentials {} for deploy config {} not found in {}",
+            &deploy_config.credentials,
+            deploy_id,
+            CREDENTIALS_CONFIG_FILE
+          )
+        );
+      configs.push(Config {
+        credentials: credentials.credentials,
+        cloudProvider: credentials.cloudProvider,
+        region: deploy_config.region,
+        vmType: deploy_config.vmType,
+      });
+    }
+    deploy_config.insert(deploy_id, configs);
+  }
+  deploy_config
 }
 
 pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error> {
@@ -216,7 +281,7 @@ pub async fn info() {
   let mut apps: Vec<App> = from_str(resp).unwrap();
 
   if apps.len() == 0 {
-    println!("No apps deployed using the cloud credentials in {}", CONFIG_NAME);
+    println!("No apps currently deployed");
     return;
   }
 
@@ -260,7 +325,7 @@ pub async fn info() {
     data.push(vec![&app.id, &app.url, &app.deployName, &app.size, &app.version]);
   }
 
-  println!("Status of all apps deployed using the cloud credentials in ~/{}\n", CONFIG_NAME);
+  println!("Status of all apps deployed:\n");
   clusters.print(data);
 
   let mut data: Vec<Vec<&dyn Display>> = vec![];
@@ -302,6 +367,6 @@ pub async fn info() {
     }
   }
 
-  println!("\nDeployment configurations used from ~/{}\n", CONFIG_NAME);
+  println!("\nDeployment configurations used:\n");
   deploy.print(data);
 }
