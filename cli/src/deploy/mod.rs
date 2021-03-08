@@ -17,6 +17,8 @@ const REQUEST_TIMEOUT: &str = "Operation is still in progress. It might take a f
   the cloud provider to finish up.";
 const FORBIDDEN_OPERATION: &str = "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://alantech.gitbook.io/anycloud/";
+const NAME_CONFLICT: &str = "Another application with same App Id already exists.";
+
 const URL: &str = if cfg!(debug_assertions) {
   "http://localhost:8080"
 } else {
@@ -77,6 +79,7 @@ struct App {
 pub enum PostV1Error {
   Timeout,
   Forbidden,
+  Conflict,
   Other(Box<dyn Error>),
 }
 
@@ -132,6 +135,7 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
     st if st.is_success() => Ok(data_str),
     StatusCode::REQUEST_TIMEOUT => Err(PostV1Error::Timeout),
     StatusCode::FORBIDDEN => Err(PostV1Error::Forbidden),
+    StatusCode::CONFLICT => Err(PostV1Error::Conflict),
     _ => Err(PostV1Error::Other(data_str.into())),
   }
 }
@@ -153,6 +157,7 @@ pub async fn terminate(cluster_id: &str) {
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
+      PostV1Error::Conflict => format!("{}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
     }
   };
@@ -168,6 +173,7 @@ pub async fn new(body: Value) {
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
+      PostV1Error::Conflict => format!("{}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
     }
   };
@@ -183,6 +189,7 @@ pub async fn upgrade(body: Value) {
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
+      PostV1Error::Conflict => format!("{}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
     }
   };
@@ -205,6 +212,10 @@ pub async fn info() {
       },
       PostV1Error::Forbidden => {
         eprintln!("{}", FORBIDDEN_OPERATION);
+        std::process::exit(1);
+      },
+      PostV1Error::Conflict => {
+        eprintln!("{}", NAME_CONFLICT);
         std::process::exit(1);
       },
       PostV1Error::Other(err) => {
