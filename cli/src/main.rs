@@ -67,7 +67,7 @@ pub async fn main() {
     .subcommand(SubCommand::with_name("new")
       .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
       .arg_from_usage("<DEPLOY_NAME> 'Specifies the name of the deploy config to use'")
-      .arg_from_usage("--app-id=[APP_ID] '[Optional] Specifies the application identifier'")
+      .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional application identifier'")
     )
     .subcommand(SubCommand::with_name("info")
       .about("Displays all the apps deployed with the deploy config from anycloud.json")
