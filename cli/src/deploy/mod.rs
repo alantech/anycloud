@@ -19,12 +19,6 @@ const FORBIDDEN_OPERATION: &str = "Please review your credentials. Make sure you
   configuration steps: https://alantech.gitbook.io/anycloud/";
 const NAME_CONFLICT: &str = "Another application with same App Id already exists.";
 
-const URL: &str = if cfg!(debug_assertions) {
-  "http://localhost:8080"
-} else {
-  "https://deploy.alantechnologies.com"
-};
-
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct AWSCredentials {
@@ -143,6 +137,18 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   config.unwrap()
 }
 
+fn get_url() -> &'static str {
+  const LOCAL_DEV: Option<&'static str> = option_env!("LOCAL_DEV");
+  let local_dev = LOCAL_DEV.unwrap_or("false") == "true";
+  if local_dev {
+    return "http://localhost:8080"
+  } else if cfg!(debug_assertions) {
+    return "https://deploy-staging.alantechnologies.com"
+  } else {
+    return "https://deploy.alantechnologies.com"
+  };
+}
+
 pub fn get_config() -> HashMap<String, Vec<Config>> {
   let anycloud_config = get_deploy_config();
   let cred_configs = get_credentials();
@@ -173,7 +179,8 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
 
 pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error> {
   let client = Client::builder().build::<_, Body>(hyper_tls::HttpsConnector::new());
-  let req = Request::post(format!("{}/v1/{}", URL, endpoint))
+  let url = get_url();
+  let req = Request::post(format!("{}/v1/{}", url, endpoint))
     .header("Content-Type", "application/json")
     .body(body.to_string().into());
   let req = match req {
