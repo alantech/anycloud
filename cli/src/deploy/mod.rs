@@ -255,9 +255,8 @@ pub async fn upgrade(body: Value) {
 }
 
 pub async fn info() {
-  let deploy_configs = get_config();
   let body = json!({
-    "deployConfig": deploy_configs,
+    "deployConfig": get_config(),
   });
   let resp = post_v1("info", body).await;
   let resp = match &resp {
@@ -331,37 +330,52 @@ pub async fn info() {
   let mut deploy = AsciiTable::default();
   deploy.max_width = 140;
 
+  let column = Column {
+    header: "Deploy Config".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(0, column);
+
+  let column = Column {
+    header: "Credentials".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(1, column);
+
+  let column = Column {
+    header: "Cloud Provider".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(2, column);
+
+  let column = Column {
+    header: "Region".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(3, column);
+
+  let column = Column {
+    header: "VM Type".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(4, column);
+
+  let deploy_configs = get_deploy_config();
+  let credentials = get_credentials();
   for deploy_name in deploy_names {
-    let column = Column {
-      header: "Deploy Config".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(0, column);
-
-    let column = Column {
-      header: "Cloud Provider".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(1, column);
-
-    let column = Column {
-      header: "Region".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(2, column);
-
-    let column = Column {
-      header: "VM Type".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(3, column);
-
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
     for (i, cloud_config) in cloud_configs.iter().enumerate() {
+      let creds = credentials.get(&cloud_config.credentials).expect(
+        &format!("Credentials {} for deploy config {} not found in {}",
+          &cloud_config.credentials,
+          deploy_name,
+          CREDENTIALS_CONFIG_FILE
+        )
+      );
       if i == 0 {
-        data.push(vec![deploy_name, &cloud_config.cloudProvider, &cloud_config.region, &cloud_config.vmType])
+        data.push(vec![deploy_name, &cloud_config.credentials, &creds.cloudProvider, &cloud_config.region, &cloud_config.vmType])
       } else {
-        data.push(vec![&"", &cloud_config.cloudProvider, &cloud_config.region, &cloud_config.vmType])
+        data.push(vec![&"", &cloud_config.credentials, &creds.cloudProvider, &cloud_config.region, &cloud_config.vmType])
       };
     }
   }
