@@ -227,8 +227,8 @@ pub async fn terminate(cluster_id: &str) {
     Ok(_) => format!("Terminated app {} successfully!", cluster_id),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
-      PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("{}", NAME_CONFLICT),
+      PostV1Error::Forbidden => format!("Failed to terminate app {}. Error: {}", cluster_id,FORBIDDEN_OPERATION),
+      PostV1Error::Conflict => format!("Failed to terminate app {}. Error: {}", cluster_id ,NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
     }
   };
@@ -243,8 +243,8 @@ pub async fn new(body: Value) {
     Ok(res) => format!("Created app with id {} successfully!", res),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
-      PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("{}", NAME_CONFLICT),
+      PostV1Error::Forbidden => format!("Failed to create a new app. Error: {}", FORBIDDEN_OPERATION),
+      PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
     }
   };
@@ -259,8 +259,8 @@ pub async fn upgrade(body: Value) {
     Ok(_) => format!("Upgraded app successfully!"),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
-      PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("{}", NAME_CONFLICT),
+      PostV1Error::Forbidden => format!("Failed to create a new app. Error: {}", FORBIDDEN_OPERATION),
+      PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
     }
   };
@@ -281,11 +281,11 @@ pub async fn info() {
         std::process::exit(1);
       },
       PostV1Error::Forbidden => {
-        eprintln!("{}", FORBIDDEN_OPERATION);
+        eprintln!("Displaying status for apps failed with error: {}", FORBIDDEN_OPERATION);
         std::process::exit(1);
       },
       PostV1Error::Conflict => {
-        eprintln!("{}", NAME_CONFLICT);
+        eprintln!("Displaying status for apps failed with error: {}", NAME_CONFLICT);
         std::process::exit(1);
       },
       PostV1Error::Other(err) => {
