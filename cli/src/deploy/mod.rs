@@ -24,14 +24,14 @@ const URL: &str = if cfg!(debug_assertions) {
 };
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct AWSCredentials {
   accessKeyId: String,
   secretAccessKey: String,
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct GCPCredentials {
   privateKey: String,
   clientEmail: String,
@@ -39,7 +39,7 @@ pub struct GCPCredentials {
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct AzureCredentials {
   applicationId: String,
   secret: String,
@@ -47,7 +47,7 @@ pub struct AzureCredentials {
   directoryId: String,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Credentials {
   GCP(GCPCredentials),
@@ -143,29 +143,29 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
 pub fn get_config() -> HashMap<String, Vec<Config>> {
   let anycloud_config = get_deploy_config();
   let cred_configs = get_credentials();
-  let deploy_config = HashMap::new();
+  let mut all_configs = HashMap::new();
   for (deploy_id, deploy_configs) in anycloud_config.into_iter() {
-    let configs = Vec::new();
+    let mut configs = Vec::new();
     for deploy_config in deploy_configs {
       let credentials = cred_configs
         .get(&deploy_config.credentials)
         .expect(
-          format!("Credentials {} for deploy config {} not found in {}",
+          &format!("Credentials {} for deploy config {} not found in {}",
             &deploy_config.credentials,
             deploy_id,
             CREDENTIALS_CONFIG_FILE
           )
         );
       configs.push(Config {
-        credentials: credentials.credentials,
-        cloudProvider: credentials.cloudProvider,
+        credentials: credentials.credentials.clone(),
+        cloudProvider: credentials.cloudProvider.to_string(),
         region: deploy_config.region,
         vmType: deploy_config.vmType,
       });
     }
-    deploy_config.insert(deploy_id, configs);
+    all_configs.insert(deploy_id, configs);
   }
-  deploy_config
+  all_configs
 }
 
 pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error> {
