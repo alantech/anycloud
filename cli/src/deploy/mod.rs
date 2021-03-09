@@ -85,6 +85,7 @@ struct App {
   size: usize,
 }
 
+#[derive(Debug)]
 pub enum PostV1Error {
   Timeout,
   Forbidden,
