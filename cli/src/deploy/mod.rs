@@ -24,14 +24,14 @@ const URL: &str = if cfg!(debug_assertions) {
 };
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct AWSCredentials {
   accessKeyId: String,
   secretAccessKey: String,
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct GCPCredentials {
   privateKey: String,
   clientEmail: String,
@@ -39,7 +39,7 @@ pub struct GCPCredentials {
 }
 
 #[allow(non_snake_case)]
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 pub struct AzureCredentials {
   applicationId: String,
   secret: String,
@@ -47,12 +47,27 @@ pub struct AzureCredentials {
   directoryId: String,
 }
 
-#[derive(Deserialize, Debug, Serialize)]
+#[derive(Deserialize, Debug, Clone, Serialize)]
 #[serde(untagged)]
 pub enum Credentials {
   GCP(GCPCredentials),
   AWS(AWSCredentials),
   Azure(AzureCredentials),
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct CredentialsConfig {
+  credentials: Credentials,
+  cloudProvider: String,
+}
+
+#[allow(non_snake_case)]
+#[derive(Deserialize, Debug, Serialize)]
+pub struct DeployConfig {
+  credentials: String,
+  region: String,
+  vmType: String,
 }
 
 #[allow(non_snake_case)]
@@ -80,13 +95,34 @@ pub enum PostV1Error {
   Other(Box<dyn Error>),
 }
 
-const CONFIG_NAME: &str = ".anycloud/deploy.json";
+const DEPLOY_CONFIG_FILE: &str = "anycloud.json";
+const CREDENTIALS_CONFIG_FILE: &str = ".anycloud/credentials.json";
 // TODO: Have a command to do this for users
 const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-pub fn get_config() -> HashMap<String, Vec<Config>> {
+fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let home = std::env::var("HOME").unwrap();
-  let file_name = &format!("{}/{}", home, CONFIG_NAME);
+  let file_name = &format!("{}/{}", home, CREDENTIALS_CONFIG_FILE);
+  let path = Path::new(file_name);
+  let file = File::open(path);
+  if let Err(err) = file {
+    println!("Cannot access credentials at {}. Error: {}", file_name, err);
+    println!("{}", CONFIG_SETUP);
+    std::process::exit(1);
+  }
+  let reader = BufReader::new(file.unwrap());
+  let config = from_reader(reader);
+  if let Err(err) = config {
+    println!("Invalid credentials. Error: {}", err);
+    println!("{}", CONFIG_SETUP);
+    std::process::exit(1);
+  }
+  config.unwrap()
+}
+
+fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
+  let home = std::env::var("PWD").unwrap();
+  let file_name = &format!("{}/{}", home, DEPLOY_CONFIG_FILE);
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
@@ -102,6 +138,34 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
     std::process::exit(1);
   }
   config.unwrap()
+}
+
+pub fn get_config() -> HashMap<String, Vec<Config>> {
+  let anycloud_config = get_deploy_config();
+  let cred_configs = get_credentials();
+  let mut all_configs = HashMap::new();
+  for (deploy_id, deploy_configs) in anycloud_config.into_iter() {
+    let mut configs = Vec::new();
+    for deploy_config in deploy_configs {
+      let credentials = cred_configs
+        .get(&deploy_config.credentials)
+        .expect(
+          &format!("Credentials {} for deploy config {} not found in {}",
+            &deploy_config.credentials,
+            deploy_id,
+            CREDENTIALS_CONFIG_FILE
+          )
+        );
+      configs.push(Config {
+        credentials: credentials.credentials.clone(),
+        cloudProvider: credentials.cloudProvider.to_string(),
+        region: deploy_config.region,
+        vmType: deploy_config.vmType,
+      });
+    }
+    all_configs.insert(deploy_id, configs);
+  }
+  all_configs
 }
 
 pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error> {
@@ -191,9 +255,8 @@ pub async fn upgrade(body: Value) {
 }
 
 pub async fn info() {
-  let deploy_configs = get_config();
   let body = json!({
-    "deployConfig": deploy_configs,
+    "deployConfig": get_config(),
   });
   let resp = post_v1("info", body).await;
   let resp = match &resp {
@@ -216,7 +279,7 @@ pub async fn info() {
   let mut apps: Vec<App> = from_str(resp).unwrap();
 
   if apps.len() == 0 {
-    println!("No apps deployed using the cloud credentials in {}", CONFIG_NAME);
+    println!("No apps currently deployed");
     return;
   }
 
@@ -260,48 +323,63 @@ pub async fn info() {
     data.push(vec![&app.id, &app.url, &app.deployName, &app.size, &app.version]);
   }
 
-  println!("Status of all apps deployed using the cloud credentials in ~/{}\n", CONFIG_NAME);
+  println!("Status of all apps deployed:\n");
   clusters.print(data);
 
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   let mut deploy = AsciiTable::default();
   deploy.max_width = 140;
 
+  let column = Column {
+    header: "Deploy Config".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(0, column);
+
+  let column = Column {
+    header: "Credentials".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(1, column);
+
+  let column = Column {
+    header: "Cloud Provider".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(2, column);
+
+  let column = Column {
+    header: "Region".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(3, column);
+
+  let column = Column {
+    header: "VM Type".into(),
+    ..Column::default()
+  };
+  deploy.columns.insert(4, column);
+
+  let deploy_configs = get_deploy_config();
+  let credentials = get_credentials();
   for deploy_name in deploy_names {
-    let column = Column {
-      header: "Deploy Config".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(0, column);
-
-    let column = Column {
-      header: "Cloud Provider".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(1, column);
-
-    let column = Column {
-      header: "Region".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(2, column);
-
-    let column = Column {
-      header: "VM Type".into(),
-      ..Column::default()
-    };
-    deploy.columns.insert(3, column);
-
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
     for (i, cloud_config) in cloud_configs.iter().enumerate() {
+      let creds = credentials.get(&cloud_config.credentials).expect(
+        &format!("Credentials {} for deploy config {} not found in {}",
+          &cloud_config.credentials,
+          deploy_name,
+          CREDENTIALS_CONFIG_FILE
+        )
+      );
       if i == 0 {
-        data.push(vec![deploy_name, &cloud_config.cloudProvider, &cloud_config.region, &cloud_config.vmType])
+        data.push(vec![deploy_name, &cloud_config.credentials, &creds.cloudProvider, &cloud_config.region, &cloud_config.vmType])
       } else {
-        data.push(vec![&"", &cloud_config.cloudProvider, &cloud_config.region, &cloud_config.vmType])
+        data.push(vec![&"", &cloud_config.credentials, &creds.cloudProvider, &cloud_config.region, &cloud_config.vmType])
       };
     }
   }
 
-  println!("\nDeployment configurations used from ~/{}\n", CONFIG_NAME);
+  println!("\nDeployment configurations used:\n");
   deploy.print(data);
 }
