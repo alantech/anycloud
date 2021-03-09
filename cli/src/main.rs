@@ -86,6 +86,10 @@ pub async fn main() {
     ("new",  Some(matches)) => {
       let config = get_config();
       let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
+      if !config.contains_key(deploy_name) {
+        eprintln!("Deploy name provided is not defined in anycloud.json");
+        std::process::exit(1);
+      }
       let app_id = matches.value_of("app-id");
       let body = json!({
         "deployConfig": config,
