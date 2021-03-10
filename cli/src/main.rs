@@ -8,6 +8,10 @@ use serde_json::json;
 
 use anycloud::deploy::{info, get_config, new, terminate, upgrade};
 
+macro_rules! alan_version {
+  () => ( include_str!("../alan/alan-version.txt") )
+}
+
 fn get_dockerfile_b64() -> String {
   let pwd = std::env::var("PWD").unwrap();
   let dockerfile = read(format!("{}/Dockerfile", pwd)).expect(&format!("No Dockerfile in {}", pwd));
@@ -60,14 +64,9 @@ fn get_app_tar_gz_b64() -> String {
 #[tokio::main]
 pub async fn main() {
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
-  let alan_version = String::from_utf8(include_bytes!("../alan/alan-version.txt").to_vec())
-    .unwrap()
-    .pop() // remove newline
-    .unwrap()
-    .to_string();
   let app = App::new(crate_name!())
     .version(crate_version!())
-    .about("AnyCloud is a Lambda alternative that works with multiple cloud provider.")
+    .about(concat!("AnyCloud is a Lambda alternative that works with multiple cloud provider.\nCurrent alan version: ", alan_version!()))
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
       .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
@@ -103,13 +102,13 @@ pub async fn main() {
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
         "appId": app_id,
-        "alanVersion": &alan_version,
+        "alanVersion": alan_version!(),
       });
       new(body).await;
     },
     ("terminate",  Some(matches)) => {
       let cluster_id = matches.value_of("APP_ID").unwrap();
-      terminate(cluster_id, &alan_version).await;
+      terminate(cluster_id, alan_version!()).await;
     },
     ("upgrade",  Some(matches)) => {
       let config = get_config();
@@ -120,12 +119,12 @@ pub async fn main() {
         "agzB64": anycloud_agz,
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
-        "alanVersion": &alan_version,
+        "alanVersion": alan_version!(),
       });
       upgrade(body).await;
     },
     ("info",  _) => {
-      info(&alan_version).await;
+      info(alan_version!()).await;
     },
     // rely on AppSettings::SubcommandRequiredElseHelp
     _ => {}
