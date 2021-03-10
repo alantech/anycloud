@@ -3,6 +3,13 @@
 use std::process::Command;
 
 fn main() {
+  //Get alan version
+  Command::new("sh")
+    .arg("-c")
+    .arg("cd alan && alan --version | sed -e 's/alan //' > alan-version.txt")
+    .output()
+    .unwrap();
+
   // Tell Cargo that if the anycloud.ln file changes, rerun this build script
   println!("cargo:rerun-if-changed=alan/anycloud.ln");
   let output = Command::new("sh")
