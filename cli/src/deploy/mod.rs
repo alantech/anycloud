@@ -217,10 +217,11 @@ pub fn get_file_str(file: &str) -> String {
   return base64::encode(f);
 }
 
-pub async fn terminate(cluster_id: &str) {
+pub async fn terminate(cluster_id: &str, alan_version: &str) {
   let body = json!({
     "deployConfig": get_config(),
     "clusterId": cluster_id,
+    "alanVersion": alan_version,
   });
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
@@ -269,9 +270,10 @@ pub async fn upgrade(body: Value) {
   sp.close();
 }
 
-pub async fn info() {
+pub async fn info(alan_version: &str) {
   let body = json!({
     "deployConfig": get_config(),
+    "alanVersion": alan_version,
   });
   let resp = post_v1("info", body).await;
   let resp = match &resp {
