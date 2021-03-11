@@ -3,13 +3,17 @@
 use std::process::Command;
 
 fn main() {
-  //Get alan version
-  Command::new("sh")
+  // Set alan version as environment variable
+  let alan_version_output = Command::new("sh")
     .arg("-c")
-    .arg("cd alan && alan --version | sed -e 's/alan //' > alan-version")
+    .arg("cd alan && alan --version | sed -e 's/alan //'")
     .output()
     .unwrap();
-
+  if alan_version_output.status.code().unwrap() == 0 {
+    let alan_version = String::from_utf8_lossy(&alan_version_output.stdout);
+    println!("cargo:rustc-env=ALAN_VERSION={}", &alan_version);
+  }
+  
   // Tell Cargo that if the anycloud.ln file changes, rerun this build script
   println!("cargo:rerun-if-changed=alan/anycloud.ln");
   let output = Command::new("sh")
