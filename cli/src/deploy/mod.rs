@@ -139,8 +139,7 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
 }
 
 fn get_url() -> &'static str {
-  const LOCAL_DEV: Option<&'static str> = option_env!("LOCAL_DEV");
-  let local_dev = LOCAL_DEV.unwrap_or("false") == "true";
+  let local_dev = std::env::var("LOCAL_DEV").unwrap_or("false".to_string()) == "true";
   if local_dev {
     return "http://localhost:8080"
   } else if cfg!(debug_assertions) {
