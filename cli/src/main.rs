@@ -66,7 +66,7 @@ pub async fn main() {
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
   let app = App::new(crate_name!())
     .version(crate_version!())
-    .about(concat!("alan ", alan_version!(), "\n", env!("CARGO_PKG_DESCRIPTION")))
+    .about(concat!(env!("CARGO_PKG_DESCRIPTION"), ".\nCurrent alan version: ", alan_version!()))
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
       .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
