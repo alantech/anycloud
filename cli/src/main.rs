@@ -108,7 +108,7 @@ pub async fn main() {
     },
     ("terminate",  Some(matches)) => {
       let cluster_id = matches.value_of("APP_ID").unwrap();
-      terminate(cluster_id, alan_version!()).await;
+      terminate(cluster_id).await;
     },
     ("upgrade",  Some(matches)) => {
       let config = get_config();
@@ -124,7 +124,7 @@ pub async fn main() {
       upgrade(body).await;
     },
     ("info",  _) => {
-      info(alan_version!()).await;
+      info().await;
     },
     // rely on AppSettings::SubcommandRequiredElseHelp
     _ => {}
