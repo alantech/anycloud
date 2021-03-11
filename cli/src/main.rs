@@ -8,6 +8,8 @@ use serde_json::json;
 
 use anycloud::deploy::{info, get_config, new, terminate, upgrade};
 
+const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
+
 fn get_dockerfile_b64() -> String {
   let pwd = std::env::var("PWD").unwrap();
   let dockerfile = read(format!("{}/Dockerfile", pwd)).expect(&format!("No Dockerfile in {}", pwd));
@@ -60,9 +62,10 @@ fn get_app_tar_gz_b64() -> String {
 #[tokio::main]
 pub async fn main() {
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
+  let desc: &str = &format!("{}{}",concat!(env!("CARGO_PKG_DESCRIPTION"), ".\nCurrent alan version: "), ALAN_VERSION);
   let app = App::new(crate_name!())
     .version(crate_version!())
-    .about("AnyCloud is a Lambda alternative that works with multiple cloud provider.")
+    .about(desc)
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
       .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
@@ -98,6 +101,7 @@ pub async fn main() {
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
         "appId": app_id,
+        "alanVersion": format!("v{}", ALAN_VERSION),
       });
       new(body).await;
     },
@@ -114,6 +118,7 @@ pub async fn main() {
         "agzB64": anycloud_agz,
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
+        "alanVersion": format!("v{}", ALAN_VERSION),
       });
       upgrade(body).await;
     },
