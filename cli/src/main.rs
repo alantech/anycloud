@@ -9,7 +9,7 @@ use serde_json::json;
 use anycloud::deploy::{info, get_config, new, terminate, upgrade};
 
 macro_rules! alan_version {
-  () => ( include_str!("../alan/alan-version.txt") )
+  () => ( include_str!("../alan/alan-version") )
 }
 
 fn get_dockerfile_b64() -> String {

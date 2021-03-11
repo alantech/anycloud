@@ -6,7 +6,7 @@ fn main() {
   //Get alan version
   Command::new("sh")
     .arg("-c")
-    .arg("cd alan && alan --version | sed -e 's/alan //' > alan-version.txt")
+    .arg("cd alan && alan --version | sed -e 's/alan //' > alan-version")
     .output()
     .unwrap();
 
