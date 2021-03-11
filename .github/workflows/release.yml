@@ -13,6 +13,11 @@ jobs:
     outputs:
       upload_url: ${{ steps.create_release.outputs.upload_url }}
     steps:
+      - name: Get latest alan version
+        id: get_latest_alan
+        run: |
+          echo "::set-output name=alan_version::$(curl --silent "https://api.github.com/repos/alantech/alan/releases/latest" | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/')"
+
       - name: Checkout code
         uses: actions/checkout@v2
 
@@ -24,7 +29,7 @@ jobs:
         with:
           tag_name: ${{ github.ref }}
           release_name: ${{ github.ref }}
-          body: Release ${{ github.ref }}
+          body: Release ${{ github.ref }} - Alan version ${{ steps.get_latest_alan.outputs.alan_version }}
           draft: false
           prerelease: false
   ubuntu:
