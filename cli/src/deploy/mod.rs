@@ -140,12 +140,13 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
 
 fn get_url() -> &'static str {
   let local_dev = std::env::var("LOCAL_DEV").unwrap_or("false".to_string()) == "true";
+  let prod = std::env::var("PROD").unwrap_or("false".to_string()) == "true";
   if local_dev {
     return "http://localhost:8080"
-  } else if cfg!(debug_assertions) {
-    return "https://deploy-staging.alantechnologies.com"
-  } else {
+  } else if prod {
     return "https://deploy.alantechnologies.com"
+  } else {
+    return "https://deploy-staging.alantechnologies.com"
   };
 }
 
