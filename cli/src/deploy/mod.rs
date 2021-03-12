@@ -64,6 +64,7 @@ pub struct DeployConfig {
   credentials: String,
   region: String,
   vmType: String,
+  envFile: Option<String>,
 }
 
 #[allow(non_snake_case)]
@@ -73,6 +74,7 @@ pub struct Config {
   region: String,
   cloudProvider: String,
   vmType: String,
+  envFile: Option<String>,
 }
 
 #[allow(non_snake_case)]
@@ -171,6 +173,7 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
         cloudProvider: credentials.cloudProvider.to_string(),
         region: deploy_config.region,
         vmType: deploy_config.vmType,
+        envFile: deploy_config.envFile
       });
     }
     all_configs.insert(deploy_id, configs);
