@@ -138,16 +138,16 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   config.unwrap()
 }
 
+// This method can be called as a binary by the end user in the CLI or as a library by the Alan daemon
+// to send stats to the deploy service. We default to production so that it works as-is when it is used
+// as a binary and we override the value it can have to our needs
 fn get_url() -> &'static str {
-  let local_dev = std::env::var("LOCAL_DEV").unwrap_or("false".to_string()) == "true";
-  let prod = std::env::var("PROD").unwrap_or("false".to_string()) == "true";
-  if local_dev {
-    return "http://localhost:8080"
-  } else if prod {
-    return "https://deploy.alantechnologies.com"
-  } else {
-    return "https://deploy-staging.alantechnologies.com"
-  };
+  let env = std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
+  match env.as_str() {
+    "local" => "http://localhost:8080",
+    "staging" => "https://deploy-staging.alantechnologies.com",
+    _ => "https://deploy.alantechnologies.com",
+  }
 }
 
 pub fn get_config() -> HashMap<String, Vec<Config>> {
