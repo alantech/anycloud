@@ -62,7 +62,7 @@ fn get_app_tar_gz_b64() -> String {
 #[tokio::main]
 pub async fn main() {
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
-  let desc: &str = &format!("{}{}",concat!(env!("CARGO_PKG_DESCRIPTION"), ".\nCurrent alan version: "), ALAN_VERSION);
+  let desc: &str = &format!("alan {}\n{}", ALAN_VERSION, env!("CARGO_PKG_DESCRIPTION"));
   let app = App::new(crate_name!())
     .version(crate_version!())
     .about(desc)
