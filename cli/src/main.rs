@@ -18,7 +18,7 @@ fn get_dockerfile_b64() -> String {
 
 fn get_env_file_b64(env_file_path: String) -> String {
   let pwd = std::env::var("PWD").unwrap();
-  let env_file = read(format!("{}/{}", pwd, env_file_path));//.expect(&format!("No environment file in {}/{}", pwd, env_file));
+  let env_file = read(format!("{}/{}", pwd, env_file_path));
   if let Err(_) = env_file {
     println!("No environment file in {}/{}", pwd, env_file_path);
     std::process::exit(1);
