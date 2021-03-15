@@ -20,12 +20,12 @@ on start {
   }
 
   // We need to use the --env-file option only if we are sure the file exists 
+  let containerStr = 'docker run -p 8088:8088 -d anycloud/app:latest';
   const envFile = exec('stat anycloud.env');
-  if envFile.exitCode != 0 {
-    const containerRes = exec('docker run -p 8088:8088 -d anycloud/app:latest');
-  } else {
-    const containerRes = exec('docker run --env-file anycloud.env -p 8088:8088 -d anycloud/app:latest');  
+  if envFile.exitCode == 0 {
+    containerStr = 'docker run --env-file anycloud.env -p 8088:8088 -d anycloud/app:latest';
   }
+  const containerRes = exec(containerStr);
   if containerRes.exitCode != 0 {
     eprint('Docker container could not be started');
     eprint(containerRes.stderr);
