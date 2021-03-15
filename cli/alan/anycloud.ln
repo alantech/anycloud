@@ -19,7 +19,7 @@ on start {
     emit exit dockerRes.exitCode;
   }
 
-  const containerRes = exec('docker run --env-file $ENV_FILE -p 8088:8088 -d anycloud/app:latest');
+  const containerRes = exec('docker run --env-file .anycloud.env -p 8088:8088 -d anycloud/app:latest');
   if containerRes.exitCode != 0 {
     eprint('Docker container could not be started');
     eprint(containerRes.stderr);
