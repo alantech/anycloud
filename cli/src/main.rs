@@ -107,7 +107,7 @@ pub async fn main() {
       }
       let app_id = matches.value_of("app-id");
       let env_file = matches.value_of("env-file");
-      let body = json!({
+      let mut body = json!({
         "deployConfig": config,
         "deployName": deploy_name,
         "agzB64": anycloud_agz,
@@ -115,8 +115,10 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
-        "envFileB64": if env_file.is_some() { get_env_file_b64(env_file.unwrap().to_string()) } else { format!("") },
       });
+      if env_file.is_some() {
+        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.unwrap().to_string())));
+      }
       new(body).await;
     },
     ("terminate",  Some(matches)) => {
@@ -127,15 +129,17 @@ pub async fn main() {
       let config = get_config();
       let cluster_id = matches.value_of("APP_ID").unwrap();
       let env_file = matches.value_of("env-file");
-      let body = json!({
+      let mut body = json!({
         "clusterId": cluster_id,
         "deployConfig": config,
         "agzB64": anycloud_agz,
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
-        "envFileB64": if env_file.is_some() { get_env_file_b64(env_file.unwrap().to_string()) } else { format!("") },
       });
+      if env_file.is_some() {
+        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.unwrap().to_string())));
+      }
       upgrade(body).await;
     },
     ("info",  _) => {
