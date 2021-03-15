@@ -16,6 +16,16 @@ fn get_dockerfile_b64() -> String {
   return base64::encode(dockerfile);
 }
 
+fn get_env_file_b64(env_file_path: String) -> String {
+  let pwd = std::env::var("PWD").unwrap();
+  let env_file = read(format!("{}/{}", pwd, env_file_path));//.expect(&format!("No environment file in {}/{}", pwd, env_file));
+  if let Err(_) = env_file {
+    println!("No environment file in {}/{}", pwd, env_file_path);
+    std::process::exit(1);
+  }
+  return base64::encode(env_file.unwrap());
+}
+
 fn get_app_tar_gz_b64() -> String {
   let output = Command::new("git")
     .arg("status")
@@ -71,6 +81,7 @@ pub async fn main() {
       .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
       .arg_from_usage("<DEPLOY_NAME> 'Specifies the name of the deploy config to use'")
       .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional application identifier'")
+      .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
     )
     .subcommand(SubCommand::with_name("info")
       .about("Displays all the apps deployed with the deploy config from anycloud.json")
@@ -82,6 +93,7 @@ pub async fn main() {
     .subcommand(SubCommand::with_name("upgrade")
       .about("Deploys your repository to an existing app hosted in one of the deploy configs at anycloud.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
+      .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     );
 
   let matches = app.get_matches();
@@ -94,6 +106,7 @@ pub async fn main() {
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");
+      let env_file = matches.value_of("env-file");
       let body = json!({
         "deployConfig": config,
         "deployName": deploy_name,
@@ -102,6 +115,7 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
+        "envFileB64": if env_file.is_some() { get_env_file_b64(env_file.unwrap().to_string()) } else { format!("") },
       });
       new(body).await;
     },
@@ -112,6 +126,7 @@ pub async fn main() {
     ("upgrade",  Some(matches)) => {
       let config = get_config();
       let cluster_id = matches.value_of("APP_ID").unwrap();
+      let env_file = matches.value_of("env-file");
       let body = json!({
         "clusterId": cluster_id,
         "deployConfig": config,
@@ -119,6 +134,7 @@ pub async fn main() {
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
+        "envFileB64": if env_file.is_some() { get_env_file_b64(env_file.unwrap().to_string()) } else { format!("") },
       });
       upgrade(body).await;
     },
