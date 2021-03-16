@@ -134,8 +134,8 @@ pub async fn main() {
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
       });
-      if env_file.is_some() {
-        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.unwrap().to_string())));
+      if let Some(env_file) = env_file {
+        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.to_string())));
       }
       new(body).await;
     },
@@ -155,8 +155,8 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
       });
-      if env_file.is_some() {
-        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.unwrap().to_string())));
+      if let Some(env_file) = env_file {
+        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.to_string())));
       }
       upgrade(body).await;
     },
