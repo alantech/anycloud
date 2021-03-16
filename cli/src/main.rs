@@ -11,19 +11,37 @@ use anycloud::deploy::{info, get_config, new, terminate, upgrade};
 const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 
 fn get_dockerfile_b64() -> String {
-  let pwd = std::env::var("PWD").unwrap();
-  let dockerfile = read(format!("{}/Dockerfile", pwd)).expect(&format!("No Dockerfile in {}", pwd));
-  return base64::encode(dockerfile);
+  let pwd = env::current_dir();
+  match pwd {
+    Ok(pwd) => {
+      let dockerfile = read(format!("{}/Dockerfile", pwd.display())).expect(&format!("No Dockerfile in {}", pwd.display()));
+      return base64::encode(dockerfile);
+    },
+    Err(_) => {
+      println!("Current working directory value is invalid");
+      std::process::exit(1);
+    }
+  }
 }
 
 fn get_env_file_b64(env_file_path: String) -> String {
-  let pwd = std::env::var("PWD").unwrap();
-  let env_file = read(format!("{}/{}", pwd, env_file_path));
-  if let Err(_) = env_file {
-    println!("No environment file in {}/{}", pwd, env_file_path);
-    std::process::exit(1);
+  let pwd = env::current_dir();
+  match pwd {
+    Ok(pwd) => {
+      let env_file = read(format!("{}/{}", pwd.display(), env_file_path));
+      match env_file {
+        Ok(env_file) => base64::encode(env_file),
+        Err(_) => {
+          println!("No environment file in {}/{}", pwd.display(), env_file_path);
+          std::process::exit(1);
+        }
+      }
+    },
+    Err(_) => {
+      println!("Current working directory value is invalid");
+      std::process::exit(1);
+    }
   }
-  return base64::encode(env_file.unwrap());
 }
 
 fn get_app_tar_gz_b64() -> String {
