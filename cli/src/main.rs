@@ -11,9 +11,37 @@ use anycloud::deploy::{info, get_config, new, terminate, upgrade};
 const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 
 fn get_dockerfile_b64() -> String {
-  let pwd = std::env::var("PWD").unwrap();
-  let dockerfile = read(format!("{}/Dockerfile", pwd)).expect(&format!("No Dockerfile in {}", pwd));
-  return base64::encode(dockerfile);
+  let pwd = env::current_dir();
+  match pwd {
+    Ok(pwd) => {
+      let dockerfile = read(format!("{}/Dockerfile", pwd.display())).expect(&format!("No Dockerfile in {}", pwd.display()));
+      return base64::encode(dockerfile);
+    },
+    Err(_) => {
+      println!("Current working directory value is invalid");
+      std::process::exit(1);
+    }
+  }
+}
+
+fn get_env_file_b64(env_file_path: String) -> String {
+  let pwd = env::current_dir();
+  match pwd {
+    Ok(pwd) => {
+      let env_file = read(format!("{}/{}", pwd.display(), env_file_path));
+      match env_file {
+        Ok(env_file) => base64::encode(env_file),
+        Err(_) => {
+          println!("No environment file in {}/{}", pwd.display(), env_file_path);
+          std::process::exit(1);
+        }
+      }
+    },
+    Err(_) => {
+      println!("Current working directory value is invalid");
+      std::process::exit(1);
+    }
+  }
 }
 
 fn get_app_tar_gz_b64() -> String {
@@ -71,6 +99,7 @@ pub async fn main() {
       .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
       .arg_from_usage("<DEPLOY_NAME> 'Specifies the name of the deploy config to use'")
       .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional application identifier'")
+      .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
     )
     .subcommand(SubCommand::with_name("info")
       .about("Displays all the apps deployed with the deploy config from anycloud.json")
@@ -82,6 +111,7 @@ pub async fn main() {
     .subcommand(SubCommand::with_name("upgrade")
       .about("Deploys your repository to an existing app hosted in one of the deploy configs at anycloud.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
+      .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     );
 
   let matches = app.get_matches();
@@ -94,7 +124,8 @@ pub async fn main() {
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");
-      let body = json!({
+      let env_file = matches.value_of("env-file");
+      let mut body = json!({
         "deployConfig": config,
         "deployName": deploy_name,
         "agzB64": anycloud_agz,
@@ -103,6 +134,9 @@ pub async fn main() {
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
       });
+      if let Some(env_file) = env_file {
+        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.to_string())));
+      }
       new(body).await;
     },
     ("terminate",  Some(matches)) => {
@@ -112,7 +146,8 @@ pub async fn main() {
     ("upgrade",  Some(matches)) => {
       let config = get_config();
       let cluster_id = matches.value_of("APP_ID").unwrap();
-      let body = json!({
+      let env_file = matches.value_of("env-file");
+      let mut body = json!({
         "clusterId": cluster_id,
         "deployConfig": config,
         "agzB64": anycloud_agz,
@@ -120,6 +155,9 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
       });
+      if let Some(env_file) = env_file {
+        body.as_object_mut().unwrap().insert(format!("envB64"), json!(get_env_file_b64(env_file.to_string())));
+      }
       upgrade(body).await;
     },
     ("info",  _) => {
