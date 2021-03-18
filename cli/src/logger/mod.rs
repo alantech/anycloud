@@ -14,7 +14,7 @@ impl log::Log for SimpleLogger {
     if self.enabled(record.metadata()) {
       if record.level() == Level::Error {
         eprintln!(
-          "Error {} | {} | {}",
+          "{} | {} | {}",
           utc_time,
           record.level(),
           record.args()
