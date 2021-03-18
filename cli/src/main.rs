@@ -1,10 +1,10 @@
-use log::{debug, error, info, warn};
 use std::env;
 use std::fs::read;
 use std::process::Command;
 
 use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
+use log::{debug, error, info, warn};
 use serde_json::json;
 
 use anycloud::deploy::{get_config, info, new, terminate, upgrade};
