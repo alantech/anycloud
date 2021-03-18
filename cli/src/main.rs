@@ -1,6 +1,7 @@
 use std::env;
 use std::fs::read;
 use std::process::Command;
+use log::{info, warn, debug, error};
 
 use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
@@ -90,6 +91,7 @@ fn get_app_tar_gz_b64() -> String {
 
 #[tokio::main]
 pub async fn main() {
+  anycloud::logger::init().unwrap();
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
   let desc: &str = &format!("alan {}\n{}", ALAN_VERSION, env!("CARGO_PKG_DESCRIPTION"));
   let app = App::new(crate_name!())
