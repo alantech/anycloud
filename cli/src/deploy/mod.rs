@@ -6,16 +6,18 @@ use spinner::SpinnerBuilder;
 use std::collections::{HashMap, HashSet};
 use std::error::Error;
 use std::fmt::Display;
-use std::fs::{File, read};
+use std::fs::{read, File};
 use std::io::BufReader;
 use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
 use base64;
 
-const REQUEST_TIMEOUT: &str = "Operation is still in progress. It might take a few more minutes for \
+const REQUEST_TIMEOUT: &str =
+  "Operation is still in progress. It might take a few more minutes for \
   the cloud provider to finish up.";
-const FORBIDDEN_OPERATION: &str = "Please review your credentials. Make sure you have follow all the \
+const FORBIDDEN_OPERATION: &str =
+  "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://alantech.gitbook.io/anycloud/";
 const NAME_CONFLICT: &str = "Another application with same App Id already exists.";
 
@@ -124,7 +126,10 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    println!("Cannot access deploy config at {}. Error: {}", file_name, err);
+    println!(
+      "Cannot access deploy config at {}. Error: {}",
+      file_name, err
+    );
     println!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
@@ -159,13 +164,10 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
     for deploy_config in deploy_configs {
       let credentials = cred_configs
         .get(&deploy_config.credentials)
-        .expect(
-          &format!("Credentials {} for deploy config {} not found in {}",
-            &deploy_config.credentials,
-            deploy_id,
-            CREDENTIALS_CONFIG_FILE
-          )
-        );
+        .expect(&format!(
+          "Credentials {} for deploy config {} not found in {}",
+          &deploy_config.credentials, deploy_id, CREDENTIALS_CONFIG_FILE
+        ));
       configs.push(Config {
         credentials: credentials.credentials.clone(),
         cloudProvider: credentials.cloudProvider.to_string(),
@@ -185,8 +187,8 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
     .header("Content-Type", "application/json")
     .body(body.to_string().into());
   let req = match req {
-      Ok(req) => req,
-      Err(e) => return Err(PostV1Error::Other(e.into())),
+    Ok(req) => req,
+    Err(e) => return Err(PostV1Error::Other(e.into())),
   };
   let resp = client.request(req).await;
   let mut resp = match resp {
@@ -209,7 +211,7 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
     StatusCode::FORBIDDEN => Err(PostV1Error::Forbidden),
     StatusCode::CONFLICT => Err(PostV1Error::Conflict),
     _ => Err(PostV1Error::Other(data_str.into())),
-  }
+  };
 }
 
 pub fn get_file_str(file: &str) -> String {
@@ -229,9 +231,12 @@ pub async fn terminate(cluster_id: &str) {
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("Failed to terminate app {}. Error: {}", cluster_id, NAME_CONFLICT),
+      PostV1Error::Conflict => format!(
+        "Failed to terminate app {}. Error: {}",
+        cluster_id, NAME_CONFLICT
+      ),
       PostV1Error::Other(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
-    }
+    },
   };
   sp.message(res);
   sp.close();
@@ -247,7 +252,7 @@ pub async fn new(body: Value) {
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
       PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
-    }
+    },
   };
   sp.message(res);
   sp.close();
@@ -263,7 +268,7 @@ pub async fn upgrade(body: Value) {
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
       PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
-    }
+    },
   };
   sp.message(res);
   sp.close();
@@ -280,20 +285,23 @@ pub async fn info() {
       PostV1Error::Timeout => {
         eprintln!("{}", REQUEST_TIMEOUT);
         std::process::exit(1);
-      },
+      }
       PostV1Error::Forbidden => {
         eprintln!("{}", FORBIDDEN_OPERATION);
         std::process::exit(1);
-      },
+      }
       PostV1Error::Conflict => {
-        eprintln!("Displaying status for apps failed with error: {}", NAME_CONFLICT);
+        eprintln!(
+          "Displaying status for apps failed with error: {}",
+          NAME_CONFLICT
+        );
         std::process::exit(1);
-      },
+      }
       PostV1Error::Other(err) => {
         eprintln!("Displaying status for apps failed with error: {}", err);
         std::process::exit(1);
-      },
-    }
+      }
+    },
   };
   let mut apps: Vec<App> = from_str(resp).unwrap();
 
@@ -339,7 +347,13 @@ pub async fn info() {
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for app in &mut apps {
     deploy_names.insert(&app.deployName);
-    data.push(vec![&app.id, &app.url, &app.deployName, &app.size, &app.version]);
+    data.push(vec![
+      &app.id,
+      &app.url,
+      &app.deployName,
+      &app.size,
+      &app.version,
+    ]);
   }
 
   println!("Status of all apps deployed:\n");
@@ -384,17 +398,26 @@ pub async fn info() {
   for deploy_name in deploy_names {
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
     for (i, cloud_config) in cloud_configs.iter().enumerate() {
-      let creds = credentials.get(&cloud_config.credentials).expect(
-        &format!("Credentials {} for deploy config {} not found in {}",
-          &cloud_config.credentials,
-          deploy_name,
-          CREDENTIALS_CONFIG_FILE
-        )
-      );
+      let creds = credentials.get(&cloud_config.credentials).expect(&format!(
+        "Credentials {} for deploy config {} not found in {}",
+        &cloud_config.credentials, deploy_name, CREDENTIALS_CONFIG_FILE
+      ));
       if i == 0 {
-        data.push(vec![deploy_name, &cloud_config.credentials, &creds.cloudProvider, &cloud_config.region, &cloud_config.vmType])
+        data.push(vec![
+          deploy_name,
+          &cloud_config.credentials,
+          &creds.cloudProvider,
+          &cloud_config.region,
+          &cloud_config.vmType,
+        ])
       } else {
-        data.push(vec![&"", &cloud_config.credentials, &creds.cloudProvider, &cloud_config.region, &cloud_config.vmType])
+        data.push(vec![
+          &"",
+          &cloud_config.credentials,
+          &creds.cloudProvider,
+          &cloud_config.region,
+          &cloud_config.vmType,
+        ])
       };
     }
   }
