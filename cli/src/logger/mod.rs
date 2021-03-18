@@ -29,5 +29,10 @@ impl log::Log for SimpleLogger {
 }
 
 pub fn init() -> Result<(), SetLoggerError> {
-  set_boxed_logger(Box::new(SimpleLogger)).map(|()| log::set_max_level(LevelFilter::Info))
+  let env = std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
+  match env.as_str() {
+    "local" => set_boxed_logger(Box::new(SimpleLogger)).map(|()| log::set_max_level(LevelFilter::Info)),
+    _ => set_boxed_logger(Box::new(SimpleLogger)).map(|()| log::set_max_level(LevelFilter::Error)), // TODO: update with new logger struct once decide
+  }
+  
 }
