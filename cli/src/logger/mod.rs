@@ -23,12 +23,18 @@ impl log::Log for SimpleLogger {
   fn flush(&self) {}
 }
 
+fn config_logger_local(_: ()) {
+  log::set_max_level(LevelFilter::Info);
+}
+
+fn config_logger(_: ()) {
+  log::set_max_level(LevelFilter::Error);
+}
+
 pub fn init() -> Result<(), SetLoggerError> {
   let env = std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
   match env.as_str() {
-    "local" => {
-      set_boxed_logger(Box::new(SimpleLogger)).map(|()| log::set_max_level(LevelFilter::Info))
-    }
-    _ => set_boxed_logger(Box::new(SimpleLogger)).map(|()| log::set_max_level(LevelFilter::Error)), // TODO: update with new logger struct once decide
+    "local" => set_boxed_logger(Box::new(SimpleLogger)).map(config_logger_local),
+    _ => set_boxed_logger(Box::new(SimpleLogger)).map(config_logger), // TODO: update with new logger struct once decide
   }
 }
