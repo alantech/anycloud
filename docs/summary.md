@@ -1,17 +1,19 @@
 # Table of contents
 
 * [About the documentation](about-docs.md)
-* [Generating credentials](credentials.md)
 
 ## Tutorials
 
-* [Host a Node.js server on your AWS account](tutorials/host-a-node.js-server-on-your-aws-account.md)
+* [Deploy a Node HTTPS server on your AWS account](tutorials/host-node-aws.md)
 
 ## how-to guides
 
-* [Untitled](how-to-guides/untitled.md)
+* [Set environment variables](how-to-guides/set-environment-variables.md)
+* [Deploy to Azure](how-to-guides/deploy-to-azure.md)
+* [Deploy to GCP](how-to-guides/untitled.md)
 
 ## Reference
 
+* [Credentials](reference/credentials.md)
 * [anycloud.json](reference/anycloud-json.md)
 

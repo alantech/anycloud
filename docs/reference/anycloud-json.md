@@ -83,7 +83,7 @@ The schema for the AWS deployment config is as follows:
 ]
 ```
 
-Follow the steps at [credentials](../credentials.md#aws) to get the `accessKeyId` and `secretAccessKey`. An example would look like:
+Follow the steps at [credentials](credentials.md#aws) to get the `accessKeyId` and `secretAccessKey`. An example would look like:
 
 ```javascript
 [
@@ -118,7 +118,7 @@ The schema for a GCP deployment config is as follows:
 }
 ```
 
-Take a look at the exported JSON file from your GCP [credentials](../credentials.md#gcp) and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
+Take a look at the exported JSON file from your GCP [credentials](credentials.md#gcp) and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
 
 ```javascript
 {
@@ -151,7 +151,7 @@ The schema for an Azure deployment config is as follows:
 }
 ```
 
-Take a look at the Azure [credentials](../credentials.md#azure) and grab your `applicationId`, `secret`, `subscriptionId` and `directoryId`. An example of an Azure cloud configuration will look something like this:
+Take a look at the Azure [credentials](credentials.md#azure) and grab your `applicationId`, `secret`, `subscriptionId` and `directoryId`. An example of an Azure cloud configuration will look something like this:
 
 ```javascript
 {
