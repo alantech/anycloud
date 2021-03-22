@@ -24,11 +24,11 @@ impl log::Log for SimpleLogger {
 }
 
 fn config_logger_local(_: ()) {
-  log::set_max_level(LevelFilter::Info);
+  log::set_max_level(LevelFilter::Trace);
 }
 
 fn config_logger(_: ()) {
-  log::set_max_level(LevelFilter::Error);
+  log::set_max_level(LevelFilter::Info);
 }
 
 pub fn init() -> Result<(), SetLoggerError> {
