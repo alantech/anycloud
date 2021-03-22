@@ -1,9 +1,9 @@
 use chrono::{DateTime, Local, Utc};
 use elasticsearch::{http::transport::Transport, Elasticsearch, IndexParts};
 use log::{Level, Metadata, Record};
+use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
-use once_cell::sync::Lazy;
 use tokio;
 
 static ES_CLIENT: Lazy<Elasticsearch> = Lazy::new(|| {
