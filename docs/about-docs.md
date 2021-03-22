@@ -1,9 +1,15 @@
-# About the documentation
+# About
 
-A high-level overview of [how the AnyCloud documentation is organized](https://documentation.divio.com/) will help you know how to quickly find what you are looking for:
+[AnyCloud](https://github.com/alantech/anycloud/blob/main/README.md) takes API credentials from your preferred cloud provider and a `Dockerfile` to elastically scales an HTTP server in your own cloud provider account.
 
-* The [Tutorial](host-node-aws.md) will guide you from 0 to a sample AnyCloud app deployed in AWS. Start here if you’re new to AnyCloud.
-* [How-to guides](https://github.com/alantech/anycloud/tree/eb3bf804e2cff8e04e9ef1667d0fe835fdba0b5f/docs/how_to.md) are recipes. They guide you through the steps involved in addressing key problems and use-cases. They are more advanced than tutorials and assume some knowledge of how AnyCloud works.
-* [Topic guides](https://github.com/alantech/anycloud/tree/eb3bf804e2cff8e04e9ef1667d0fe835fdba0b5f/docs/topics.md) discuss key topics and concepts at a fairly high level and provide useful background information and explanation about the internals of how AnyCloud works.
-* [Reference guides](https://github.com/alantech/anycloud/tree/eb3bf804e2cff8e04e9ef1667d0fe835fdba0b5f/docs/reference.md) contains technical reference for built-in APIs and data types, the standard library and opcodes. They describe how it works and how to use it but assume that you have a basic understanding of key concepts.
+A high-level overview of how the AnyCloud documentation is organized will help you know how to quickly find what you are looking for:
+
+* The [Tutorial](host-node-aws.md) will guide you from 0 to a sample Node server deployed in your AWS account with AnyCloud. Start here if you’re new to AnyCloud.
+* [How-to guides](how-to-guides/) are recipes. They guide you through the steps involved in addressing key problems and use-cases. They are more advanced than the tutorial and assume some knowledge of how AnyCloud works.
+* [Technical reference](reference-1/) for built-in APIs and JSON file schemas. They describe how it works and how to use it but assume some knowledge of how AnyCloud works
+* [Background Information](background-information.md) discusses key topics and concepts at a fairly high level and provide useful explanations about the internals 
+
+  of how AnyCloud works.
+
+
 

@@ -1,6 +1,4 @@
----
-description: Deploy a Node HTTPS server on your AWS account
----
-
 # Tutorial
+
+Deploy a Node HTTPS server on your AWS account
 
