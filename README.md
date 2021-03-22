@@ -4,7 +4,7 @@
 </div>
 <br/>
 
-Our aim is to easily allow developers run and elastically scale their webservers on any cloud provider while also providing a much better experience to alternative services offered in AWS (Lambda, Elastic Beanstalk, ECS/Fargate, EC2) or GCP (Cloud Functions, App Engine, Cloud Run, Compute Engine).
+AnyCloud takes API credentials from your preferred cloud provider and a `Dockerfile` in order to elastically scale an HTTP server in your own cloud provider account. Our aim is providing a much better experience to alternative services offered in AWS (Lambda, Elastic Beanstalk, ECS/Fargate, EC2) or GCP (Cloud Functions, App Engine, Cloud Run, Compute Engine).
 
 - [x] Automatically scales your HTTP server based on request load and system stats
 - [x] Vendor portability across cloud providers
