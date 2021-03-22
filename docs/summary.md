@@ -2,17 +2,11 @@
 
 * [About the documentation](about-docs.md)
 * [Tutorial](host-node-aws.md)
-
-## Tutorials
-
-## how-to guides
-
-* [Set environment variables](how-to-guides/set-environment-variables.md)
-* [Deploy to Azure](how-to-guides/deploy-to-azure.md)
-* [Deploy to GCP](how-to-guides/untitled.md)
-
-## Reference
-
-* [Credentials](reference/credentials.md)
-* [anycloud.json](reference/anycloud-json.md)
+* [How-to Guides](how-to-guides/README.md)
+  * [Deploy to GCP](how-to-guides/untitled.md)
+  * [Deploy to Azure](how-to-guides/deploy-to-azure.md)
+  * [Set environment variables](how-to-guides/set-environment-variables.md)
+* [Reference](reference-1/README.md)
+  * [anycloud.json](reference-1/anycloud-json.md)
+  * [Credentials](reference-1/credentials.md)
 
