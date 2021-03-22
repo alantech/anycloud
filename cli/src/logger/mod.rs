@@ -18,6 +18,6 @@ pub fn init() -> Result<(), SetLoggerError> {
   let env = std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
   match env.as_str() {
     "local" => set_boxed_logger(Box::new(ElasticSearch)).map(config_logger_local),
-    _ => set_boxed_logger(Box::new(SimpleLogger)).map(config_logger), // TODO: update with new logger struct once decide
+    _ => set_boxed_logger(Box::new(ElasticSearch)).map(config_logger), // TODO: update with new logger struct once decide
   }
 }
