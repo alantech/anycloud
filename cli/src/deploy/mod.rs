@@ -12,6 +12,7 @@ use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
 use base64;
+use log::error;
 
 const REQUEST_TIMEOUT: &str =
   "Operation is still in progress. It might take a few more minutes for \
@@ -106,15 +107,15 @@ fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    println!("Cannot access credentials at {}. Error: {}", file_name, err);
-    println!("{}", CONFIG_SETUP);
+    error!("Cannot access credentials at {}. Error: {}", file_name, err);
+    error!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    println!("Invalid credentials. Error: {}", err);
-    println!("{}", CONFIG_SETUP);
+    error!("Invalid credentials. Error: {}", err);
+    error!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   config.unwrap()
@@ -126,18 +127,18 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    println!(
+    error!(
       "Cannot access deploy config at {}. Error: {}",
       file_name, err
     );
-    println!("{}", CONFIG_SETUP);
+    error!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    println!("Invalid deploy config. Error: {}", err);
-    println!("{}", CONFIG_SETUP);
+    error!("Invalid deploy config. Error: {}", err);
+    error!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   config.unwrap()
@@ -283,22 +284,22 @@ pub async fn info() {
     Ok(resp) => resp,
     Err(err) => match err {
       PostV1Error::Timeout => {
-        eprintln!("{}", REQUEST_TIMEOUT);
+        error!("{}", REQUEST_TIMEOUT);
         std::process::exit(1);
       }
       PostV1Error::Forbidden => {
-        eprintln!("{}", FORBIDDEN_OPERATION);
+        error!("{}", FORBIDDEN_OPERATION);
         std::process::exit(1);
       }
       PostV1Error::Conflict => {
-        eprintln!(
+        error!(
           "Displaying status for apps failed with error: {}",
           NAME_CONFLICT
         );
         std::process::exit(1);
       }
       PostV1Error::Other(err) => {
-        eprintln!("Displaying status for apps failed with error: {}", err);
+        error!("Displaying status for apps failed with error: {}", err);
         std::process::exit(1);
       }
     },

@@ -4,7 +4,7 @@ use std::process::Command;
 
 use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
-use log::{debug, error, info, warn};
+use log::error;
 use serde_json::json;
 
 use anycloud::deploy::{get_config, info, new, terminate, upgrade};
@@ -20,7 +20,7 @@ fn get_dockerfile_b64() -> String {
       return base64::encode(dockerfile);
     }
     Err(_) => {
-      println!("Current working directory value is invalid");
+      error!("Current working directory value is invalid");
       std::process::exit(1);
     }
   }
@@ -34,13 +34,13 @@ fn get_env_file_b64(env_file_path: String) -> String {
       match env_file {
         Ok(env_file) => base64::encode(env_file),
         Err(_) => {
-          println!("No environment file in {}/{}", pwd.display(), env_file_path);
+          error!("No environment file in {}/{}", pwd.display(), env_file_path);
           std::process::exit(1);
         }
       }
     }
     Err(_) => {
-      println!("Current working directory value is invalid");
+      error!("Current working directory value is invalid");
       std::process::exit(1);
     }
   }
@@ -55,7 +55,7 @@ fn get_app_tar_gz_b64() -> String {
 
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
-    eprintln!(
+    error!(
       "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}",
       msg
     );
@@ -72,7 +72,7 @@ fn get_app_tar_gz_b64() -> String {
     .unwrap();
 
   if output.status.code().unwrap() != 0 {
-    eprintln!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
+    error!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -82,7 +82,7 @@ fn get_app_tar_gz_b64() -> String {
   let output = Command::new("rm").arg("app.tar.gz").output().unwrap();
 
   if output.status.code().unwrap() != 0 {
-    eprintln!("Somehow could not delete temporary app.tar.gz file");
+    error!("Somehow could not delete temporary app.tar.gz file");
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -123,7 +123,7 @@ pub async fn main() {
       let config = get_config();
       let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
       if !config.contains_key(deploy_name) {
-        eprintln!("Deploy name provided is not defined in anycloud.json");
+        error!("Deploy name provided is not defined in anycloud.json");
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");
