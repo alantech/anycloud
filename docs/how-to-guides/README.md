@@ -1,10 +1,12 @@
 # How-to Guides
 
-{% page-ref page="untitled.md" %}
 
-{% page-ref page="deploy-to-azure.md" %}
 
-{% page-ref page="set-environment-variables.md" %}
+{% page-ref page="gcp.md" %}
+
+{% page-ref page="azure.md" %}
+
+{% page-ref page="env.md" %}
 
 
 
