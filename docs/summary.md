@@ -1,10 +1,9 @@
 # Table of contents
 
 * [About the documentation](about-docs.md)
+* [Tutorial](host-node-aws.md)
 
 ## Tutorials
-
-* [Deploy a Node HTTPS server on your AWS account](tutorials/host-node-aws.md)
 
 ## how-to guides
 
