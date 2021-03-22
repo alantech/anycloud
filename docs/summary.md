@@ -1,9 +1,7 @@
 # Table of contents
 
-* [About docs](about-docs.md)
+* [Introduction](start.md)
+* [About the documentation](about-docs.md)
 * [Credentials](credentials.md)
-
-# Reference
-
-* [`anycloud.json`](anycloud-json.md)
+* [anycloud.json](anycloud-json.md)
 
