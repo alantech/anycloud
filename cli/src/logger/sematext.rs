@@ -11,9 +11,9 @@ static ES_CLIENT: Lazy<Elasticsearch> = Lazy::new(|| {
 });
 
 #[derive(Deserialize, Serialize, Debug)]
-pub struct ElasticSearch;
+pub struct Sematext;
 
-impl log::Log for ElasticSearch {
+impl log::Log for Sematext {
   fn enabled(&self, metadata: &Metadata) -> bool {
     metadata.level() <= Level::Info
   }
@@ -22,8 +22,10 @@ impl log::Log for ElasticSearch {
     let local_time = Local::now();
     let utc_time = DateTime::<Utc>::from_utc(local_time.naive_utc(), Utc);
     if self.enabled(record.metadata()) {
+      // TODO: remove before merging
       println!("Logging: {} | {}", record.level(), record.args());
       let future = ES_CLIENT
+        // TODO: make this key dynamic based on env
         .index(IndexParts::Index("f3c3fe7c-9689-470c-98c6-bc60e9b9649d"))
         .body(json!({
           "level": record.level(),
