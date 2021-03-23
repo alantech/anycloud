@@ -27,7 +27,7 @@ Anycloud deployments are configured using an `anycloud.json` file located within
 }
 ```
 
-An example of an `anycloud.json` with a staging and a production deployment configuration will look like this:
+An example of an `anycloud.json` with a staging and a production deployment configuration:
 
 ```javascript
 {
@@ -35,13 +35,13 @@ An example of an `anycloud.json` with a staging and a production deployment conf
     "cloudProvider": "AWS",
     "region": "us-west-1",
     "vmType": "t2.medium",
-    "credentials": "piedpiper-aws",
+    "credentials": "stripe-aws",
   }],
   "production": [{
     "cloudProvider": "AWS",
     "region": "us-west-1",
     "vmType": "t3.xlarge",
-    "credentials": "piedpiper-aws",
+    "credentials": "stripe-aws",
   }]
 }
 ```

@@ -19,7 +19,7 @@ The schema for the AWS deployment config is as follows:
 }
 ```
 
-Follow the steps in this part of the Tutorial to get the `accessKeyId` and `secretAccessKey`. An example would look like:
+The `accessKeyId` and `secretAccessKey` are from an IAM user with . An example would look like:
 
 ```javascript
 {
@@ -54,7 +54,7 @@ The schema for a GCP deployment config is as follows:
 }
 ```
 
-Take a look at the exported JSON file from your GCP [credentials]() and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
+Take a look at the exported JSON file from your GCP [credentials](../how-to-guides/gcp.md) and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
 
 ```javascript
 {
