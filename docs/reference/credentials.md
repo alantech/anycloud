@@ -23,7 +23,7 @@ Follow the steps in this part of the Tutorial to get the `accessKeyId` and `secr
 
 ```javascript
 {
-  "stripe-aws": {
+  "piedpiper-aws": {
     "cloudProvider": "AWS",
     "region": "us-west-1",
     "vmType": "t2.medium",
@@ -58,7 +58,7 @@ Take a look at the exported JSON file from your GCP [credentials]() and grab you
 
 ```javascript
 {
-  "stripe-gcp": {
+  "piedpiper-gcp": {
     "cloudProvider": "GCP",
     "credentials": {
       "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
@@ -92,7 +92,7 @@ Take a look at the Azure [credentials]() and grab your `applicationId`, `secret`
 
 ```javascript
 {
-  "stripe-azure": {
+  "piedpiper-azure": {
     "cloudProvider": "Azure",
     "credentials": {
       "applicationId": "########-####-####-####-############",
