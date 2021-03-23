@@ -1,6 +1,6 @@
-# ~/.anycloud/credentials.json
+# Credentials
 
-Cloud credentials are configured using a local file that is not committed to any repository and is located in `~/.anycloud/credentials.json`. Each deployment will be keyed by a name and will provide the cloud provider configuration via two fields:  `credentials` and `cloudProvider`. Possible values for `cloudProvider` are `AWS`, `GCP` and `Azure` and `credentials` will have a different schema depending on which cloud provider it is.
+AnyCloud deployments expect the cloud credentials to be configured using a local file that is not committed to any repository and is located at `~/.anycloud/credentials.json`. Each deployment will be keyed by a name and will provide the cloud provider configuration via two fields:  `credentials` and `cloudProvider`. Possible values for `cloudProvider` are `AWS`, `GCP` and `Azure`. `credentials` will have a different schema depending on which cloud provider it is.
 
 ## AWS
 

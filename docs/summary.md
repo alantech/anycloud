@@ -7,7 +7,9 @@
   * [Deploy to Azure](how-to-guides/azure.md)
   * [Set environment variables](how-to-guides/env.md)
 * [Technical Reference](reference-1/README.md)
-  * [~/.anycloud/credentials.json](reference-1/credentials-1.md)
-  * [anycloud.json](reference-1/anycloud-json.md)
+  * [Project Structure](reference-1/project-structure/README.md)
+    * [anycloud.json](reference-1/project-structure/anycloud-json.md)
+    * [Dockerfile](reference-1/project-structure/dockerfile.md)
+  * [Credentials](reference-1/credentials-1.md)
 * [Background Information](background-information.md)
 
