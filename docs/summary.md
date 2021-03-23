@@ -1,6 +1,6 @@
 # Table of contents
 
-* [About the docs](about.md)
+* [AnyCloud Documentation](about.md)
 * [Tutorial](tutorial.md)
 * [How-to guides](how-to-guides/README.md)
   * [Deploy to GCP](how-to-guides/gcp.md)

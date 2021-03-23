@@ -1,4 +1,4 @@
-# About the docs
+# AnyCloud Documentation
 
 [AnyCloud](https://github.com/alantech/anycloud/blob/main/README.md) takes API credentials from your preferred cloud provider and a `Dockerfile` in order to elastically scale an HTTP server in your own cloud provider account.
 

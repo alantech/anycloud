@@ -4,7 +4,7 @@ The AnyCloud CLI expects your project to be version controlled with `git`. If th
 
 ```text
 git init
-git add -A
+git add .
 git commit -m "Initial commit"
 ```
 
