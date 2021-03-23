@@ -33,6 +33,7 @@ dependencies = [
  "hyper",
  "hyper-tls",
  "log",
+ "multi_log",
  "once_cell",
  "serde",
  "serde_json",
@@ -635,6 +636,15 @@ checksum = "5a33c1b55807fbed163481b5ba66db4b2fa6cde694a5027be10fb724206c5897"
 dependencies = [
  "socket2",
  "winapi",
+]
+
+[[package]]
+name = "multi_log"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ad56bb3c7c7c15b4e25de86c9123e886e5f80a0c03ace219b453b081c2bf20d7"
+dependencies = [
+ "log",
 ]
 
 [[package]]
