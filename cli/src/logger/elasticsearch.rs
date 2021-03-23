@@ -22,7 +22,7 @@ impl log::Log for ElasticSearch {
     let local_time = Local::now();
     let utc_time = DateTime::<Utc>::from_utc(local_time.naive_utc(), Utc);
     if self.enabled(record.metadata()) {
-      println!("Logging: {}", record.args());
+      println!("Logging: {} | {}", record.level(), record.args());
       let future = ES_CLIENT
         .index(IndexParts::Index("f3c3fe7c-9689-470c-98c6-bc60e9b9649d"))
         .body(json!({
