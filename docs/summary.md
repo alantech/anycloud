@@ -1,7 +1,7 @@
 # Table of contents
 
 * [About the docs](about.md)
-* [Tutorial](host-node-aws.md)
+* [Tutorial](tutorial.md)
 * [How-to guides](how-to-guides/README.md)
   * [Deploy to GCP](how-to-guides/gcp.md)
   * [Deploy to Azure](how-to-guides/azure.md)
