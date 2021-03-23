@@ -1,2 +1,4 @@
 # Background Information
 
+AnyCloud is built on the [Rust](https://rust-lang.org) and [Alan](https://alan-lang.org) programming languages. It is accessed via a CLI that takes [cloud provider credentials](reference-1/credentials-1.md), a [deploy configuration](reference-1/anycloud-json.md) and a `Dockerfile` with an HTTP server listening on port 8088 as input. Your container/server is deployed to the account with the specified credentials and runs with a sidecar process that manages your server across multiple regions and cloud providers via DNS and figures out when to scale up or down.
+
