@@ -58,13 +58,13 @@ List of available [virtual machines](https://docs.aws.amazon.com/AWSEC2/latest/U
 
 ## GCP
 
-List of regions.
+List of available regions.
 
-List of virtual machines types.
+List of available virtual machines types.
 
 ## Azure
 
-List of regions.
+List of available regions.
 
-List of virtual machines types.
+List of available virtual machines types.
 

@@ -15,5 +15,7 @@
     * [anycloud.json](reference/structure/anycloud-json.md)
     * [Dockerfile](reference/structure/dockerfile.md)
   * [Credentials](reference/credentials.md)
-* [Background Information](background-information.md)
+* [Background Information](background-information/README.md)
+  * [Autoscaling](background-information/autoscaling.md)
+  * [Architecture](background-information/architecture.md)
 
