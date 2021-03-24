@@ -1,4 +1,4 @@
-use hyper::{client::Client, Body, Request, StatusCode};
+use hyper::{Request, StatusCode};
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, from_str, json, Value};
 use spinner::SpinnerBuilder;
@@ -12,6 +12,8 @@ use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
 use base64;
+
+use crate::http::CLIENT;
 
 const REQUEST_TIMEOUT: &str =
   "Operation is still in progress. It might take a few more minutes for \
@@ -181,7 +183,6 @@ pub fn get_config() -> HashMap<String, Vec<Config>> {
 }
 
 pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error> {
-  let client = Client::builder().build::<_, Body>(hyper_tls::HttpsConnector::new());
   let url = get_url();
   let req = Request::post(format!("{}/v1/{}", url, endpoint))
     .header("Content-Type", "application/json")
@@ -190,7 +191,7 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
     Ok(req) => req,
     Err(e) => return Err(PostV1Error::Other(e.into())),
   };
-  let resp = client.request(req).await;
+  let resp = CLIENT.request(req).await;
   let mut resp = match resp {
     Ok(resp) => resp,
     Err(e) => return Err(PostV1Error::Other(e.into())),
