@@ -93,7 +93,7 @@ We are referencing the previously defined credentials so make sure that the `cre
 
 ## Deploy an app
 
-1. Make sure you [install the AnyCloud CLI](cli-installation.md). Now deploy your Node.js server to your AWS account using the AnyCloud CLI:
+1. Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI:
 
 ```text
 anycloud new staging

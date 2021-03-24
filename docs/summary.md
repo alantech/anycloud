@@ -1,7 +1,6 @@
 # Table of contents
 
 * [AnyCloud Documentation](about.md)
-* [CLI Installation](cli-installation.md)
 * [Tutorial](tutorial.md)
 * [How-to guides](how-to-guides/README.md)
   * [Deploy to GCP](how-to-guides/gcp.md)
