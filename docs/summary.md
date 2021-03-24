@@ -10,8 +10,6 @@
   * [Deploy an app to multiple clouds and/or regions](how-to-guides/multi.md)
 * [Technical Reference](reference/README.md)
   * [Project Structure](reference/structure/README.md)
-    * [.git](reference/structure/git.md)
-    * [anycloud.json](reference/structure/anycloud-json.md)
     * [Dockerfile](reference/structure/dockerfile.md)
   * [Credentials](reference/credentials.md)
   * [CLI API](reference/cli-api.md)
