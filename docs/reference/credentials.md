@@ -25,8 +25,6 @@ The `accessKeyId` and `secretAccessKey` are from an IAM user with . An example w
 {
   "piedpiper-aws": {
     "cloudProvider": "AWS",
-    "region": "us-west-1",
-    "vmType": "t2.medium",
     "credentials": {
       "accessKeyId": "#####################",
       "secretAccessKey": "###################"
