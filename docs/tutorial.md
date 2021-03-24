@@ -93,7 +93,7 @@ We are referencing the previously defined credentials so make sure that the `cre
 
 ## Deploy an app
 
-1. Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI:
+1. Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
 
 ```bash
 $ anycloud new staging
@@ -131,7 +131,7 @@ $ curl https://maroon-egret-25.anycloudapp.com
 
 Which should return `Hello World!`
 
-4. Terminate your AnyCloud app after you are done
+4. Terminate your AnyCloud app when you no longer need it
 
 ```bash
 anycloud terminate maroon-egret-25

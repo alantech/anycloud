@@ -4,23 +4,6 @@ AnyCloud deployments expect the cloud credentials to be configured using a local
 
 ## AWS
 
-The schema for the AWS deployment config is as follows:
-
-```javascript
-{
-  "string": {
-    "cloudProvider": "string",
-    "credentials": {
-      "accessKeyId": "string",
-      "secretAccessKey": "string"
-    }
-  },
-  ...
-}
-```
-
-The `accessKeyId` and `secretAccessKey` come from an IAM user with an [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy attached. An example credential entry would look like this:
-
 ```javascript
 {
   "piedpiper-aws": {
@@ -30,29 +13,12 @@ The `accessKeyId` and `secretAccessKey` come from an IAM user with an [`AmazonEC
       "secretAccessKey": "###################"
     },
   },
-  ...
 }
 ```
+
+The top-level key is the alias you provide for referring to these credentials. For AWS the `cloudProvider` value is `AWS`, and in the credentials the `accessKeyId` and `secretAccessKey` come from an IAM user with an [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy attached.
 
 ## GCP
-
-The schema for a GCP deployment config is as follows:
-
-```javascript
-{
-  "string": {
-    "cloudProvider": "string",
-    "credentials": {
-      "privateKey": "string",
-      "clientEmail": "string",
-      "projectId": "string",
-    }
-  }
-  ...
-}
-```
-
-The `projectId` belongs to the GCP project that the service account is under. The`privateKey` and `clientEmail` come from a service account with the[`Compute Engine Admin`](https://cloud.google.com/compute/docs/access/iam#compute.admin) role. An example credential entry would look like this:
 
 ```javascript
 {
@@ -64,29 +30,15 @@ The `projectId` belongs to the GCP project that the service account is under. Th
       "projectId": "my-gcp-project"
     },
   },
-  ...
 }
 ```
+
+The top-level key is the alias you provide for referring to these credentials. For GCP the `cloudProvider` value is `GCP`, and in the credentials the `projectId` belongs to the GCP project that the service account is under. The`privateKey` and `clientEmail` come from a service account with the [`Compute Engine Admin`](https://cloud.google.com/compute/docs/access/iam#compute.admin) role.
+
 
 ## Azure
 
-The schema for an Azure deployment config is as follows:
-
-```javascript
-{
-  "string": {
-    "cloudProvider": "string",
-    "credentials": {
-      "clientId": "string",
-      "secret": "string",
-      "subscriptionId": "string",
-      "domain": "string"
-    }
-  }
-}
-```
-
-An example of an Azure cloud configuration will look something like this:
+The top-level key is the alias you provide for referring to these credentials. For Azure the `cloudProvider` value is `Azure`. In the credentials the `directoryId` belongs to the Azure Active Directory, the `applicationId` and `secret` belong to the application and service principal under that application, and the `subscriptionId` belongs to the billing subscription.
 
 ```javascript
 {
@@ -99,6 +51,5 @@ An example of an Azure cloud configuration will look something like this:
       "directoryId": "########-####-####-####-############"
     }
   }
-  ...
 }
 ```
