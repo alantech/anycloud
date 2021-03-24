@@ -136,6 +136,3 @@ Which should return `Hello World!`
 ```bash
 anycloud terminate maroon-egret-25
 ```
-
-
-

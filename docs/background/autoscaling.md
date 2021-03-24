@@ -1,4 +1,3 @@
 # Autoscaling
 
 Coming soon!
-

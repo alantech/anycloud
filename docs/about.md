@@ -38,4 +38,3 @@ sudo mv anycloud /usr/local/bin/anycloud
 Invoke-WebRequest -OutFile anycloud-windows.zip -Uri https://github.com/alantech/anycloud/releases/latest/download/anycloud-windows.zip
 Expand-Archive -Path anycloud-windows.zip -DestinationPath C:\windows
 ```
-
