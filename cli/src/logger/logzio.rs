@@ -1,8 +1,9 @@
-use chrono::{DateTime, Local, Utc};
+use chrono::Utc;
 use hyper::{client::Client, Body, Request};
 use log::{Level, Metadata, Record};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
+use std::env;
 use tokio;
 
 #[derive(Deserialize, Serialize, Debug)]
@@ -14,15 +15,15 @@ impl log::Log for LogzIO {
   }
 
   fn log(&self, record: &Record) {
-    let env = std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
+    let utc_time = Utc::now().format("%FT%T%.3fZ");
+    let env = env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
+    let cluster = record.target(); // If no target defined default to `anycloud`
     let token = match env.as_str() {
       "local" => "ZERXpCvywsOBtNOXrqIzfpLiOnEXKXhb",
       "staging" => "ZERXpCvywsOBtNOXrqIzfpLiOnEXKXhb",
       "production" => "ZERXpCvywsOBtNOXrqIzfpLiOnEXKXhb",
       _ => "",
     };
-    let local_time = Local::now();
-    let utc_time = DateTime::<Utc>::from_utc(local_time.naive_utc(), Utc);
     let url = format!(
       "https://listener.logz.io:8071/?token={}&type=anycloud",
       token
@@ -31,8 +32,11 @@ impl log::Log for LogzIO {
       let client = Client::builder().build::<_, Body>(hyper_tls::HttpsConnector::new());
       let req = Request::post(url).body(
         json!({
+          "utc_time": utc_time.to_string(),
           "level": record.level(),
-          "message": format!("{} | {} | {}", utc_time, record.level(), record.args()),
+          "env": env,
+          "cluster": cluster,
+          "message": record.args(),
         })
         .to_string()
         .into(),
