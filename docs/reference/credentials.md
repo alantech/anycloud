@@ -19,7 +19,7 @@ The schema for the AWS deployment config is as follows:
 }
 ```
 
-The `accessKeyId` and `secretAccessKey` are from an IAM user with . An example would look like:
+The `accessKeyId` and `secretAccessKey` come from an IAM user with an [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy attached. An example credential entry would look like this:
 
 ```javascript
 {
@@ -52,7 +52,7 @@ The schema for a GCP deployment config is as follows:
 }
 ```
 
-Take a look at the exported JSON file from your GCP [credentials](../how-to-guides/gcp.md) and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
+The `projectId` belongs to the GCP project that the service account is under. The`privateKey` and `clientEmail` come from a service account with the[`Compute Engine Admin`](https://cloud.google.com/compute/docs/access/iam#compute.admin) role. An example credential entry would look like this:
 
 ```javascript
 {
@@ -86,7 +86,7 @@ The schema for an Azure deployment config is as follows:
 }
 ```
 
-Take a look at the Azure [credentials]() and grab your `applicationId`, `secret`, `subscriptionId` and `directoryId`. An example of an Azure cloud configuration will look something like this:
+An example of an Azure cloud configuration will look something like this:
 
 ```javascript
 {
