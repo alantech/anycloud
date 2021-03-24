@@ -36,6 +36,7 @@ FLAGS:
 
 OPTIONS:
     -a, --app-id <APP_ID>    Specifies an optional application identifier
+    -e, --env-file=<ENV_FILE> Specifies an optional environment file
 
 ARGS:
     <DEPLOY_NAME>    Specifies the name of the deploy config to use
@@ -53,6 +54,9 @@ USAGE:
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
+
+OPTIONS:
+    -e, --env-file=<ENV_FILE> Specifies an optional environment file
 
 ARGS:
     <APP_ID>    Specifies the alan app to upgrade
