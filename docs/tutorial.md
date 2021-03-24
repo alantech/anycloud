@@ -1,6 +1,6 @@
 # Tutorial
 
-In this tutorial we will deploy the [sample express Node.js HTTP server](https://expressjs.com/en/starter/hello-world.html) in your own AWS account with AnyCloud. All the code can be found in this [template repository](https://github.com/alantech/hello-anycloud) which you can use to [create a new repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for an AnyCloud project.
+In this tutorial we will deploy the [sample express Node.js HTTP server](https://expressjs.com/en/starter/hello-world.html) in your own AWS account with AnyCloud. All the code can be found in this [template repository](https://github.com/alantech/hello-anycloud) which you can use to [create a new repository](https://docs.github.com/en/github/creating-cloning-and-archiving-repositories/creating-a-repository-from-a-template) for your AnyCloud project.
 
 ## Enable programmatic AWS access for AnyCloud
 
@@ -119,7 +119,7 @@ Deployment configurations used:
 ┌───────────────┬──────────────┬────────────────┬────────────┬───────────┐
 │ Deploy Config │ Credentials  │ Cloud Provider │ Region     │ VM Type   │
 ├───────────────┼──────────────┼────────────────┼────────────┼───────────┤
-│ staging       │ aws-personal │ GCP            │ us-west1   │ t3.medium │
+│ staging       │ aws-personal │ GCP            │ us-west-1  │ t3.medium │
 └───────────────┴──────────────┴────────────────┴────────────┴───────────┘
 ```
 
