@@ -19,12 +19,14 @@ The schema for the AWS deployment config is as follows:
 }
 ```
 
-The `accessKeyId` and `secretAccessKey` are from an IAM user with . An example would look like:
+Follow the steps in this part of the Tutorial to get the `accessKeyId` and `secretAccessKey`. An example would look like:
 
 ```javascript
 {
-  "piedpiper-aws": {
+  "stripe-aws": {
     "cloudProvider": "AWS",
+    "region": "us-west-1",
+    "vmType": "t2.medium",
     "credentials": {
       "accessKeyId": "#####################",
       "secretAccessKey": "###################"
@@ -52,11 +54,11 @@ The schema for a GCP deployment config is as follows:
 }
 ```
 
-Take a look at the exported JSON file from your GCP [credentials](../how-to-guides/gcp.md) and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
+Take a look at the exported JSON file from your GCP [credentials]() and grab your `project_id`, `private_key` and `client_email`. An example of a GCP cloud configuration will look something like this:
 
 ```javascript
 {
-  "piedpiper-gcp": {
+  "stripe-gcp": {
     "cloudProvider": "GCP",
     "credentials": {
       "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
@@ -90,7 +92,7 @@ Take a look at the Azure [credentials]() and grab your `applicationId`, `secret`
 
 ```javascript
 {
-  "piedpiper-azure": {
+  "stripe-azure": {
     "cloudProvider": "Azure",
     "credentials": {
       "applicationId": "########-####-####-####-############",

@@ -20,5 +20,22 @@
    }
    ```
 
+## Configure your project
+
+Define a new deployment configuration in the `anycloud.json` project you want to deploy to GCP like this:
+
+```javascript
+{
+  "staging": [{
+    "credentials": "piedpiper-gcp",
+    "region": "us-west1-c",
+    "vmType": "e2-medium"
+  }],
+  ...
+}
+```
+
+We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`
+
 
 

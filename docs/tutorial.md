@@ -56,7 +56,7 @@ app.listen(port, () => {
 
 4. Define the `Dockerfile` like this: 
 
-```text
+```bash
 FROM node:lts
 
 ENV PORT 8088
@@ -69,10 +69,10 @@ CMD node index.js
 
 5. Test the `Dockerfile` locally by installing [Docker Desktop](https://www.docker.com/products/docker-desktop), building the Docker image and then running the server within the container
 
-```text
-docker build -t anycloud/app .
-docker run -p 8088:8088 -d anycloud/app:latest
-curl localhost:8088
+```bash
+$ docker build -t anycloud/app .
+$ docker run -p 8088:8088 -d anycloud/app:latest
+$ curl localhost:8088
 ```
 
 Which should return `Hello World!`
@@ -95,28 +95,46 @@ We are referencing the previously defined credentials so make sure that the `cre
 
 1. Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI:
 
-```text
-anycloud new staging
+```bash
+$ anycloud new staging
+▇ Creating new app
 ```
 
-2. Check the status of your application. It might take a few minutes for the server to start while the virtual machine is provisioned and upgraded:
+It might take a few minutes for your app to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random app name for you, but [a custom app name can be used](how-to-guides/define-a-custom-app-name.md). 
 
-```text
-anycloud info
+2. Check the status of your application:
+
+```bash
+$ anycloud info
+Status of all apps deployed:
+
+┌─────────────────┬─────────────────────────────────────────┬───────────────┬──────┬─────────┐
+│ App Id          │ Url                                     │ Deploy Config │ Size │ Version │
+├─────────────────┼─────────────────────────────────────────┼───────────────┼──────┼─────────┤
+│ maroon-egret-25 │ https://maroon-egret-25.anycloudapp.com │ staging       │ 1    │ v0.1.34 │
+└─────────────────┴─────────────────────────────────────────┴───────────────┴──────┴─────────┘
+
+Deployment configurations used:
+
+┌───────────────┬──────────────┬────────────────┬────────────┬───────────┐
+│ Deploy Config │ Credentials  │ Cloud Provider │ Region     │ VM Type   │
+├───────────────┼──────────────┼────────────────┼────────────┼───────────┤
+│ staging       │ aws-personal │ GCP            │ us-west1   │ t3.medium │
+└───────────────┴──────────────┴────────────────┴────────────┴───────────┘
 ```
 
 3. The `size` of your app represents the number of virtual machines used to back your app. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud app!
 
-```text
-curl https://${appName}.anycloudapp.com
+```bash
+$ curl https://maroon-egret-25.anycloudapp.com
 ```
 
 Which should return `Hello World!`
 
 4. Terminate your AnyCloud app after you are done
 
-```text
-anycloud terminate ${appName}
+```bash
+anycloud terminate maroon-egret-25
 ```
 
 
