@@ -23,7 +23,7 @@ In this tutorial we will deploy the [sample express Node.js HTTP server](https:/
 
 ## Configure your project
 
-1. Initialize a `git` repository
+1) Initialize a `git` repository
 
 ```bash
 git init
@@ -31,14 +31,14 @@ git add -A
 git commit -m "Initial commit"
 ```
 
-2. Initialize your `package.json` and install `express`
+2) Initialize your `package.json` and install `express`
 
 ```bash
 npm init
 npm install express --save
 ```
 
-3. Define an HTTP server listening on port `8088` in an `index.js` file:
+3) Define an HTTP server listening on port `8088` in an `index.js` file:
 
 ```javascript
 const express = require('express')
@@ -54,7 +54,7 @@ app.listen(port, () => {
 })
 ```
 
-4. Define the `Dockerfile` like this: 
+4) Define the `Dockerfile` like this: 
 
 ```bash
 FROM node:lts
@@ -67,7 +67,7 @@ RUN npm install
 CMD node index.js
 ```
 
-5. Test the `Dockerfile` locally by installing [Docker Desktop](https://www.docker.com/products/docker-desktop), building the Docker image and then running the server within the container
+5) Test the `Dockerfile` locally by installing [Docker Desktop](https://www.docker.com/products/docker-desktop), building the Docker image and then running the server within the container
 
 ```bash
 $ docker build -t anycloud/app .
@@ -77,7 +77,7 @@ $ curl localhost:8088
 
 Which should return `Hello World!`
 
- 6. Define your deployment configuration in `anycloud.json` like this:
+6) Define your deployment configuration in `anycloud.json` like this:
 
 ```javascript
 {
@@ -93,7 +93,7 @@ We are referencing the previously defined credentials so make sure that the `cre
 
 ## Deploy an app
 
-1. Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
+1) Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
 
 ```bash
 $ anycloud new staging
@@ -102,7 +102,7 @@ $ anycloud new staging
 
 It might take a few minutes for your app to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random app name for you, but [a custom app name can be used](how-to-guides/custom-name.md). 
 
-2. Check the status of your application:
+2) Check the status of your application:
 
 ```bash
 $ anycloud info
@@ -123,7 +123,7 @@ Deployment configurations used:
 └───────────────┴──────────────┴────────────────┴────────────┴───────────┘
 ```
 
-3. The `size` of your app represents the number of virtual machines used to back your app. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud app!
+3) The `size` of your app represents the number of virtual machines used to back your app. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud app!
 
 ```bash
 $ curl https://maroon-egret-25.anycloudapp.com
@@ -131,7 +131,7 @@ $ curl https://maroon-egret-25.anycloudapp.com
 
 Which should return `Hello World!`
 
-4. Terminate your AnyCloud app when you no longer need it
+4) Terminate your AnyCloud app when you no longer need it
 
 ```bash
 anycloud terminate maroon-egret-25
