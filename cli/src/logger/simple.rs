@@ -15,9 +15,23 @@ impl log::Log for SimpleLogger {
     let cluster = record.target(); // If no target defined default to `anycloud`
     if self.enabled(record.metadata()) {
       if record.level() == Level::Error {
-        eprintln!("{} | {} | {} | {} | {}", utc_time, record.level(), env, cluster, record.args());
+        eprintln!(
+          "{} | {} | {} | {} | {}",
+          utc_time,
+          record.level(),
+          env,
+          cluster,
+          record.args()
+        );
       } else {
-        println!("{} | {} | {} | {} | {}", utc_time, record.level(), env, cluster, record.args());
+        println!(
+          "{} | {} | {} | {} | {}",
+          utc_time,
+          record.level(),
+          env,
+          cluster,
+          record.args()
+        );
       }
     }
   }
