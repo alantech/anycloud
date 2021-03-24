@@ -1,2 +1,2 @@
-# Deploy an app to multiple cloud providers
+# Deploy an app to multiple clouds
 
