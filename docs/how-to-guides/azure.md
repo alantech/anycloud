@@ -8,20 +8,20 @@
 4. To be able to use Anycloud with Azure you will need to manage your subscription resource provider registration as described [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal). You will need to register: `Microsoft.Compute`, `Microsoft.Network`, `Microsoft.Storage` and `Microsoft.Security`.
 5. Add a new [credential]() by taking the `privateKey`, `clientEmail`and `projectId`from step 2 and adding a new entry to your `~/.anycloud/credentials.json` file like this:
 
-   ```javascript
-   {
-     "piedpiper-azure": {
-       "cloudProvider": "Azure",
-       "credentials": {
-         "applicationId": "########-####-####-####-############",
-         "secret": "##################################",
-         "subscriptionId": "########-####-####-####-############",
-         "directoryId": "########-####-####-####-############"
-       }
-     }
-     ...
-   }
-   ```
+```javascript
+{
+  "piedpiper-azure": {
+    "cloudProvider": "Azure",
+    "credentials": {
+      "applicationId": "########-####-####-####-############",
+      "secret": "##################################",
+      "subscriptionId": "########-####-####-####-############",
+      "directoryId": "########-####-####-####-############"
+    }
+  }
+  ...
+}
+```
 
 ## **Configure your project**
 
@@ -39,4 +39,3 @@ Define a new deployment configuration in the `anycloud.json` project you want to
 ```
 
 We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`
-
