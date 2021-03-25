@@ -19,7 +19,7 @@ In this tutorial we will deploy the [sample express Node.js HTTP server](https:/
     "credentials": {
       "accessKeyId": "#####################",
       "secretAccessKey": "###################"
-    },
+    }
   }
 }
 ```
