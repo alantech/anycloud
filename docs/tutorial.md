@@ -46,7 +46,7 @@ npm install express --save
 ```javascript
 const express = require('express')
 const app = express()
-const port = process.env.PORT
+const port = 8088
 
 app.get('/', (req, res) => {
   res.send('Hello World!')
@@ -61,8 +61,6 @@ app.listen(port, () => {
 
 ```bash
 FROM node:lts
-
-ENV PORT 8088
 
 COPY . .
 
@@ -94,9 +92,11 @@ Which should return `Hello World!`
 
 We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`
 
+7) Make sure all of the changes in the git repo are committed or they won't be deployed.
+
 ## Deploy an app
 
-1) Make sure you [install the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
+1) Make sure you [installed the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
 
 ```bash
 $ anycloud new staging
