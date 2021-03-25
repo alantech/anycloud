@@ -103,7 +103,7 @@ $ anycloud new staging
 ▇ Creating new app
 ```
 
-It might take a few minutes for your app to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random app name for you, but [a custom app name can be used](how-to-guides/custom-name.md). 
+It might take a few minutes for your app to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random app name for you, but [a custom app name can be used](how-to/custom-app.md).
 
 2) Check the status of your application:
 
