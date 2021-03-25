@@ -45,7 +45,7 @@ impl log::Log for LogzIO {
         Ok(req) => req,
         Err(e) => {
           eprintln!("Error creating LogzIO request: {}", e);
-          return ();
+          return;
         }
       };
       tokio::task::spawn(async move {
