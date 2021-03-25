@@ -15,9 +15,7 @@ pub fn init() -> Result<(), SetLoggerError> {
   let sematext = Box::new(Sematext);
   let logzio = Box::new(LogzIO);
   match env.as_str() {
-    "local" => {
-      multi_log::MultiLogger::init(vec![simple_logger, sematext, logzio], log::Level::Info)
-    }
-    _ => multi_log::MultiLogger::init(vec![sematext], log::Level::Info),
+    "local" => multi_log::MultiLogger::init(vec![simple_logger], log::Level::Info),
+    _ => multi_log::MultiLogger::init(vec![sematext, logzio], log::Level::Info),
   }
 }
