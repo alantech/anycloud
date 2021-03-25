@@ -12,7 +12,7 @@ Add an additional object to the existing deployment configuration in the `anyclo
     {
       "credentials": "mystartup-aws",
       "region": "us-west-1",
-      "vmType": "t3.medium",
+      "vmType": "t3.medium"
     },
     {
       "credentials": "mystartup-aws",
