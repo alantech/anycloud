@@ -12,7 +12,4 @@
   * [Project Structure](reference/project-structure.md)
   * [Credentials](reference/credentials.md)
   * [CLI API](reference/cli-api.md)
-* [Background Information](background/README.md)
-  * [Autoscaling](background/autoscaling.md)
-  * [Architecture](background/architecture.md)
 
