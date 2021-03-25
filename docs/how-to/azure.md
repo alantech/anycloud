@@ -36,7 +36,7 @@ Define a new deployment configuration in the `anycloud.json` project you want to
   "staging": [{
     "credentials": "mystartup-azure",
     "region": "westus2",
-    "vmType": "Standard_B1ls",
+    "vmType": "Standard_B1ls"
   }],
   ...
 }
