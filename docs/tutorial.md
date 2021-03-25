@@ -10,7 +10,7 @@ In this tutorial we will deploy the [sample express Node.js HTTP server](https:/
 
 3) Enable programmatic access for that IAM user, and attach the built-in [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy to it as described [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console).
 
-4) Take the `accessKeyId` and `secretAccessKey` from step 2 and add a local `~/.anycloud/credentials.json` file with the following contents:
+4) Take the `accessKeyId` and `secretAccessKey` from step 2 and add a local `~/.anycloud/credentials.json` file. The top-level key is the alias you provide for referring to these credentials later on in the `anycloud.json` file.
 
 ```javascript
 {
@@ -90,7 +90,7 @@ Which should return `Hello World!`
 }
 ```
 
-We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`
+We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`. In this case, the alias for the credentials is `staging`.
 
 7) Make sure all of the changes in the git repo are committed or they won't be deployed.
 
