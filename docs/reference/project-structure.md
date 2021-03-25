@@ -45,7 +45,7 @@ An example of an `anycloud.json` with a staging and a production deployment conf
     "cloudProvider": "AWS",
     "region": "us-west-1",
     "vmType": "t2.medium",
-    "credentials": "piedpiper-aws",
+    "credentials": "piedpiper-aws"
   }],
   "production": [{
     "cloudProvider": "AWS",
