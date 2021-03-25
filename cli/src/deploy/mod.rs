@@ -22,7 +22,7 @@ const REQUEST_TIMEOUT: &str =
 const FORBIDDEN_OPERATION: &str =
   "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://alantech.gitbook.io/anycloud/";
-const NAME_CONFLICT: &str = "Another application with same App Id already exists.";
+const NAME_CONFLICT: &str = "Another application with same app ID already exists.";
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]

@@ -4,7 +4,7 @@
 </div>
 <br/>
 
-Our aim is to easily allow developers run and elastically scale their webservers on any cloud provider while also providing a much better experience to alternative services offered in AWS (Lambda, Elastic Beanstalk, ECS/Fargate, EC2) or GCP (Cloud Functions, App Engine, Cloud Run, Compute Engine).
+AnyCloud takes API credentials from your preferred cloud provider and a `Dockerfile` in order to elastically scale an HTTP server in your own cloud provider account. Our aim is providing a much better experience to alternative services offered in AWS (Lambda, Elastic Beanstalk, ECS/Fargate, EC2) or GCP (Cloud Functions, App Engine, Cloud Run, Compute Engine).
 
 - [x] Automatically scales your HTTP server based on request load and system stats
 - [x] Vendor portability across cloud providers
@@ -22,10 +22,6 @@ Our aim is to easily allow developers run and elastically scale their webservers
 - [x] Alpha: We are working with closed set of customers. Drop us a line at hello at anycloudapp dot com if you are interested
 - [ ] Beta: Anyone can sign up. Stable enough for most use-cases
 - [ ] Public: Production-ready for enterprise use-cases
-
-## How it works
-
-AnyCloud is built on the [Rust](https://rust-lang.org) and [Alan](https://alan-lang.org) programming languages. It is accessed via a CLI that takes cloud provider credentials and a Dockerfile with a webserver listening on port 8088 as input. Your container/server is deployed to the account with the specified credentials and runs with a sidecar process that manages your server across multiple regions and cloud providers via DNS and figures out when to scale up or down.
 
 ## Supported Cloud Providers
 
