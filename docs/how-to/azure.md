@@ -14,7 +14,7 @@
 
 ```javascript
 {
-  "piedpiper-azure": {
+  "mystartup-azure": {
     "cloudProvider": "Azure",
     "credentials": {
       "applicationId": "########-####-####-####-############",
@@ -34,7 +34,7 @@ Define a new deployment configuration in the `anycloud.json` project you want to
 ```javascript
 {
   "staging": [{
-    "credentials": "piedpiper-azure",
+    "credentials": "mystartup-azure",
     "region": "westus2",
     "vmType": "Standard_B1ls",
   }],

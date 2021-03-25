@@ -1,6 +1,6 @@
 # Credentials
 
-AnyCloud deployments expect the cloud credentials to be configured using a local file that is not committed to any repository and is located at `~/.anycloud/credentials.json`. Each deployment will be keyed by a name and will provide the cloud provider configuration via two fields:  `credentials` and `cloudProvider`. Possible values for `cloudProvider` are `AWS`, `GCP` and `Azure`. `credentials` will have a different schema depending on which cloud provider it is.
+AnyCloud deployments expect the cloud credentials to be configured using a local file that is not committed to any repository and is located at `~/.anycloud/credentials.json`. Each deployment will be keyed by a name and will provide the cloud provider configuration via two fields: `credentials` and `cloudProvider`. Possible values for `cloudProvider` are `AWS`, `GCP` and `Azure`. `credentials` will have a different schema depending on which cloud provider it is.
 
 ## AWS
 
@@ -11,8 +11,8 @@ AnyCloud deployments expect the cloud credentials to be configured using a local
     "credentials": {
       "accessKeyId": "#####################",
       "secretAccessKey": "###################"
-    },
-  },
+    }
+  }
 }
 ```
 
@@ -28,8 +28,8 @@ The top-level key is the alias you provide for referring to these credentials. F
       "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
       "clientEmail": "#########-compute@developer.gserviceaccount.com",
       "projectId": "my-gcp-project"
-    },
-  },
+    }
+  }
 }
 ```
 

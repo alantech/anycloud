@@ -32,7 +32,7 @@ tar -xzf anycloud-ubuntu.tar.gz
 sudo mv anycloud /usr/local/bin/anycloud
 ```
 
-#### Windows
+#### Windows PowerShell
 
 ```text
 Invoke-WebRequest -OutFile anycloud-windows.zip -Uri https://github.com/alantech/anycloud/releases/latest/download/anycloud-windows.zip
