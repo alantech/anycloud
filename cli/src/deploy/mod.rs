@@ -14,6 +14,7 @@ use base64;
 use log::error;
 
 use crate::http::CLIENT;
+use crate::oauth::clear_token;
 
 const REQUEST_TIMEOUT: &str =
   "Operation is still in progress. It might take a few more minutes for \
@@ -22,6 +23,8 @@ const FORBIDDEN_OPERATION: &str =
   "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://alantech.gitbook.io/anycloud/";
 const NAME_CONFLICT: &str = "Another application with same app ID already exists.";
+const UNAUTHORIZED_OPERATION: &str =
+  "Invalid AnyCloud authentication credentials. Please retry and you will be asked to reauthenticate.";
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
@@ -94,6 +97,7 @@ pub enum PostV1Error {
   Timeout,
   Forbidden,
   Conflict,
+  Unauthorized,
   Other(String),
 }
 
@@ -224,10 +228,11 @@ pub fn get_file_str(file: &str) -> String {
   return base64::encode(f);
 }
 
-pub async fn terminate(cluster_id: &str) {
+pub async fn terminate(cluster_id: &str, token: &str) {
   let body = json!({
     "deployConfig": get_config(),
-    "clusterId": cluster_id
+    "clusterId": cluster_id,
+    "accessToken": token,
   });
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
@@ -240,6 +245,10 @@ pub async fn terminate(cluster_id: &str) {
         "Failed to terminate app {}. Error: {}",
         cluster_id, NAME_CONFLICT
       ),
+      PostV1Error::Unauthorized => {
+        clear_token();
+        format!("{}", UNAUTHORIZED_OPERATION)
+      }
       PostV1Error::Other(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
     },
   };
@@ -256,6 +265,10 @@ pub async fn new(body: Value) {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
       PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
+      PostV1Error::Unauthorized => {
+        clear_token();
+        format!("{}", UNAUTHORIZED_OPERATION)
+      }
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
     },
   };
@@ -272,6 +285,10 @@ pub async fn upgrade(body: Value) {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
       PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
+      PostV1Error::Unauthorized => {
+        clear_token();
+        format!("{}", UNAUTHORIZED_OPERATION)
+      }
       PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
     },
   };
@@ -279,9 +296,10 @@ pub async fn upgrade(body: Value) {
   sp.close();
 }
 
-pub async fn info() {
+pub async fn info(token: &str) {
   let body = json!({
     "deployConfig": get_config(),
+    "accessToken": token,
   });
   let response = post_v1("info", body).await;
   let resp = match &response {
@@ -299,6 +317,10 @@ pub async fn info() {
             "Displaying status for apps failed with error: {}",
             NAME_CONFLICT
           );
+        }
+        PostV1Error::Unauthorized => {
+          clear_token();
+          eprintln!("{}", UNAUTHORIZED_OPERATION);
         }
         PostV1Error::Other(err) => {
           eprintln!("Displaying status for apps failed with error: {}", err);

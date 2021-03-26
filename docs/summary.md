@@ -1,6 +1,7 @@
 # Table of contents
 
 * [AnyCloud Documentation](about.md)
+* [CLI Installation and Authentication](cli.md)
 * [Tutorial](tutorial.md)
 * [How-to guides](how-to/README.md)
   * [Define a custom app ID](how-to/custom-app.md)

@@ -8,6 +8,7 @@ use log::error;
 use serde_json::json;
 
 use anycloud::deploy::{get_config, info, new, terminate, upgrade};
+use anycloud::oauth::get_token;
 
 const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 
@@ -117,6 +118,7 @@ pub async fn main() {
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     );
 
+  let token = get_token().await;
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new", Some(matches)) => {
@@ -136,6 +138,7 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
+        "accessToken": get_token().await,
       });
       if let Some(env_file) = env_file {
         body.as_object_mut().unwrap().insert(
@@ -147,7 +150,7 @@ pub async fn main() {
     }
     ("terminate", Some(matches)) => {
       let cluster_id = matches.value_of("APP_ID").unwrap();
-      terminate(cluster_id).await;
+      terminate(cluster_id, &token).await;
     }
     ("upgrade", Some(matches)) => {
       let config = get_config();
@@ -160,6 +163,7 @@ pub async fn main() {
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
+        "accessToken": token,
       });
       if let Some(env_file) = env_file {
         body.as_object_mut().unwrap().insert(
@@ -170,7 +174,7 @@ pub async fn main() {
       upgrade(body).await;
     }
     ("info", _) => {
-      info().await;
+      info(&token).await;
     }
     // rely on AppSettings::SubcommandRequiredElseHelp
     _ => {}
