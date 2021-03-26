@@ -24,8 +24,7 @@ const FORBIDDEN_OPERATION: &str =
   configuration steps: https://alantech.gitbook.io/anycloud/";
 const NAME_CONFLICT: &str = "Another application with same app ID already exists.";
 const UNAUTHORIZED_OPERATION: &str =
-  "Invalid AnyCloud authentication credentials. Please try again and you will be asked \
-  to login once again.";
+  "Invalid AnyCloud authentication credentials. Please retry and you will be asked to reauthenticate.";
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
