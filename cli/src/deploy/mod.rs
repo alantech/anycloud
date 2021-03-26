@@ -184,10 +184,12 @@ pub async fn get_config(token: &str) -> HashMap<String, Vec<Config>> {
             region: deploy_config.region,
             vmType: deploy_config.vmType,
           });
-        },
+        }
         None => {
-          let err = format!("Credentials {} for deploy config {} not found in {}",
-            &deploy_config.credentials, deploy_id, CREDENTIALS_FILE);
+          let err = format!(
+            "Credentials {} for deploy config {} not found in {}",
+            &deploy_config.credentials, deploy_id, CREDENTIALS_FILE
+          );
           eprintln!("{}", err);
           error!("{}", err);
           client_error(token, "INVALID_CREDENTIAL_ALIAS").await;

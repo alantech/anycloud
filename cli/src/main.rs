@@ -7,7 +7,7 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use log::error;
 use serde_json::json;
 
-use anycloud::deploy::{ALAN_VERSION, get_config, info, new, terminate, upgrade};
+use anycloud::deploy::{get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::get_token;
 
 fn get_dockerfile_b64() -> String {
