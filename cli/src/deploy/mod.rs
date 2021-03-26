@@ -5,17 +5,17 @@ use spinner::SpinnerBuilder;
 
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
-use std::fs::{read, File};
+use std::fs::File;
 use std::io::BufReader;
 use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
-use base64;
 use log::error;
 
 use crate::http::CLIENT;
 use crate::oauth::clear_token;
 
+pub const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 const REQUEST_TIMEOUT: &str =
   "Operation is still in progress. It might take a few more minutes for \
   the cloud provider to finish up.";
@@ -101,20 +101,21 @@ pub enum PostV1Error {
   Other(String),
 }
 
-const DEPLOY_CONFIG_FILE: &str = "anycloud.json";
-const CREDENTIALS_CONFIG_FILE: &str = ".anycloud/credentials.json";
+const ANYCLOUD_FILE: &str = "anycloud.json";
+const CREDENTIALS_FILE: &str = ".anycloud/credentials.json";
 // TODO: Have a command to do this for users
 const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-fn get_credentials() -> HashMap<String, CredentialsConfig> {
+async fn get_credentials(token: &str) -> HashMap<String, CredentialsConfig> {
   let home = std::env::var("HOME").unwrap();
-  let file_name = &format!("{}/{}", home, CREDENTIALS_CONFIG_FILE);
+  let file_name = &format!("{}/{}", home, CREDENTIALS_FILE);
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
     eprintln!("Cannot access credentials at {}. Error: {}", file_name, err);
     eprintln!("{}", CONFIG_SETUP);
     error!("Cannot access credentials. Error: {}", err);
+    client_error(token, "NO_CREDENTIALS_FILE").await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
@@ -123,14 +124,15 @@ fn get_credentials() -> HashMap<String, CredentialsConfig> {
     eprintln!("Invalid credentials. Error: {}", err);
     eprintln!("{}", CONFIG_SETUP);
     error!("Invalid credentials. Error: {}", err);
+    client_error(token, "INVALID_CREDENTIALS_FILE").await;
     std::process::exit(1);
   }
   config.unwrap()
 }
 
-fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
+async fn get_deploy_config(token: &str) -> HashMap<String, Vec<DeployConfig>> {
   let home = std::env::var("PWD").unwrap();
-  let file_name = &format!("{}/{}", home, DEPLOY_CONFIG_FILE);
+  let file_name = &format!("{}/{}", home, ANYCLOUD_FILE);
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
@@ -139,7 +141,8 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
       file_name, err
     );
     eprintln!("{}", CONFIG_SETUP);
-    error!("Cannot access deploy config. Error: {}", err);
+    client_error(token, "NO_ANYCLOUD_FILE").await;
+    error!("Cannot access {}. Error: {}", ANYCLOUD_FILE, err);
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
@@ -147,6 +150,7 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   if let Err(err) = config {
     eprintln!("Invalid deploy config. Error: {}", err);
     eprintln!("{}", CONFIG_SETUP);
+    client_error(token, "INVALID_ANYCLOUD_FILE").await;
     error!("Invalid deploy config. Error: {}", err);
     std::process::exit(1);
   }
@@ -165,25 +169,31 @@ fn get_url() -> &'static str {
   }
 }
 
-pub fn get_config() -> HashMap<String, Vec<Config>> {
-  let anycloud_config = get_deploy_config();
-  let cred_configs = get_credentials();
+pub async fn get_config(token: &str) -> HashMap<String, Vec<Config>> {
+  let anycloud_config = get_deploy_config(token).await;
+  let cred_configs = get_credentials(token).await;
   let mut all_configs = HashMap::new();
   for (deploy_id, deploy_configs) in anycloud_config.into_iter() {
     let mut configs = Vec::new();
     for deploy_config in deploy_configs {
-      let credentials = cred_configs
-        .get(&deploy_config.credentials)
-        .expect(&format!(
-          "Credentials {} for deploy config {} not found in {}",
-          &deploy_config.credentials, deploy_id, CREDENTIALS_CONFIG_FILE
-        ));
-      configs.push(Config {
-        credentials: credentials.credentials.clone(),
-        cloudProvider: credentials.cloudProvider.to_string(),
-        region: deploy_config.region,
-        vmType: deploy_config.vmType,
-      });
+      match cred_configs.get(&deploy_config.credentials) {
+        Some(credentials) => {
+          configs.push(Config {
+            credentials: credentials.credentials.clone(),
+            cloudProvider: credentials.cloudProvider.to_string(),
+            region: deploy_config.region,
+            vmType: deploy_config.vmType,
+          });
+        },
+        None => {
+          let err = format!("Credentials {} for deploy config {} not found in {}",
+            &deploy_config.credentials, deploy_id, CREDENTIALS_FILE);
+          eprintln!("{}", err);
+          error!("{}", err);
+          client_error(token, "INVALID_CREDENTIAL_ALIAS").await;
+          std::process::exit(1);
+        }
+      }
     }
     all_configs.insert(deploy_id, configs);
   }
@@ -223,14 +233,19 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
   };
 }
 
-pub fn get_file_str(file: &str) -> String {
-  let f = read(file).expect(&format!("Deploy failed parsing {}", file));
-  return base64::encode(f);
+pub async fn client_error(token: &str, err_name: &str) {
+  let body = json!({
+    "errorName": err_name,
+    "accessToken": token,
+    "alanVersion": format!("v{}", ALAN_VERSION),
+    "osName": std::env::consts::OS,
+  });
+  let _resp = post_v1("clientError", body).await;
 }
 
 pub async fn terminate(cluster_id: &str, token: &str) {
   let body = json!({
-    "deployConfig": get_config(),
+    "deployConfig": get_config(token).await,
     "clusterId": cluster_id,
     "accessToken": token,
   });
@@ -298,7 +313,7 @@ pub async fn upgrade(body: Value) {
 
 pub async fn info(token: &str) {
   let body = json!({
-    "deployConfig": get_config(),
+    "deployConfig": get_config(token).await,
     "accessToken": token,
   });
   let response = post_v1("info", body).await;
@@ -419,14 +434,14 @@ pub async fn info(token: &str) {
   };
   deploy.columns.insert(4, column);
 
-  let deploy_configs = get_deploy_config();
-  let credentials = get_credentials();
+  let deploy_configs = get_deploy_config(token).await;
+  let credentials = get_credentials(token).await;
   for deploy_name in deploy_names {
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
     for (i, cloud_config) in cloud_configs.iter().enumerate() {
       let creds = credentials.get(&cloud_config.credentials).expect(&format!(
         "Credentials {} for deploy config {} not found in {}",
-        &cloud_config.credentials, deploy_name, CREDENTIALS_CONFIG_FILE
+        &cloud_config.credentials, deploy_name, CREDENTIALS_FILE
       ));
       if i == 0 {
         data.push(vec![
