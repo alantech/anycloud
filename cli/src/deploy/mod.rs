@@ -108,15 +108,17 @@ fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    error!("Cannot access credentials at {}. Error: {}", file_name, err);
-    error!("{}", CONFIG_SETUP);
+    eprintln!("Cannot access credentials at {}. Error: {}", file_name, err);
+    eprintln!("{}", CONFIG_SETUP);
+    error!("Cannot access credentials. Error: {}", err);
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
+    eprintln!("Invalid credentials. Error: {}", err);
+    eprintln!("{}", CONFIG_SETUP);
     error!("Invalid credentials. Error: {}", err);
-    error!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   config.unwrap()
@@ -128,18 +130,20 @@ fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    error!(
+    eprintln!(
       "Cannot access deploy config at {}. Error: {}",
       file_name, err
     );
-    error!("{}", CONFIG_SETUP);
+    eprintln!("{}", CONFIG_SETUP);
+    error!("Cannot access deploy config. Error: {}", err);
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
+    eprintln!("Invalid deploy config. Error: {}", err);
+    eprintln!("{}", CONFIG_SETUP);
     error!("Invalid deploy config. Error: {}", err);
-    error!("{}", CONFIG_SETUP);
     std::process::exit(1);
   }
   config.unwrap()
@@ -223,7 +227,7 @@ pub fn get_file_str(file: &str) -> String {
 pub async fn terminate(cluster_id: &str) {
   let body = json!({
     "deployConfig": get_config(),
-    "clusterId": cluster_id,
+    "clusterId": cluster_id
   });
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
@@ -279,30 +283,29 @@ pub async fn info() {
   let body = json!({
     "deployConfig": get_config(),
   });
-  let resp = post_v1("info", body).await;
-  let resp = match &resp {
+  let response = post_v1("info", body).await;
+  let resp = match &response {
     Ok(resp) => resp,
-    Err(err) => match err {
-      PostV1Error::Timeout => {
-        error!("{}", REQUEST_TIMEOUT);
-        std::process::exit(1);
+    Err(err) => {
+      match err {
+        PostV1Error::Timeout => {
+          eprintln!("{}", REQUEST_TIMEOUT);
+        }
+        PostV1Error::Forbidden => {
+          eprintln!("{}", FORBIDDEN_OPERATION);
+        }
+        PostV1Error::Conflict => {
+          eprintln!(
+            "Displaying status for apps failed with error: {}",
+            NAME_CONFLICT
+          );
+        }
+        PostV1Error::Other(err) => {
+          eprintln!("Displaying status for apps failed with error: {}", err);
+        }
       }
-      PostV1Error::Forbidden => {
-        error!("{}", FORBIDDEN_OPERATION);
-        std::process::exit(1);
-      }
-      PostV1Error::Conflict => {
-        error!(
-          "Displaying status for apps failed with error: {}",
-          NAME_CONFLICT
-        );
-        std::process::exit(1);
-      }
-      PostV1Error::Other(err) => {
-        error!("Displaying status for apps failed with error: {}", err);
-        std::process::exit(1);
-      }
-    },
+      std::process::exit(1);
+    }
   };
   let mut apps: Vec<App> = from_str(resp).unwrap();
 
