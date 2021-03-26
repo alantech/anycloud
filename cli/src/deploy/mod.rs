@@ -4,7 +4,6 @@ use serde_json::{from_reader, from_str, json, Value};
 use spinner::SpinnerBuilder;
 
 use std::collections::{HashMap, HashSet};
-use std::error::Error;
 use std::fmt::Display;
 use std::fs::{read, File};
 use std::io::BufReader;
@@ -95,7 +94,7 @@ pub enum PostV1Error {
   Timeout,
   Forbidden,
   Conflict,
-  Other(Box<dyn Error>),
+  Other(String),
 }
 
 const DEPLOY_CONFIG_FILE: &str = "anycloud.json";
@@ -190,29 +189,29 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
     .body(body.to_string().into());
   let req = match req {
     Ok(req) => req,
-    Err(e) => return Err(PostV1Error::Other(e.into())),
+    Err(e) => return Err(PostV1Error::Other(e.to_string())),
   };
   let resp = CLIENT.request(req).await;
   let mut resp = match resp {
     Ok(resp) => resp,
-    Err(e) => return Err(PostV1Error::Other(e.into())),
+    Err(e) => return Err(PostV1Error::Other(e.to_string())),
   };
   let data = hyper::body::to_bytes(resp.body_mut()).await;
   let data = match data {
     Ok(data) => data,
-    Err(e) => return Err(PostV1Error::Other(e.into())),
+    Err(e) => return Err(PostV1Error::Other(e.to_string())),
   };
   let data_str = String::from_utf8(data.to_vec());
   let data_str = match data_str {
     Ok(data_str) => data_str,
-    Err(e) => return Err(PostV1Error::Other(e.into())),
+    Err(e) => return Err(PostV1Error::Other(e.to_string())),
   };
   return match resp.status() {
     st if st.is_success() => Ok(data_str),
     StatusCode::REQUEST_TIMEOUT => Err(PostV1Error::Timeout),
     StatusCode::FORBIDDEN => Err(PostV1Error::Forbidden),
     StatusCode::CONFLICT => Err(PostV1Error::Conflict),
-    _ => Err(PostV1Error::Other(data_str.into())),
+    _ => Err(PostV1Error::Other(data_str.to_string())),
   };
 }
 
