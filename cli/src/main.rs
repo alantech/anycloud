@@ -7,10 +7,8 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use log::error;
 use serde_json::json;
 
-use anycloud::deploy::{get_config, info, new, terminate, upgrade};
+use anycloud::deploy::{get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::get_token;
-
-const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 
 fn get_dockerfile_b64() -> String {
   let pwd = env::current_dir();
@@ -122,7 +120,7 @@ pub async fn main() {
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new", Some(matches)) => {
-      let config = get_config();
+      let config = get_config(&token).await;
       let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
       if !config.contains_key(deploy_name) {
         error!("Deploy name provided is not defined in anycloud.json");
@@ -138,6 +136,7 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
+        "osName": std::env::consts::OS,
         "accessToken": get_token().await,
       });
       if let Some(env_file) = env_file {
@@ -153,7 +152,7 @@ pub async fn main() {
       terminate(cluster_id, &token).await;
     }
     ("upgrade", Some(matches)) => {
-      let config = get_config();
+      let config = get_config(&token).await;
       let cluster_id = matches.value_of("APP_ID").unwrap();
       let env_file = matches.value_of("env-file");
       let mut body = json!({
@@ -164,6 +163,7 @@ pub async fn main() {
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
         "accessToken": token,
+        "osName": std::env::consts::OS,
       });
       if let Some(env_file) = env_file {
         body.as_object_mut().unwrap().insert(
