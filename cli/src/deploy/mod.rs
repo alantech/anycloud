@@ -88,7 +88,7 @@ struct App {
   id: String,
   url: String,
   deployName: String,
-  version: String,
+  status: String,
   size: usize,
 }
 
@@ -381,7 +381,7 @@ pub async fn info(token: &str) {
   clusters.columns.insert(3, column);
 
   let column = Column {
-    header: "Version".into(),
+    header: "Status".into(),
     ..Column::default()
   };
   clusters.columns.insert(4, column);
@@ -395,7 +395,7 @@ pub async fn info(token: &str) {
       &app.url,
       &app.deployName,
       &app.size,
-      &app.version,
+      &app.status,
     ]);
   }
 
