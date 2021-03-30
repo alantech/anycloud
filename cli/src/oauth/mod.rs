@@ -1,12 +1,12 @@
-use hyper::Request;
-use serde_json::{json, Value};
 use std::fs::{read_to_string, remove_file, File};
 use std::io::prelude::*;
 use std::path::Path;
+
+use hyper::Request;
+use serde_json::{json, Value};
 use tokio::time::{sleep, Duration};
 
-use log::error;
-
+use crate::deploy::client_error;
 use crate::http::CLIENT;
 
 const CODE_URL: &'static str = "https://github.com/login/device/code";
@@ -89,7 +89,13 @@ async fn generate_token() -> String {
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {
         eprintln!("Authentication failed. Please try again. Err: {}", error);
-        error!("Authentication failed. Err: {}", error);
+        client_error(
+          "",
+          "AUTH_FAILED",
+          Some(&format!("Authentication failed. Err: {}", error)),
+          None,
+        )
+        .await;
         std::process::exit(1);
       }
     }
