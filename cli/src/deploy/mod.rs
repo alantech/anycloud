@@ -11,7 +11,7 @@ use serde_json::{from_reader, from_str, json, Value};
 use spinner::SpinnerBuilder;
 
 use crate::http::CLIENT;
-use crate::oauth::clear_token;
+use crate::oauth::{clear_token, get_token};
 
 pub const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 const REQUEST_TIMEOUT: &str =
@@ -104,7 +104,7 @@ const CREDENTIALS_FILE: &str = ".anycloud/credentials.json";
 // TODO: Have a command to do this for users
 const CONFIG_SETUP: &str = "To create valid Anycloud deploy configs follow the instructions at:\n\nhttps://alantech.gitbook.io/anycloud";
 
-async fn get_credentials(token: &str) -> HashMap<String, CredentialsConfig> {
+async fn get_credentials() -> HashMap<String, CredentialsConfig> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CREDENTIALS_FILE);
   let path = Path::new(file_name);
@@ -113,7 +113,7 @@ async fn get_credentials(token: &str) -> HashMap<String, CredentialsConfig> {
     let err_str = format!("Cannot access credentials at {}. Error: {}", file_name, err);
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error(token, "NO_CREDENTIALS_FILE", Some(&err_str), None).await;
+    client_error("NO_CREDENTIALS_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
@@ -122,13 +122,13 @@ async fn get_credentials(token: &str) -> HashMap<String, CredentialsConfig> {
     let err_str = format!("Invalid credentials. Error: {}", err);
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error(token, "INVALID_CREDENTIALS_FILE", Some(&err_str), None).await;
+    client_error("INVALID_CREDENTIALS_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   config.unwrap()
 }
 
-async fn get_deploy_config(token: &str) -> HashMap<String, Vec<DeployConfig>> {
+async fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
   let home = std::env::var("PWD").unwrap();
   let file_name = &format!("{}/{}", home, ANYCLOUD_FILE);
   let path = Path::new(file_name);
@@ -140,7 +140,7 @@ async fn get_deploy_config(token: &str) -> HashMap<String, Vec<DeployConfig>> {
     );
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error(token, "NO_ANYCLOUD_FILE", Some(&err_str), None).await;
+    client_error("NO_ANYCLOUD_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
@@ -149,7 +149,7 @@ async fn get_deploy_config(token: &str) -> HashMap<String, Vec<DeployConfig>> {
     let err_str = format!("Invalid deploy config. Error: {}", err);
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error(token, "INVALID_ANYCLOUD_FILE", Some(&err_str), None).await;
+    client_error("INVALID_ANYCLOUD_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   config.unwrap()
@@ -167,9 +167,9 @@ fn get_url() -> &'static str {
   }
 }
 
-pub async fn get_config(token: &str) -> HashMap<String, Vec<Config>> {
-  let anycloud_config = get_deploy_config(token).await;
-  let cred_configs = get_credentials(token).await;
+pub async fn get_config() -> HashMap<String, Vec<Config>> {
+  let anycloud_config = get_deploy_config().await;
+  let cred_configs = get_credentials().await;
   let mut all_configs = HashMap::new();
   for (deploy_id, deploy_configs) in anycloud_config.into_iter() {
     let mut configs = Vec::new();
@@ -189,7 +189,7 @@ pub async fn get_config(token: &str) -> HashMap<String, Vec<Config>> {
             &deploy_config.credentials, deploy_id, CREDENTIALS_FILE
           );
           eprintln!("{}", err_str);
-          client_error(token, "INVALID_CREDENTIAL_ALIAS", Some(&err_str), None).await;
+          client_error("INVALID_CREDENTIAL_ALIAS", Some(&err_str), None).await;
           std::process::exit(1);
         }
       }
@@ -233,14 +233,13 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
 }
 
 pub async fn client_error(
-  token: &str,
   err_name: &str,
   message: Option<&str>,
   cluster_id: Option<&str>,
 ) {
   let mut body = json!({
     "errorName": err_name,
-    "accessToken": token,
+    "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,
   });
@@ -259,11 +258,11 @@ pub async fn client_error(
   let _resp = post_v1("clientError", body).await;
 }
 
-pub async fn terminate(cluster_id: &str, token: &str) {
+pub async fn terminate(cluster_id: &str) {
   let body = json!({
-    "deployConfig": get_config(token).await,
+    "deployConfig": get_config().await,
     "clusterId": cluster_id,
-    "accessToken": token,
+    "accessToken": get_token(),
   });
   let sp = SpinnerBuilder::new(format!("Terminating app {} if it exists", cluster_id)).start();
   let resp = post_v1("terminate", body).await;
@@ -327,10 +326,10 @@ pub async fn upgrade(body: Value) {
   sp.close();
 }
 
-pub async fn info(token: &str) {
+pub async fn info() {
   let body = json!({
-    "deployConfig": get_config(token).await,
-    "accessToken": token,
+    "deployConfig": get_config().await,
+    "accessToken": get_token(),
   });
   let response = post_v1("info", body).await;
   let resp = match &response {
@@ -450,8 +449,8 @@ pub async fn info(token: &str) {
   };
   deploy.columns.insert(4, column);
 
-  let deploy_configs = get_deploy_config(token).await;
-  let credentials = get_credentials(token).await;
+  let deploy_configs = get_deploy_config().await;
+  let credentials = get_credentials().await;
   for deploy_name in deploy_names {
     let cloud_configs = deploy_configs.get(&deploy_name.to_string()).unwrap();
     for (i, cloud_config) in cloud_configs.iter().enumerate() {

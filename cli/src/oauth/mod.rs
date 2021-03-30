@@ -99,8 +99,8 @@ async fn generate_token() {
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {
         eprintln!("Authentication failed. Please try again. Err: {}", error);
+        // TODO: REVIEW THIS LOGIC WHEN NO TOKEN DEFINED
         client_error(
-          "",
           "AUTH_FAILED",
           Some(&format!("Authentication failed. Err: {}", error)),
           None,
