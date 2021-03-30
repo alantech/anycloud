@@ -3,6 +3,7 @@ use std::io::prelude::*;
 use std::path::Path;
 
 use hyper::Request;
+use once_cell::sync::OnceCell;
 use serde_json::{json, Value};
 use tokio::time::{sleep, Duration};
 
@@ -19,15 +20,23 @@ const CODE_BODY: &'static str = "{\
 const POLL_URL: &'static str = "https://github.com/login/oauth/access_token";
 const ERR: &'static str = "Failed to perform OAuth 2.0 authentication with GitHub";
 const TOKEN_FILE: &str = ".anycloud/.token";
+static TOKEN: OnceCell<String> = OnceCell::new();
+
+pub fn get_token() -> &'static str {
+  TOKEN.get().unwrap()
+}
 
 // Get previously generated OAuth access token or generate a new one
-pub async fn get_token() -> String {
-  let home = std::env::var("HOME").unwrap();
-  let file_name = &format!("{}/{}", home, TOKEN_FILE);
-  match read_to_string(file_name) {
-    Ok(token) => token,
-    Err(_) => generate_token().await,
-  }
+pub async fn authenticate() {
+  let token = TOKEN.get();
+  if token.is_none() {
+    let home = std::env::var("HOME").unwrap();
+    let file_name = &format!("{}/{}", home, TOKEN_FILE);
+    match read_to_string(file_name) {
+      Ok(file_token) => TOKEN.set(file_token).unwrap(),
+      Err(_) => generate_token().await,
+    };
+  };
 }
 
 pub fn clear_token() {
@@ -39,7 +48,7 @@ pub fn clear_token() {
 // Prompts the user to authenticate with Github using the Device Flow.
 // Generates the OAuth access token, stores it in a file for later use and returns it.
 // https://docs.github.com/en/developers/apps/authorizing-oauth-apps#device-flow
-async fn generate_token() -> String {
+async fn generate_token() {
   let req = Request::post(CODE_URL)
     .header("Content-Type", "application/json")
     .header("Accept", "application/json")
@@ -85,7 +94,8 @@ async fn generate_token() -> String {
       }
       let mut file = File::create(file_name).expect(ERR);
       file.write_all(token.as_bytes()).expect(ERR);
-      return token.to_string();
+      TOKEN.set(token.to_string()).unwrap();
+      return;
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {
         eprintln!("Authentication failed. Please try again. Err: {}", error);

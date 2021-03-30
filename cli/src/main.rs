@@ -7,7 +7,7 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use serde_json::json;
 
 use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
-use anycloud::oauth::get_token;
+use anycloud::oauth::{authenticate, get_token};
 
 async fn get_dockerfile_b64(token: &str, cluster_id: Option<&str>) -> String {
   let pwd = env::current_dir();
@@ -126,7 +126,7 @@ pub async fn main() {
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     );
 
-  let token = get_token().await;
+  authenticate().await;
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new", Some(matches)) => {
@@ -151,7 +151,7 @@ pub async fn main() {
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
         "osName": std::env::consts::OS,
-        "accessToken": get_token().await,
+        "accessToken": get_token(),
       });
       if let Some(env_file) = env_file {
         let env_file_b64 = get_env_file_b64(env_file.to_string(), &token, None).await;
