@@ -5,9 +5,7 @@ use std::io::BufReader;
 use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
-use chrono::Utc;
 use hyper::{Request, StatusCode};
-use log::error;
 use serde::{Deserialize, Serialize};
 use serde_json::{from_reader, from_str, json, Value};
 use spinner::SpinnerBuilder;
@@ -112,19 +110,19 @@ async fn get_credentials(token: &str) -> HashMap<String, CredentialsConfig> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    eprintln!("Cannot access credentials at {}. Error: {}", file_name, err);
+    let err_str = format!("Cannot access credentials at {}. Error: {}", file_name, err);
+    eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    error!("Cannot access credentials. Error: {}", err);
-    client_error(token, "NO_CREDENTIALS_FILE").await;
+    client_error(token, "NO_CREDENTIALS_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    eprintln!("Invalid credentials. Error: {}", err);
+    let err_str = format!("Invalid credentials. Error: {}", err);
+    eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    error!("Invalid credentials. Error: {}", err);
-    client_error(token, "INVALID_CREDENTIALS_FILE").await;
+    client_error(token, "INVALID_CREDENTIALS_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   config.unwrap()
@@ -136,22 +134,22 @@ async fn get_deploy_config(token: &str) -> HashMap<String, Vec<DeployConfig>> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    eprintln!(
+    let err_str = format!(
       "Cannot access deploy config at {}. Error: {}",
       file_name, err
     );
+    eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error(token, "NO_ANYCLOUD_FILE").await;
-    error!("Cannot access {}. Error: {}", ANYCLOUD_FILE, err);
+    client_error(token, "NO_ANYCLOUD_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    eprintln!("Invalid deploy config. Error: {}", err);
+    let err_str = format!("Invalid deploy config. Error: {}", err);
+    eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error(token, "INVALID_ANYCLOUD_FILE").await;
-    error!("Invalid deploy config. Error: {}", err);
+    client_error(token, "INVALID_ANYCLOUD_FILE", Some(&err_str), None).await;
     std::process::exit(1);
   }
   config.unwrap()
@@ -186,13 +184,12 @@ pub async fn get_config(token: &str) -> HashMap<String, Vec<Config>> {
           });
         }
         None => {
-          let err = format!(
+          let err_str = format!(
             "Credentials {} for deploy config {} not found in {}",
             &deploy_config.credentials, deploy_id, CREDENTIALS_FILE
           );
-          eprintln!("{}", err);
-          error!("{}", err);
-          client_error(token, "INVALID_CREDENTIAL_ALIAS").await;
+          eprintln!("{}", err_str);
+          client_error(token, "INVALID_CREDENTIAL_ALIAS", Some(&err_str), None).await;
           std::process::exit(1);
         }
       }
@@ -238,10 +235,10 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
 pub async fn client_error(
   token: &str,
   err_name: &str,
-  cluster_id: Option<&str>,
   message: Option<&str>,
+  cluster_id: Option<&str>,
 ) {
-  let body = json!({
+  let mut body = json!({
     "errorName": err_name,
     "accessToken": token,
     "alanVersion": format!("v{}", ALAN_VERSION),
