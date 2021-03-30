@@ -2,6 +2,8 @@ use chrono::Utc;
 use log::{Level, Metadata, Record};
 use std::env;
 
+use crate::logger::{log_from_str, CustomLogger};
+
 pub struct SimpleLogger;
 
 impl log::Log for SimpleLogger {
@@ -10,27 +12,17 @@ impl log::Log for SimpleLogger {
   }
 
   fn log(&self, record: &Record) {
-    let utc_time = Utc::now().format("%FT%T%.3fZ");
-    let env = env::var("ALAN_TECH_ENV").unwrap_or("production".to_string());
-    let cluster = record.target(); // If no target defined default to `anycloud`
+    let log: CustomLogger = log_from_str(record.args().to_string()).unwrap();
     if self.enabled(record.metadata()) {
       if record.level() == Level::Error {
         eprintln!(
           "{} | {} | {} | {} | {}",
-          utc_time,
-          record.level(),
-          env,
-          cluster,
-          record.args()
+          log.utcTime, log.level, log.env, log.cluster, log.message
         );
       } else {
         println!(
           "{} | {} | {} | {} | {}",
-          utc_time,
-          record.level(),
-          env,
-          cluster,
-          record.args()
+          log.utcTime, log.level, log.env, log.cluster, log.message
         );
       }
     }
