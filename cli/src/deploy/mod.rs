@@ -246,8 +246,6 @@ pub async fn client_error(
     "accessToken": token,
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,
-    "env": std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string()),
-    "utcTime": Utc::now().format("%FT%T%.3fZ"),
   });
   if let Some(cluster_id) = cluster_id {
     body
