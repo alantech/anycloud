@@ -1,8 +1,3 @@
-use hyper::{Request, StatusCode};
-use serde::{Deserialize, Serialize};
-use serde_json::{from_reader, from_str, json, Value};
-use spinner::SpinnerBuilder;
-
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
 use std::fs::File;
@@ -10,7 +5,12 @@ use std::io::BufReader;
 use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
+use chrono::Utc;
+use hyper::{Request, StatusCode};
 use log::error;
+use serde::{Deserialize, Serialize};
+use serde_json::{from_reader, from_str, json, Value};
+use spinner::SpinnerBuilder;
 
 use crate::http::CLIENT;
 use crate::oauth::clear_token;
@@ -235,13 +235,32 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
   };
 }
 
-pub async fn client_error(token: &str, err_name: &str) {
+pub async fn client_error(
+  token: &str,
+  err_name: &str,
+  cluster_id: Option<&str>,
+  message: Option<&str>,
+) {
   let body = json!({
     "errorName": err_name,
     "accessToken": token,
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,
+    "env": std::env::var("ALAN_TECH_ENV").unwrap_or("production".to_string()),
+    "utcTime": Utc::now().format("%FT%T%.3fZ"),
   });
+  if let Some(cluster_id) = cluster_id {
+    body
+      .as_object_mut()
+      .unwrap()
+      .insert(format!("clusterId"), json!(cluster_id.to_string()));
+  };
+  if let Some(message) = message {
+    body
+      .as_object_mut()
+      .unwrap()
+      .insert(format!("message"), json!(message.to_string()));
+  };
   let _resp = post_v1("clientError", body).await;
 }
 
