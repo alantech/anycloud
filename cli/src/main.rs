@@ -4,11 +4,9 @@ use std::process::Command;
 
 use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
-use log::{error, info};
 use serde_json::json;
 
 use anycloud::deploy::{get_config, info, new, terminate, upgrade, ALAN_VERSION};
-use anycloud::logger::{create_custom_log, log_to_str};
 use anycloud::oauth::get_token;
 
 fn get_dockerfile_b64() -> String {
@@ -175,15 +173,6 @@ pub async fn main() {
       upgrade(body).await;
     }
     ("info", _) => {
-      info!(
-        "{}",
-        log_to_str(create_custom_log(
-          "info".to_string(),
-          "".to_string(),
-          "test".to_string()
-        ))
-        .unwrap()
-      );
       info(&token).await;
     }
     // rely on AppSettings::SubcommandRequiredElseHelp
