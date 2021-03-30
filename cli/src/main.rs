@@ -6,10 +6,10 @@ use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use serde_json::json;
 
-use anycloud::deploy::{get_config, info, new, terminate, upgrade, ALAN_VERSION};
+use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::get_token;
 
-fn get_dockerfile_b64() -> String {
+async fn get_dockerfile_b64(token: &str, cluster_id: Option<&str>) -> String {
   let pwd = env::current_dir();
   match pwd {
     Ok(pwd) => {
@@ -18,13 +18,15 @@ fn get_dockerfile_b64() -> String {
       return base64::encode(dockerfile);
     }
     Err(_) => {
-      error!("Current working directory value is invalid");
+      let err_str = format!("Current working directory value is invalid");
+      eprintln!("{}", err_str);
+      client_error(&token, "INVALID_PWD", Some(&err_str), cluster_id).await;
       std::process::exit(1);
     }
   }
 }
 
-fn get_env_file_b64(env_file_path: String) -> String {
+async fn get_env_file_b64(env_file_path: String, token: &str, cluster_id: Option<&str>) -> String {
   let pwd = env::current_dir();
   match pwd {
     Ok(pwd) => {
@@ -32,19 +34,23 @@ fn get_env_file_b64(env_file_path: String) -> String {
       match env_file {
         Ok(env_file) => base64::encode(env_file),
         Err(_) => {
-          error!("No environment file in {}/{}", pwd.display(), env_file_path);
+          let err_str = format!("No environment file in {}/{}", pwd.display(), env_file_path);
+          eprintln!("{}", err_str);
+          client_error(&token, "NO_ENV_FILE", Some(&err_str), cluster_id).await;
           std::process::exit(1);
         }
       }
     }
     Err(_) => {
-      error!("Current working directory value is invalid");
+      let err_str = format!("Current working directory value is invalid");
+      eprintln!("{}", err_str);
+      client_error(&token, "INVALID_PWD", Some(&err_str), cluster_id).await;
       std::process::exit(1);
     }
   }
 }
 
-fn get_app_tar_gz_b64() -> String {
+async fn get_app_tar_gz_b64(token: &str, cluster_id: Option<&str>) -> String {
   let output = Command::new("git")
     .arg("status")
     .arg("--porcelain")
@@ -53,10 +59,12 @@ fn get_app_tar_gz_b64() -> String {
 
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
-    error!(
+    let err_str = format!(
       "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}",
       msg
     );
+    eprintln!("{}", err_str);
+    client_error(&token, "GIT_CHANGES", Some(&err_str), cluster_id).await;
     std::process::exit(1);
   }
 
@@ -70,7 +78,9 @@ fn get_app_tar_gz_b64() -> String {
     .unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
+    let err_str = format!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
+    eprintln!("{}", err_str);
+    client_error(&token, "NO_GIT", Some(&err_str), cluster_id).await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -80,7 +90,9 @@ fn get_app_tar_gz_b64() -> String {
   let output = Command::new("rm").arg("app.tar.gz").output().unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!("Somehow could not delete temporary app.tar.gz file");
+    let err_str = format!("Somehow could not delete temporary app.tar.gz file");
+    eprintln!("{}", err_str);
+    client_error(&token, "DELETE_TMP_TAR", Some(&err_str), cluster_id).await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -89,7 +101,6 @@ fn get_app_tar_gz_b64() -> String {
 
 #[tokio::main]
 pub async fn main() {
-  anycloud::logger::init().unwrap();
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
   let desc: &str = &format!("alan {}\n{}", ALAN_VERSION, env!("CARGO_PKG_DESCRIPTION"));
   let app = App::new(crate_name!())
@@ -122,27 +133,32 @@ pub async fn main() {
       let config = get_config(&token).await;
       let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
       if !config.contains_key(deploy_name) {
-        error!("Deploy name provided is not defined in anycloud.json");
+        let err_str = format!("Deploy name provided is not defined in anycloud.json");
+        eprintln!("{}", err_str);
+        client_error(&token, "NO_DEPLOY_MATCH", Some(&err_str), None).await;
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");
       let env_file = matches.value_of("env-file");
+      let dockerfile_b64 = get_dockerfile_b64(&token, None).await;
+      let app_tar_gz_b64 = get_app_tar_gz_b64(&token, None).await;
       let mut body = json!({
         "deployConfig": config,
         "deployName": deploy_name,
         "agzB64": anycloud_agz,
-        "DockerfileB64": get_dockerfile_b64(),
-        "appTarGzB64": get_app_tar_gz_b64(),
+        "DockerfileB64": dockerfile_b64,
+        "appTarGzB64": app_tar_gz_b64,
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
         "osName": std::env::consts::OS,
         "accessToken": get_token().await,
       });
       if let Some(env_file) = env_file {
-        body.as_object_mut().unwrap().insert(
-          format!("envB64"),
-          json!(get_env_file_b64(env_file.to_string())),
-        );
+        let env_file_b64 = get_env_file_b64(env_file.to_string(), &token, None).await;
+        body
+          .as_object_mut()
+          .unwrap()
+          .insert(format!("envB64"), json!(env_file_b64));
       }
       new(body).await;
     }
@@ -154,21 +170,24 @@ pub async fn main() {
       let config = get_config(&token).await;
       let cluster_id = matches.value_of("APP_ID").unwrap();
       let env_file = matches.value_of("env-file");
+      let dockerfile_b64 = get_dockerfile_b64(&token, Some(&cluster_id)).await;
+      let app_tar_gz_b64 = get_app_tar_gz_b64(&token, Some(&cluster_id)).await;
       let mut body = json!({
         "clusterId": cluster_id,
         "deployConfig": config,
         "agzB64": anycloud_agz,
-        "DockerfileB64": get_dockerfile_b64(),
-        "appTarGzB64": get_app_tar_gz_b64(),
+        "DockerfileB64": dockerfile_b64,
+        "appTarGzB64": app_tar_gz_b64,
         "alanVersion": format!("v{}", ALAN_VERSION),
         "accessToken": token,
         "osName": std::env::consts::OS,
       });
       if let Some(env_file) = env_file {
-        body.as_object_mut().unwrap().insert(
-          format!("envB64"),
-          json!(get_env_file_b64(env_file.to_string())),
-        );
+        let env_file_b64 = get_env_file_b64(env_file.to_string(), &token, Some(&cluster_id)).await;
+        body
+          .as_object_mut()
+          .unwrap()
+          .insert(format!("envB64"), json!(env_file_b64));
       }
       upgrade(body).await;
     }
