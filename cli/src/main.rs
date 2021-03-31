@@ -8,7 +8,7 @@ use log::error;
 use serde_json::json;
 
 use anycloud::deploy::{get_config, info, new, terminate, upgrade, ALAN_VERSION};
-use anycloud::oauth::get_token;
+use anycloud::oauth::{authenticate, get_token};
 
 fn get_dockerfile_b64() -> String {
   let pwd = env::current_dir();
@@ -116,11 +116,11 @@ pub async fn main() {
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     );
 
-  let token = get_token().await;
+  authenticate().await;
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new", Some(matches)) => {
-      let config = get_config(&token).await;
+      let config = get_config().await;
       let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
       if !config.contains_key(deploy_name) {
         error!("Deploy name provided is not defined in anycloud.json");
@@ -137,7 +137,7 @@ pub async fn main() {
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
         "osName": std::env::consts::OS,
-        "accessToken": get_token().await,
+        "accessToken": get_token(),
       });
       if let Some(env_file) = env_file {
         body.as_object_mut().unwrap().insert(
@@ -149,10 +149,10 @@ pub async fn main() {
     }
     ("terminate", Some(matches)) => {
       let cluster_id = matches.value_of("APP_ID").unwrap();
-      terminate(cluster_id, &token).await;
+      terminate(cluster_id).await;
     }
     ("upgrade", Some(matches)) => {
-      let config = get_config(&token).await;
+      let config = get_config().await;
       let cluster_id = matches.value_of("APP_ID").unwrap();
       let env_file = matches.value_of("env-file");
       let mut body = json!({
@@ -162,7 +162,7 @@ pub async fn main() {
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
         "alanVersion": format!("v{}", ALAN_VERSION),
-        "accessToken": token,
+        "accessToken": get_token(),
         "osName": std::env::consts::OS,
       });
       if let Some(env_file) = env_file {
@@ -174,7 +174,7 @@ pub async fn main() {
       upgrade(body).await;
     }
     ("info", _) => {
-      info(&token).await;
+      info().await;
     }
     // rely on AppSettings::SubcommandRequiredElseHelp
     _ => {}
