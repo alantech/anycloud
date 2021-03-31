@@ -23,7 +23,12 @@ const TOKEN_FILE: &str = ".anycloud/.token";
 static TOKEN: OnceCell<String> = OnceCell::new();
 
 pub fn get_token() -> &'static str {
-  TOKEN.get().unwrap()
+  let token = TOKEN.get();
+  if let Some(token) = token {
+    return token;
+  } else {
+    return "";
+  }
 }
 
 // Get previously generated OAuth access token or generate a new one
@@ -99,7 +104,6 @@ async fn generate_token() {
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {
         eprintln!("Authentication failed. Please try again. Err: {}", error);
-        // TODO: REVIEW THIS LOGIC WHEN NO TOKEN DEFINED
         client_error(
           "AUTH_FAILED",
           Some(&format!("Authentication failed. Err: {}", error)),
