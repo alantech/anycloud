@@ -134,7 +134,7 @@ pub async fn main() {
             std::process::exit(1);
           }
           config.keys().next().unwrap().to_string()
-        },
+        }
         Some(key) => key.to_string(),
       };
       if !config.contains_key(&profile) {
