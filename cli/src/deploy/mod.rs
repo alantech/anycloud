@@ -113,7 +113,7 @@ async fn get_credentials() -> HashMap<String, CredentialsConfig> {
     let err_str = format!("Cannot access credentials at {}. Error: {}", file_name, err);
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error("NO_CREDENTIALS_FILE", Some(&err_str), None).await;
+    client_error(106, Some(&err_str), None).await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
@@ -122,7 +122,7 @@ async fn get_credentials() -> HashMap<String, CredentialsConfig> {
     let err_str = format!("Invalid credentials. Error: {}", err);
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error("INVALID_CREDENTIALS_FILE", Some(&err_str), None).await;
+    client_error(107, Some(&err_str), None).await;
     std::process::exit(1);
   }
   config.unwrap()
@@ -140,7 +140,7 @@ async fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
     );
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error("NO_ANYCLOUD_FILE", Some(&err_str), None).await;
+    client_error(108, Some(&err_str), None).await;
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
@@ -149,7 +149,7 @@ async fn get_deploy_config() -> HashMap<String, Vec<DeployConfig>> {
     let err_str = format!("Invalid deploy config. Error: {}", err);
     eprintln!("{}", err_str);
     eprintln!("{}", CONFIG_SETUP);
-    client_error("INVALID_ANYCLOUD_FILE", Some(&err_str), None).await;
+    client_error(109, Some(&err_str), None).await;
     std::process::exit(1);
   }
   config.unwrap()
@@ -189,7 +189,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
             &deploy_config.credentials, deploy_id, CREDENTIALS_FILE
           );
           eprintln!("{}", err_str);
-          client_error("INVALID_CREDENTIAL_ALIAS", Some(&err_str), None).await;
+          client_error(110, Some(&err_str), None).await;
           std::process::exit(1);
         }
       }
@@ -233,12 +233,12 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
 }
 
 pub async fn client_error(
-  err_name: &str,
+  err_code: u8,
   message: Option<&str>,
   cluster_id: Option<&str>,
 ) {
   let mut body = json!({
-    "errorName": err_name,
+    "errorCode": err_code,
     "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,

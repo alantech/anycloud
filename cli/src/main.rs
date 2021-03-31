@@ -20,7 +20,7 @@ async fn get_dockerfile_b64(cluster_id: Option<&str>) -> String {
     Err(_) => {
       let err_str = format!("Current working directory value is invalid");
       eprintln!("{}", err_str);
-      client_error("INVALID_PWD", Some(&err_str), cluster_id).await;
+      client_error(100, Some(&err_str), cluster_id).await;
       std::process::exit(1);
     }
   }
@@ -36,7 +36,7 @@ async fn get_env_file_b64(env_file_path: String, cluster_id: Option<&str>) -> St
         Err(_) => {
           let err_str = format!("No environment file in {}/{}", pwd.display(), env_file_path);
           eprintln!("{}", err_str);
-          client_error("NO_ENV_FILE", Some(&err_str), cluster_id).await;
+          client_error(101, Some(&err_str), cluster_id).await;
           std::process::exit(1);
         }
       }
@@ -44,7 +44,7 @@ async fn get_env_file_b64(env_file_path: String, cluster_id: Option<&str>) -> St
     Err(_) => {
       let err_str = format!("Current working directory value is invalid");
       eprintln!("{}", err_str);
-      client_error("INVALID_PWD", Some(&err_str), cluster_id).await;
+      client_error(100, Some(&err_str), cluster_id).await;
       std::process::exit(1);
     }
   }
@@ -64,7 +64,7 @@ async fn get_app_tar_gz_b64(cluster_id: Option<&str>) -> String {
       msg
     );
     eprintln!("{}", err_str);
-    client_error("GIT_CHANGES", Some(&err_str), cluster_id).await;
+    client_error(102, Some(&err_str), cluster_id).await;
     std::process::exit(1);
   }
 
@@ -80,7 +80,7 @@ async fn get_app_tar_gz_b64(cluster_id: Option<&str>) -> String {
   if output.status.code().unwrap() != 0 {
     let err_str = format!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
     eprintln!("{}", err_str);
-    client_error("NO_GIT", Some(&err_str), cluster_id).await;
+    client_error(103, Some(&err_str), cluster_id).await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -92,7 +92,7 @@ async fn get_app_tar_gz_b64(cluster_id: Option<&str>) -> String {
   if output.status.code().unwrap() != 0 {
     let err_str = format!("Somehow could not delete temporary app.tar.gz file");
     eprintln!("{}", err_str);
-    client_error("DELETE_TMP_TAR", Some(&err_str), cluster_id).await;
+    client_error(104, Some(&err_str), cluster_id).await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -135,7 +135,7 @@ pub async fn main() {
       if !config.contains_key(deploy_name) {
         let err_str = format!("Deploy name provided is not defined in anycloud.json");
         eprintln!("{}", err_str);
-        client_error("NO_DEPLOY_MATCH", Some(&err_str), None).await;
+        client_error(105, Some(&err_str), None).await;
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");

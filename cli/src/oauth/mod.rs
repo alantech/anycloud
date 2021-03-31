@@ -105,7 +105,7 @@ async fn generate_token() {
       if error != "authorization_pending" {
         eprintln!("Authentication failed. Please try again. Err: {}", error);
         client_error(
-          "AUTH_FAILED",
+          111,
           Some(&format!("Authentication failed. Err: {}", error)),
           None,
         )
