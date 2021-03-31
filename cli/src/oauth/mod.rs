@@ -28,6 +28,8 @@ pub fn get_token() -> &'static str {
   if let Some(token) = token {
     return token;
   } else {
+    // This will happen when we are not able to authenticate the user.
+    // Empty token will be caught by deploy service.
     return "";
   }
 }
