@@ -415,17 +415,17 @@ pub async fn info() {
       &app.size,
       &app.status,
     ]);
+    if deploy_profiles.contains(&app.deployName) {
+      continue;
+    }
     for (i, profile) in app.cloudConfigs.iter().enumerate() {
-      if deploy_profiles.contains(&app.deployName) {
-        continue;
-      }
       if i == 0 {
         profile_data.push(vec![&app.deployName, &profile.region, &profile.vmType])
       } else {
         profile_data.push(vec![&"", &profile.region, &profile.vmType])
       };
-      deploy_profiles.insert(&app.deployName);
     }
+    deploy_profiles.insert(&app.deployName);
   }
 
   println!("Status of all apps deployed:\n");

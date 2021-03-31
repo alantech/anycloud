@@ -121,7 +121,7 @@ pub async fn main() {
   match matches.subcommand() {
     ("new", Some(matches)) => {
       let config = get_config().await;
-      let profile = match matches.value_of("DEPLOY_PROFILE") {
+      let profile = match matches.value_of("deploy-profile") {
         None => {
           if config.len() != 1 {
             let err = format!(
