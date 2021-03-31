@@ -7,7 +7,7 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use log::error;
 use serde_json::json;
 
-use anycloud::deploy::{get_config, info, new, terminate, upgrade, ALAN_VERSION};
+use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::{authenticate, get_token};
 
 fn get_dockerfile_b64() -> String {
@@ -98,20 +98,20 @@ pub async fn main() {
     .about(desc)
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
-      .about("Deploys your repository to a new app with one of the deploy configs from anycloud.json")
-      .arg_from_usage("<DEPLOY_NAME> 'Specifies the name of the deploy config to use'")
+      .about("Deploys your repository to a new app with a deploy profile from anycloud.json")
+      .arg_from_usage("-p --deploy-profile=[DEPLOY_PROFILE] 'Specifies the name of a deploy profile from anycloud.json. Required if there are multiple profiles'")
       .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional application identifier'")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
     )
     .subcommand(SubCommand::with_name("info")
-      .about("Displays all the apps deployed with the deploy config from anycloud.json")
+      .about("Displays all the apps deployed with the deploy profiles from anycloud.json")
     )
     .subcommand(SubCommand::with_name("terminate")
-      .about("Terminate an app with the provided id hosted in one of the deploy configs at anycloud.json")
+      .about("Terminate an app with the provided ID hosted in one of the deploy profiles from anycloud.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to terminate'")
     )
     .subcommand(SubCommand::with_name("upgrade")
-      .about("Deploys your repository to an existing app hosted in one of the deploy configs at anycloud.json")
+      .about("Deploys your repository to an existing app hosted in one of the deploy profiles from anycloud.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     );
@@ -121,8 +121,23 @@ pub async fn main() {
   match matches.subcommand() {
     ("new", Some(matches)) => {
       let config = get_config().await;
-      let deploy_name = matches.value_of("DEPLOY_NAME").unwrap();
-      if !config.contains_key(deploy_name) {
+      let profile = match matches.value_of("deploy-profile") {
+        None => {
+          if config.len() != 1 {
+            let err = format!(
+              "No deploy profile from anycloud.json specified when more than one \
+              profile exists.",
+            );
+            eprintln!("{}", err);
+            error!("{}", err);
+            client_error("INVALID_DEFAULT_ANYCLOUD_ALIAS").await;
+            std::process::exit(1);
+          }
+          config.keys().next().unwrap().to_string()
+        }
+        Some(key) => key.to_string(),
+      };
+      if !config.contains_key(&profile) {
         error!("Deploy name provided is not defined in anycloud.json");
         std::process::exit(1);
       }
@@ -130,7 +145,7 @@ pub async fn main() {
       let env_file = matches.value_of("env-file");
       let mut body = json!({
         "deployConfig": config,
-        "deployName": deploy_name,
+        "deployName": profile,
         "agzB64": anycloud_agz,
         "DockerfileB64": get_dockerfile_b64(),
         "appTarGzB64": get_app_tar_gz_b64(),
