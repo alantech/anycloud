@@ -7,7 +7,6 @@ macro_rules! error {
   (metadata: $metadata:tt, $errName:tt, $($message:tt)+) => {async{
     let value = json!($metadata);
     eprintln!($($message)+);
-    println!("Metadata: {}", value);
     client_error($errName).await;
   }}
 }
