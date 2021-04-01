@@ -33,7 +33,13 @@ async fn get_env_file_b64(env_file_path: String) -> String {
       match env_file {
         Ok(env_file) => base64::encode(env_file),
         Err(_) => {
-          error!("NO_ENV_FILE", "No environment file in {}/{}", pwd.display(), env_file_path).await;
+          error!(
+            "NO_ENV_FILE",
+            "No environment file in {}/{}",
+            pwd.display(),
+            env_file_path
+          )
+          .await;
           std::process::exit(1);
         }
       }
@@ -56,9 +62,9 @@ async fn get_app_tar_gz_b64() -> String {
   if msg.contains("M ") {
     error!(
       "GIT_CHANGES",
-      "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}",
-      msg
-    ).await;
+      "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg
+    )
+    .await;
     std::process::exit(1);
   }
 
@@ -82,7 +88,11 @@ async fn get_app_tar_gz_b64() -> String {
   let output = Command::new("rm").arg("app.tar.gz").output().unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!("DELETE_TMP_TAR", "Somehow could not delete temporary app.tar.gz file").await;
+    error!(
+      "DELETE_TMP_TAR",
+      "Somehow could not delete temporary app.tar.gz file"
+    )
+    .await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -136,7 +146,11 @@ pub async fn main() {
         Some(key) => key.to_string(),
       };
       if !config.contains_key(&profile) {
-        error!("DEPLOY_NOT_FOUND", "Deploy name provided is not defined in anycloud.json").await;
+        error!(
+          "DEPLOY_NOT_FOUND",
+          "Deploy name provided is not defined in anycloud.json"
+        )
+        .await;
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");
