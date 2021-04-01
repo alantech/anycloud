@@ -11,7 +11,6 @@ use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
 
-use crate::error;
 use crate::http::CLIENT;
 use crate::oauth::{clear_token, get_token};
 

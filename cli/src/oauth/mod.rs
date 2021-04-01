@@ -8,7 +8,6 @@ use serde_json::{json, Value};
 use tokio::time::{sleep, Duration};
 
 use crate::deploy::client_error;
-use crate::error;
 use crate::http::CLIENT;
 
 const CODE_URL: &'static str = "https://github.com/login/device/code";

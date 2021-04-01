@@ -7,8 +7,10 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use serde_json::json;
 
 use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
-use anycloud::error;
 use anycloud::oauth::{authenticate, get_token};
+
+#[macro_use]
+extern crate anycloud;
 
 async fn get_dockerfile_b64() -> String {
   let pwd = env::current_dir();
