@@ -10,7 +10,6 @@ use std::io::BufReader;
 use std::path::Path;
 
 use ascii_table::{AsciiTable, Column};
-use log::error;
 
 use crate::http::CLIENT;
 use crate::oauth::{clear_token, get_token};
@@ -113,19 +112,23 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    eprintln!("Cannot access credentials at {}. Error: {}", file_name, err);
-    eprintln!("{}", CONFIG_SETUP);
-    error!("Cannot access credentials. Error: {}", err);
-    client_error("NO_CREDENTIALS_FILE").await;
+    error!(
+      "NO_CREDENTIALS_FILE",
+      "Cannot access credentials at {}. Error: {}", file_name, err
+    )
+    .await;
+    eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    eprintln!("Invalid credentials. Error: {}", err);
-    eprintln!("{}", CONFIG_SETUP);
-    error!("Invalid credentials. Error: {}", err);
-    client_error("INVALID_CREDENTIALS_FILE").await;
+    error!(
+      "INVALID_CREDENTIALS_FILE",
+      "Invalid credentials. Error: {}", err
+    )
+    .await;
+    eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
   config.unwrap()
@@ -137,22 +140,23 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let path = Path::new(file_name);
   let file = File::open(path);
   if let Err(err) = file {
-    eprintln!(
-      "Cannot access deploy config at {}. Error: {}",
-      file_name, err
-    );
-    eprintln!("{}", CONFIG_SETUP);
-    client_error("NO_ANYCLOUD_FILE").await;
-    error!("Cannot access {}. Error: {}", ANYCLOUD_FILE, err);
+    error!(
+      "NO_ANYCLOUD_FILE",
+      "Cannot access deploy config at {}. Error: {}", file_name, err
+    )
+    .await;
+    eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    eprintln!("Invalid deploy config. Error: {}", err);
-    eprintln!("{}", CONFIG_SETUP);
-    client_error("INVALID_ANYCLOUD_FILE").await;
-    error!("Invalid deploy config. Error: {}", err);
+    error!(
+      "INVALID_ANYCLOUD_FILE",
+      "Invalid deploy config. Error: {}", err
+    )
+    .await;
+    eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
   config.unwrap()
@@ -185,9 +189,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
               credential profile exists in {}.",
               deploy_profile_name, CREDENTIALS_FILE
             );
-            eprintln!("{}", err);
-            error!("{}", err);
-            client_error("INVALID_DEFAULT_CREDENTIAL_ALIAS").await;
+            error!("INVALID_DEFAULT_CREDENTIAL_ALIAS", "{}", err).await;
             std::process::exit(1);
           }
           cred_profs.keys().next().unwrap().to_string()
@@ -208,9 +210,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
             "Credentials {} for deploy config {} not found in {}",
             cred_prof_name, deploy_profile_name, CREDENTIALS_FILE
           );
-          eprintln!("{}", err);
-          error!("{}", err);
-          client_error("INVALID_CREDENTIAL_ALIAS").await;
+          error!("INVALID_CREDENTIAL_ALIAS", "{}", err).await;
           std::process::exit(1);
         }
       }

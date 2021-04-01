@@ -4,13 +4,15 @@ use std::process::Command;
 
 use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
-use log::error;
 use serde_json::json;
 
 use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::{authenticate, get_token};
 
-fn get_dockerfile_b64() -> String {
+#[macro_use]
+extern crate anycloud;
+
+async fn get_dockerfile_b64() -> String {
   let pwd = env::current_dir();
   match pwd {
     Ok(pwd) => {
@@ -19,13 +21,13 @@ fn get_dockerfile_b64() -> String {
       return base64::encode(dockerfile);
     }
     Err(_) => {
-      error!("Current working directory value is invalid");
+      error!("INVALID_PWD", "Current working directory value is invalid").await;
       std::process::exit(1);
     }
   }
 }
 
-fn get_env_file_b64(env_file_path: String) -> String {
+async fn get_env_file_b64(env_file_path: String) -> String {
   let pwd = env::current_dir();
   match pwd {
     Ok(pwd) => {
@@ -33,19 +35,25 @@ fn get_env_file_b64(env_file_path: String) -> String {
       match env_file {
         Ok(env_file) => base64::encode(env_file),
         Err(_) => {
-          error!("No environment file in {}/{}", pwd.display(), env_file_path);
+          error!(
+            "NO_ENV_FILE",
+            "No environment file in {}/{}",
+            pwd.display(),
+            env_file_path
+          )
+          .await;
           std::process::exit(1);
         }
       }
     }
     Err(_) => {
-      error!("Current working directory value is invalid");
+      error!("INVALID_PWD", "Current working directory value is invalid").await;
       std::process::exit(1);
     }
   }
 }
 
-fn get_app_tar_gz_b64() -> String {
+async fn get_app_tar_gz_b64() -> String {
   let output = Command::new("git")
     .arg("status")
     .arg("--porcelain")
@@ -55,9 +63,10 @@ fn get_app_tar_gz_b64() -> String {
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
     error!(
-      "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}",
-      msg
-    );
+      "GIT_CHANGES",
+      "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg
+    )
+    .await;
     std::process::exit(1);
   }
 
@@ -71,7 +80,7 @@ fn get_app_tar_gz_b64() -> String {
     .unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
+    error!("NO_GIT", "Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.").await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -81,7 +90,11 @@ fn get_app_tar_gz_b64() -> String {
   let output = Command::new("rm").arg("app.tar.gz").output().unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!("Somehow could not delete temporary app.tar.gz file");
+    error!(
+      "DELETE_TMP_TAR",
+      "Somehow could not delete temporary app.tar.gz file"
+    )
+    .await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -90,7 +103,6 @@ fn get_app_tar_gz_b64() -> String {
 
 #[tokio::main]
 pub async fn main() {
-  anycloud::logger::init().unwrap();
   let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
   let desc: &str = &format!("alan {}\n{}", ALAN_VERSION, env!("CARGO_PKG_DESCRIPTION"));
   let app = App::new(crate_name!())
@@ -128,9 +140,7 @@ pub async fn main() {
               "No deploy profile from anycloud.json specified when more than one \
               profile exists.",
             );
-            eprintln!("{}", err);
-            error!("{}", err);
-            client_error("INVALID_DEFAULT_ANYCLOUD_ALIAS").await;
+            error!("INVALID_DEFAULT_ANYCLOUD_ALIAS", "{}", err).await;
             std::process::exit(1);
           }
           config.keys().next().unwrap().to_string()
@@ -138,7 +148,11 @@ pub async fn main() {
         Some(key) => key.to_string(),
       };
       if !config.contains_key(&profile) {
-        error!("Deploy name provided is not defined in anycloud.json");
+        error!(
+          "DEPLOY_NOT_FOUND",
+          "Deploy name provided is not defined in anycloud.json"
+        )
+        .await;
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");
@@ -147,8 +161,8 @@ pub async fn main() {
         "deployConfig": config,
         "deployName": profile,
         "agzB64": anycloud_agz,
-        "DockerfileB64": get_dockerfile_b64(),
-        "appTarGzB64": get_app_tar_gz_b64(),
+        "DockerfileB64": get_dockerfile_b64().await,
+        "appTarGzB64": get_app_tar_gz_b64().await,
         "appId": app_id,
         "alanVersion": format!("v{}", ALAN_VERSION),
         "osName": std::env::consts::OS,
@@ -157,7 +171,7 @@ pub async fn main() {
       if let Some(env_file) = env_file {
         body.as_object_mut().unwrap().insert(
           format!("envB64"),
-          json!(get_env_file_b64(env_file.to_string())),
+          json!(get_env_file_b64(env_file.to_string()).await),
         );
       }
       new(body).await;
@@ -174,8 +188,8 @@ pub async fn main() {
         "clusterId": cluster_id,
         "deployConfig": config,
         "agzB64": anycloud_agz,
-        "DockerfileB64": get_dockerfile_b64(),
-        "appTarGzB64": get_app_tar_gz_b64(),
+        "DockerfileB64": get_dockerfile_b64().await,
+        "appTarGzB64": get_app_tar_gz_b64().await,
         "alanVersion": format!("v{}", ALAN_VERSION),
         "accessToken": get_token(),
         "osName": std::env::consts::OS,
@@ -183,7 +197,7 @@ pub async fn main() {
       if let Some(env_file) = env_file {
         body.as_object_mut().unwrap().insert(
           format!("envB64"),
-          json!(get_env_file_b64(env_file.to_string())),
+          json!(get_env_file_b64(env_file.to_string()).await),
         );
       }
       upgrade(body).await;
