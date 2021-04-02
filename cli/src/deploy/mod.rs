@@ -253,12 +253,13 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
   };
 }
 
-pub async fn client_error(err_name: &str) {
+pub async fn client_error(err_name: &str, message: &str) {
   let body = json!({
     "errorName": err_name,
     "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,
+    "message": message,
   });
   let _resp = post_v1("clientError", body).await;
 }
@@ -292,6 +293,7 @@ pub async fn terminate(cluster_id: &str) {
 }
 
 pub async fn new(body: Value) {
+  error!("TEST", "test error").await;
   let sp = SpinnerBuilder::new(format!("Creating new app")).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
