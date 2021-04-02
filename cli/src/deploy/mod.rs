@@ -114,7 +114,7 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let file = File::open(path);
   if let Err(err) = file {
     error!(
-      "NO_CREDENTIALS_FILE",
+      107,
       "Cannot access credentials at {}. Error: {}", file_name, err
     )
     .await;
@@ -124,11 +124,7 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    error!(
-      "INVALID_CREDENTIALS_FILE",
-      "Invalid credentials. Error: {}", err
-    )
-    .await;
+    error!(108, "Invalid credentials. Error: {}", err).await;
     eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
@@ -142,7 +138,7 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let file = File::open(path);
   if let Err(err) = file {
     error!(
-      "NO_ANYCLOUD_FILE",
+      109,
       "Cannot access deploy config at {}. Error: {}", file_name, err
     )
     .await;
@@ -152,11 +148,7 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    error!(
-      "INVALID_ANYCLOUD_FILE",
-      "Invalid deploy config. Error: {}", err
-    )
-    .await;
+    error!(110, "Invalid deploy config. Error: {}", err).await;
     eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
@@ -190,7 +182,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
               credential profile exists in {}.",
               deploy_profile_name, CREDENTIALS_FILE
             );
-            error!("INVALID_DEFAULT_CREDENTIAL_ALIAS", "{}", err).await;
+            error!(111, "{}", err).await;
             std::process::exit(1);
           }
           cred_profs.keys().next().unwrap().to_string()
@@ -211,7 +203,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
             "Credentials {} for deploy config {} not found in {}",
             cred_prof_name, deploy_profile_name, CREDENTIALS_FILE
           );
-          error!("INVALID_CREDENTIAL_ALIAS", "{}", err).await;
+          error!(112, "{}", err).await;
           std::process::exit(1);
         }
       }
@@ -254,9 +246,9 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
   };
 }
 
-pub async fn client_error(err_name: &str, message: &str) {
+pub async fn client_error(err_code: u8, message: &str) {
   let mut body = json!({
-    "errorName": err_name,
+    "errorName": err_code,
     "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,

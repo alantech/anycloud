@@ -22,7 +22,7 @@ async fn get_dockerfile_b64() -> String {
       return base64::encode(dockerfile);
     }
     Err(_) => {
-      error!("INVALID_PWD", "Current working directory value is invalid").await;
+      error!(100, "Current working directory value is invalid").await;
       std::process::exit(1);
     }
   }
@@ -37,7 +37,7 @@ async fn get_env_file_b64(env_file_path: String) -> String {
         Ok(env_file) => base64::encode(env_file),
         Err(_) => {
           error!(
-            "NO_ENV_FILE",
+            101,
             "No environment file in {}/{}",
             pwd.display(),
             env_file_path
@@ -48,7 +48,7 @@ async fn get_env_file_b64(env_file_path: String) -> String {
       }
     }
     Err(_) => {
-      error!("INVALID_PWD", "Current working directory value is invalid").await;
+      error!(100, "Current working directory value is invalid").await;
       std::process::exit(1);
     }
   }
@@ -64,7 +64,7 @@ async fn get_app_tar_gz_b64() -> String {
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
     error!(
-      "GIT_CHANGES",
+      102,
       "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg
     )
     .await;
@@ -81,7 +81,7 @@ async fn get_app_tar_gz_b64() -> String {
     .unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!("NO_GIT", "Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.").await;
+    error!(103, "Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.").await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -91,11 +91,7 @@ async fn get_app_tar_gz_b64() -> String {
   let output = Command::new("rm").arg("app.tar.gz").output().unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!(
-      "DELETE_TMP_TAR",
-      "Somehow could not delete temporary app.tar.gz file"
-    )
-    .await;
+    error!(104, "Somehow could not delete temporary app.tar.gz file").await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -141,7 +137,7 @@ pub async fn main() {
               "No deploy profile from anycloud.json specified when more than one \
               profile exists.",
             );
-            error!("INVALID_DEFAULT_ANYCLOUD_ALIAS", "{}", err).await;
+            error!(105, "{}", err).await;
             std::process::exit(1);
           }
           config.keys().next().unwrap().to_string()
@@ -149,11 +145,7 @@ pub async fn main() {
         Some(key) => key.to_string(),
       };
       if !config.contains_key(&profile) {
-        error!(
-          "DEPLOY_NOT_FOUND",
-          "Deploy name provided is not defined in anycloud.json"
-        )
-        .await;
+        error!(106, "Deploy name provided is not defined in anycloud.json").await;
         std::process::exit(1);
       }
       let app_id = matches.value_of("app-id");

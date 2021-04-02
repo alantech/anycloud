@@ -107,7 +107,7 @@ async fn generate_token() {
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {
         error!(
-          "AUTH_FAILED",
+          113,
           "Authentication failed. Please try again. Err: {}", error
         )
         .await;

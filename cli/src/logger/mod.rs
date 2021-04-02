@@ -1,12 +1,12 @@
 #[macro_export]
 macro_rules! error {
-  ($errName:tt, $($message:tt)+) => {async{
+  ($errCode:tt, $($message:tt)+) => {async{
       eprintln!($($message)+);
-      client_error($errName, &format!($($message)+)).await;
+      client_error($errCode, &format!($($message)+)).await;
   }};
-  (metadata: $metadata:tt, $errName:tt, $($message:tt)+) => {async{
+  (metadata: $metadata:tt, $errCode:tt, $($message:tt)+) => {async{
     let value = json!($metadata);
     eprintln!($($message)+);
-    client_error($errName, &format!($($message)+)).await;
+    client_error($errCode, &format!($($message)+)).await;
   }}
 }
