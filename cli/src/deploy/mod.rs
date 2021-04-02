@@ -300,7 +300,6 @@ pub async fn terminate(cluster_id: &str) {
 }
 
 pub async fn new(body: Value) {
-  error!("TEST", "test error").await;
   let sp = SpinnerBuilder::new(format!("Creating new app")).start();
   let resp = post_v1("new", body).await;
   let res = match resp {
