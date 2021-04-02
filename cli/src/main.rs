@@ -6,9 +6,9 @@ use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use serde_json::json;
 
-use anycloud::CLUSTER_ID;
 use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::{authenticate, get_token};
+use anycloud::CLUSTER_ID;
 
 #[macro_use]
 extern crate anycloud;

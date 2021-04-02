@@ -263,10 +263,10 @@ pub async fn client_error(err_name: &str, message: &str) {
     "message": message,
   });
   if let Some(cluster_id) = CLUSTER_ID.get() {
-    body.as_object_mut().unwrap().insert(
-      format!("clusterId"),
-      json!(cluster_id),
-    );
+    body
+      .as_object_mut()
+      .unwrap()
+      .insert(format!("clusterId"), json!(cluster_id));
   }
   let _resp = post_v1("clientError", body).await;
 }
