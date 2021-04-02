@@ -13,6 +13,7 @@ use ascii_table::{AsciiTable, Column};
 
 use crate::http::CLIENT;
 use crate::oauth::{clear_token, get_token};
+use crate::CLUSTER_ID;
 
 pub const ALAN_VERSION: &'static str = env!("ALAN_VERSION");
 const REQUEST_TIMEOUT: &str =
@@ -254,13 +255,19 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
 }
 
 pub async fn client_error(err_name: &str, message: &str) {
-  let body = json!({
+  let mut body = json!({
     "errorName": err_name,
     "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,
     "message": message,
   });
+  if let Some(cluster_id) = CLUSTER_ID.get() {
+    body.as_object_mut().unwrap().insert(
+      format!("clusterId"),
+      json!(cluster_id),
+    );
+  }
   let _resp = post_v1("clientError", body).await;
 }
 
