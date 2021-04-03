@@ -6,38 +6,34 @@
 
 2) Create a service account key for your newly service account as described [here](https://cloud.google.com/iam/docs/creating-managing-service-account-keys) and export it as a JSON file.
 
-3) Take a look at the exported JSON file. Add a new credential by taking the `privateKey`, `clientEmail`and `projectId`from step 2 and adding a new entry to your `~/.anycloud/credentials.json` file like this:
+3) Take a look at the exported JSON file. Add a new `Credential` by taking the `privateKey`, `clientEmail` and `projectId` from step 2. You will need to pick a name or alias for the `Credential`. The initial value will be `gcp`. In this example, we will call it `mystartup-gcp`.
 
-   ```javascript
-   {
-     "piedpiper-gcp": {
-       "cloudProvider": "GCP",
-       "credentials": {
-         "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
-         "clientEmail": "#########-compute@developer.gserviceaccount.com",
-         "projectId": "my-gcp-project"
-       }
-     }
-     ...
-   }
-   ```
+```bash
+$ anycloud credential add
+Pick cloud provider for the new credential:
+  AWS
+> GCP
+  Azure
+Credential Name: mystartup-gcp
+GCP Project ID: my-gcp-project
+GCP Client Email: *******-compute@developer.gserviceaccount.com
+GCP Private Key: -----BEGIN PRIVATE KEY-----\*****\n-----END PRIVATE KEY-----\n
+Successfully created "mystartup-gcp" credential
+```
 
 ## Configure your project
 
-Define a new deployment configuration in the `anycloud.json` project you want to deploy to GCP like this:
+Define a new `Deploy Config` in the `anycloud.json` project you want to deploy to GCP using the AnyCloud CLI:
 
-```javascript
-{
-  "staging": [{
-    "credentials": "piedpiper-gcp",
-    "region": "us-west1-c",
-    "vmType": "e2-medium"
-  }],
-  ...
-}
 ```
-
-We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`
-
+$ anycloud config add
+Name for new Deploy Config: staging
+Pick Credential to use:
+> mystartup-gcp
+Region name: us-west1-c
+Virtual Machine Type: e2-medium
+Do you want to add another region to this Deploy Config? n
+Successfully created "staging" Deploy Config
+```
 
 

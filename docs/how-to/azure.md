@@ -10,36 +10,33 @@
 
 4) To be able to use Anycloud with Azure you will need to manage your subscription resource provider registration as described [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal). You will need to register: `Microsoft.Compute`, `Microsoft.Network`, `Microsoft.Storage` and `Microsoft.Security`.
 
-5) Add a new [credential]() by taking the `privateKey`, `clientEmail`and `projectId`from step 2 and adding a new entry to your `~/.anycloud/credentials.json` file like this:
+5) Add a new `Credential` by taking the values from the previous steps. You will need to pick a name or alias for the `Credential`. The initial value will be `azure`. In this example, we will call it `mystartup-azure`.
 
-```javascript
-{
-  "mystartup-azure": {
-    "cloudProvider": "Azure",
-    "credentials": {
-      "applicationId": "########-####-####-####-############",
-      "secret": "##################################",
-      "subscriptionId": "########-####-####-####-############",
-      "directoryId": "########-####-####-####-############"
-    }
-  }
-  ...
-}
+```
+$ anycloud credential add
+Pick cloud provider for the new Credential:
+  AWS
+  GCP
+> Azure
+Credential Name: mystartup-azure
+Azure Application ID: ********-****-****-****-************
+Azure Directory ID: ********-****-****-****-************
+Azure Subscription ID: ********-****-****-****-************
+Azure Secret: **********************************
+Successfully created "mystartup-gcp" Credential
 ```
 
 ## **Configure your project**
 
-Define a new deployment configuration in the `anycloud.json` project you want to deploy to Azure like this:
+Define a new `Deploy Config` in the `anycloud.json` project you want to deploy to Azure using the AnyCloud CLI:
 
-```javascript
-{
-  "staging": [{
-    "credentials": "mystartup-azure",
-    "region": "westus2",
-    "vmType": "Standard_B1ls"
-  }],
-  ...
-}
 ```
-
-We are referencing the previously defined credentials so make sure that the `credentials` value matches the key in `~/.anycloud/credentials.json`
+$ anycloud config add
+Name for new Deploy Config: staging
+Pick Credential to use:
+> mystartup-azure
+Region name: westus2
+Virtual Machine Type: Standard_B1ls
+Do you want to add another region to this Deploy Config? n
+Successfully created "staging" Deploy Config
+```

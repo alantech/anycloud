@@ -6,7 +6,11 @@ use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use serde_json::json;
 
-use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
+use anycloud::deploy::{
+  add_cred, add_deploy_config, client_error, edit_cred, edit_deploy_config, get_config, info,
+  list_creds, list_deploy_configs, new, remove_cred, remove_deploy_config, terminate, upgrade,
+  ALAN_VERSION,
+};
 use anycloud::logger::ErrorType;
 use anycloud::oauth::{authenticate, get_token};
 use anycloud::CLUSTER_ID;
@@ -136,6 +140,38 @@ pub async fn main() {
       .about("Deploys your repository to an existing app hosted in one of the deploy profiles from anycloud.json")
       .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
+    )
+    .subcommand(SubCommand::with_name("config")
+      .about("Manage Deploy Configs used by apps from the anycloud.json in the current directory")
+      .setting(AppSettings::SubcommandRequiredElseHelp)
+      .subcommand(SubCommand::with_name("add")
+        .about("Add a new Deploy Config to the anycloud.json in the current directory")
+      )
+      .subcommand(SubCommand::with_name("list")
+        .about("List all the Deploy Configs from the anycloud.json in the current directory")
+      )
+      .subcommand(SubCommand::with_name("edit")
+        .about("Edit an existing Deploy Config from the anycloud.json in the current directory")
+      )
+      .subcommand(SubCommand::with_name("remove")
+        .about("Remove an existing Deploy Config from the anycloud.json in the current directory")
+      )
+    )
+    .subcommand(SubCommand::with_name("credential")
+      .about("Manage all Credentials used by Deploy Configs from the credentials file at ~/.anycloud/credentials.json")
+      .setting(AppSettings::SubcommandRequiredElseHelp)
+      .subcommand(SubCommand::with_name("add")
+        .about("Add a new Credential")
+      )
+      .subcommand(SubCommand::with_name("list")
+        .about("List all the available Credentials")
+      )
+      .subcommand(SubCommand::with_name("edit")
+        .about("Edit an existing Credential")
+      )
+      .subcommand(SubCommand::with_name("remove")
+        .about("Remove an existing Credential")
+      )
     );
 
   authenticate().await;
@@ -216,6 +252,26 @@ pub async fn main() {
     }
     ("info", _) => {
       info().await;
+    }
+    ("credential", Some(sub_matches)) => {
+      match sub_matches.subcommand() {
+        ("add", _) => add_cred().await,
+        ("edit", _) => edit_cred().await,
+        ("list", _) => list_creds().await,
+        ("remove", _) => remove_cred().await,
+        // rely on AppSettings::SubcommandRequiredElseHelp
+        _ => {}
+      }
+    }
+    ("config", Some(sub_matches)) => {
+      match sub_matches.subcommand() {
+        ("add", _) => add_deploy_config().await,
+        ("list", _) => list_deploy_configs().await,
+        ("edit", _) => edit_deploy_config().await,
+        ("remove", _) => remove_deploy_config().await,
+        // rely on AppSettings::SubcommandRequiredElseHelp
+        _ => {}
+      }
     }
     // rely on AppSettings::SubcommandRequiredElseHelp
     _ => {}

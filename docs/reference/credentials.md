@@ -1,55 +1,54 @@
 # Credentials
 
-AnyCloud deployments expect the cloud credentials to be configured using a local file that is not committed to any repository and is located at `~/.anycloud/credentials.json`. Each deployment will be keyed by a name and will provide the cloud provider configuration via two fields: `credentials` and `cloudProvider`. Possible values for `cloudProvider` are `AWS`, `GCP` and `Azure`. `credentials` will have a different schema depending on which cloud provider it is.
+AnyCloud supports managing multiple cloud `Credentials` via the `anycloud credentials` CLI command. The `Credentials` are stored in a local file that is not committed to any repository located at `~/.anycloud/credentials.json`. AnyCloud supports `Credentials` for AWS, GCP and Azure. Each `Credential` has a name, or alias, to refer to it within the `Deploy Configs`. This allows you to, for example, create credentials for your personal AWS and GCP accounts as well as for a company's AWS account and use each of them to create separate `Deploy Configs` for different `Apps` or create a multi region/cloud `Deploy Config` for the same `App`.
 
 ## AWS
 
-```javascript
-{
-  "piedpiper-aws": {
-    "cloudProvider": "AWS",
-    "credentials": {
-      "accessKeyId": "#####################",
-      "secretAccessKey": "###################"
-    }
-  }
-}
-```
+An AWS Credential consists of an `accessKeyId` and `secretAccessKey` from an IAM user with an [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home*/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess) policy attached.
 
-The top-level key is the alias you provide for referring to these credentials. For AWS the `cloudProvider` value is `AWS`, and in the credentials the `accessKeyId` and `secretAccessKey` come from an IAM user with an [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy attached.
+```
+$ anycloud credential add
+Pick cloud provider for the new Credential:
+> AWS
+  GCP
+  Azure
+Name for new Credential: mystartup-aws
+AWS Access Key ID: ******************
+AWS Secret Access Key: ******************
+Successfully created "mystartup-aws" Credential
+```
 
 ## GCP
 
-```javascript
-{
-  "piedpiper-gcp": {
-    "cloudProvider": "GCP",
-    "credentials": {
-      "privateKey": "-----BEGIN PRIVATE KEY-----\...\n-----END PRIVATE KEY-----\n",
-      "clientEmail": "#########-compute@developer.gserviceaccount.com",
-      "projectId": "my-gcp-project"
-    }
-  }
-}
+A GCP Credential consists of an `privateKey` and `clientEmail` that come from a service account with the [`Compute Engine Admin`](https://cloud.google.com/compute/docs/access/iam*compute.admin) role and the `projectId` in which the service account is contained.
+
 ```
-
-The top-level key is the alias you provide for referring to these credentials. For GCP the `cloudProvider` value is `GCP`, and in the credentials the `projectId` belongs to the GCP project that the service account is under. The`privateKey` and `clientEmail` come from a service account with the [`Compute Engine Admin`](https://cloud.google.com/compute/docs/access/iam#compute.admin) role.
-
+$ anycloud credential add
+Pick cloud provider for the new Credential:
+  AWS
+> GCP
+  Azure
+Credential Name: mystartup-gcp
+GCP Project ID: my-gcp-project
+GCP Client Email: *******-compute@developer.gserviceaccount.com
+GCP Private Key: -----BEGIN PRIVATE KEY-----\*****\n-----END PRIVATE KEY-----\n
+Successfully created "mystartup-gcp" Credential
+```
 
 ## Azure
 
-The top-level key is the alias you provide for referring to these credentials. For Azure the `cloudProvider` value is `Azure`. In the credentials the `directoryId` belongs to the Azure Active Directory, the `applicationId` and `secret` belong to the application and service principal under that application, and the `subscriptionId` belongs to the billing subscription.
+An Azure Credential consists of the `directoryId` that belongs to the [Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-whatis), the `applicationId` and `secret` of the [application and service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals), and the `subscriptionId` of the [billing subscription](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-subscriptions-associated-directory).
 
-```javascript
-{
-  "piedpiper-azure": {
-    "cloudProvider": "Azure",
-    "credentials": {
-      "applicationId": "########-####-####-####-############",
-      "secret": "##################################",
-      "subscriptionId": "########-####-####-####-############",
-      "directoryId": "########-####-####-####-############"
-    }
-  }
-}
+```
+$ anycloud credential add
+Pick cloud provider for the new Credential:
+  AWS
+  GCP
+> Azure
+Credential Name: mystartup-azure
+Azure Application ID: ********-****-****-****-************
+Azure Directory ID: ********-****-****-****-************
+Azure Subscription ID: ********-****-****-****-************
+Azure Secret: **********************************
+Successfully created "mystartup-gcp" Credential
 ```
