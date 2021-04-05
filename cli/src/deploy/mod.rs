@@ -444,10 +444,10 @@ pub async fn add_deploy_config() {
     .interact_text()
     .unwrap();
   let mut cloud_configs = Vec::new();
-  let options = creds.keys().cloned().collect::<Vec<String>>();
-  if options.len() == 0 {
+  if creds.len() == 0 {
     prompt_new_cred(false).await
   }
+  let options = creds.keys().cloned().collect::<Vec<String>>();
   loop {
     let selection = Select::new()
       .items(&options)
@@ -715,7 +715,7 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
 
 pub async fn client_error(err_code: ErrorType, message: &str) {
   let mut body = json!({
-    "errorCode": err_code as u8,
+    "errorCode": err_code as u64,
     "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,

@@ -1,4 +1,4 @@
-#[repr(u8)]
+#[repr(u64)]
 pub enum ErrorType {
   InvalidPwd = 100,
   NoEnvFile = 101,
