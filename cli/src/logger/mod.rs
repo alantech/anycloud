@@ -1,5 +1,5 @@
 #[repr(u8)]
-pub enum ErrorKind {
+pub enum ErrorType {
   InvalidPwd = 100,
   NoEnvFile = 101,
   GitChanges = 102,

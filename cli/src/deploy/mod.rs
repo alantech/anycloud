@@ -12,7 +12,7 @@ use std::path::Path;
 use ascii_table::{AsciiTable, Column};
 
 use crate::http::CLIENT;
-use crate::logger::ErrorKind;
+use crate::logger::ErrorType;
 use crate::oauth::{clear_token, get_token};
 use crate::CLUSTER_ID;
 
@@ -115,7 +115,7 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let file = File::open(path);
   if let Err(err) = file {
     error!(
-      ErrorKind::NoCredentialsFile as u8,
+      ErrorType::NoCredentialsFile,
       "Cannot access credentials at {}. Error: {}", file_name, err
     )
     .await;
@@ -126,7 +126,7 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let config = from_reader(reader);
   if let Err(err) = config {
     error!(
-      ErrorKind::InvalidCredentialsFile as u8,
+      ErrorType::InvalidCredentialsFile,
       "Invalid credentials. Error: {}", err
     )
     .await;
@@ -143,7 +143,7 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let file = File::open(path);
   if let Err(err) = file {
     error!(
-      ErrorKind::NoAnycloudFile as u8,
+      ErrorType::NoAnycloudFile,
       "Cannot access deploy config at {}. Error: {}", file_name, err
     )
     .await;
@@ -154,7 +154,7 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let config = from_reader(reader);
   if let Err(err) = config {
     error!(
-      ErrorKind::InvalidAnycloudFile as u8,
+      ErrorType::InvalidAnycloudFile,
       "Invalid deploy config. Error: {}", err
     )
     .await;
@@ -191,7 +191,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
               credential profile exists in {}.",
               deploy_profile_name, CREDENTIALS_FILE
             );
-            error!(ErrorKind::InvalidDefaultCredentialAlias as u8, "{}", err).await;
+            error!(ErrorType::InvalidDefaultCredentialAlias, "{}", err).await;
             std::process::exit(1);
           }
           cred_profs.keys().next().unwrap().to_string()
@@ -212,7 +212,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
             "Credentials {} for deploy config {} not found in {}",
             cred_prof_name, deploy_profile_name, CREDENTIALS_FILE
           );
-          error!(ErrorKind::InvalidCredentialAlias as u8, "{}", err).await;
+          error!(ErrorType::InvalidCredentialAlias, "{}", err).await;
           std::process::exit(1);
         }
       }
@@ -255,9 +255,9 @@ pub async fn post_v1(endpoint: &str, body: Value) -> Result<String, PostV1Error>
   };
 }
 
-pub async fn client_error(err_code: u8, message: &str) {
+pub async fn client_error(err_code: ErrorType, message: &str) {
   let mut body = json!({
-    "errorCode": err_code,
+    "errorCode": err_code as u8,
     "accessToken": get_token(),
     "alanVersion": format!("v{}", ALAN_VERSION),
     "osName": std::env::consts::OS,

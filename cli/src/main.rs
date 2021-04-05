@@ -7,7 +7,7 @@ use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 use serde_json::json;
 
 use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
-use anycloud::logger::ErrorKind;
+use anycloud::logger::ErrorType;
 use anycloud::oauth::{authenticate, get_token};
 use anycloud::CLUSTER_ID;
 
@@ -24,7 +24,7 @@ async fn get_dockerfile_b64() -> String {
     }
     Err(_) => {
       error!(
-        ErrorKind::InvalidPwd as u8,
+        ErrorType::InvalidPwd,
         "Current working directory value is invalid"
       )
       .await;
@@ -42,7 +42,7 @@ async fn get_env_file_b64(env_file_path: String) -> String {
         Ok(env_file) => base64::encode(env_file),
         Err(_) => {
           error!(
-            ErrorKind::NoEnvFile as u8,
+            ErrorType::NoEnvFile,
             "No environment file in {}/{}",
             pwd.display(),
             env_file_path
@@ -54,7 +54,7 @@ async fn get_env_file_b64(env_file_path: String) -> String {
     }
     Err(_) => {
       error!(
-        ErrorKind::InvalidPwd as u8,
+        ErrorType::InvalidPwd,
         "Current working directory value is invalid"
       )
       .await;
@@ -73,7 +73,7 @@ async fn get_app_tar_gz_b64() -> String {
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
     error!(
-      ErrorKind::GitChanges as u8,
+      ErrorType::GitChanges,
       "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg
     )
     .await;
@@ -90,7 +90,7 @@ async fn get_app_tar_gz_b64() -> String {
     .unwrap();
 
   if output.status.code().unwrap() != 0 {
-    error!(ErrorKind::NoGit as u8, "Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.").await;
+    error!(ErrorType::NoGit, "Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.").await;
     std::process::exit(output.status.code().unwrap());
   }
 
@@ -101,7 +101,7 @@ async fn get_app_tar_gz_b64() -> String {
 
   if output.status.code().unwrap() != 0 {
     error!(
-      ErrorKind::DeleteTmpAppTar as u8,
+      ErrorType::DeleteTmpAppTar,
       "Somehow could not delete temporary app.tar.gz file"
     )
     .await;
@@ -150,7 +150,7 @@ pub async fn main() {
               "No deploy profile from anycloud.json specified when more than one \
               profile exists.",
             );
-            error!(ErrorKind::InvalidDefaultAnycloudAlias as u8, "{}", err).await;
+            error!(ErrorType::InvalidDefaultAnycloudAlias, "{}", err).await;
             std::process::exit(1);
           }
           config.keys().next().unwrap().to_string()
@@ -159,7 +159,7 @@ pub async fn main() {
       };
       if !config.contains_key(&profile) {
         error!(
-          ErrorKind::DeployNotFound as u8,
+          ErrorType::DeployNotFound,
           "Deploy name provided is not defined in anycloud.json"
         )
         .await;
