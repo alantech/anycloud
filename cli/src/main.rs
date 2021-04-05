@@ -8,6 +8,7 @@ use serde_json::json;
 
 use anycloud::deploy::{client_error, get_config, info, new, terminate, upgrade, ALAN_VERSION};
 use anycloud::oauth::{authenticate, get_token};
+use anycloud::CLUSTER_ID;
 
 #[macro_use]
 extern crate anycloud;
@@ -178,11 +179,13 @@ pub async fn main() {
     }
     ("terminate", Some(matches)) => {
       let cluster_id = matches.value_of("APP_ID").unwrap();
+      CLUSTER_ID.set(String::from(cluster_id)).unwrap();
       terminate(cluster_id).await;
     }
     ("upgrade", Some(matches)) => {
       let config = get_config().await;
       let cluster_id = matches.value_of("APP_ID").unwrap();
+      CLUSTER_ID.set(String::from(cluster_id)).unwrap();
       let env_file = matches.value_of("env-file");
       let mut body = json!({
         "clusterId": cluster_id,
