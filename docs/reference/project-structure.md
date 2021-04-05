@@ -38,8 +38,8 @@ Deployment configurations:
 ┌────────────┬─────────────────┬───────────┬───────────┐
 │ Name       │ Credential Name │ Region    │ VM Type   │
 ├────────────┼─────────────────┼───────────┼───────────┤
-│ production │ azure-alantech  │ us-west-1 │ t2.xlarge │
-│ staging    │ azure-alantech  │ us-west-1 │ t2.medium │
+│ production │ mystartup-aws   │ us-west-1 │ t2.xlarge │
+│ staging    │ mystartup-aws   │ us-west-1 │ t2.medium │
 └────────────┴─────────────────┴───────────┴───────────┘
 ```
 

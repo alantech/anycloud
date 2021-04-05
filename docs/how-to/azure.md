@@ -12,7 +12,7 @@
 
 5) Add a new `Credential` by taking the values from the previous steps. You will need to pick a name or alias for the `Credential`. The initial value will be `azure`. In this example, we will call it `mystartup-azure`.
 
-```
+```bash
 $ anycloud credential add
 Pick cloud provider for the new Credential:
   AWS
@@ -30,7 +30,7 @@ Successfully created "mystartup-gcp" Credential
 
 Define a new `Deploy Config` in the `anycloud.json` project you want to deploy to Azure using the AnyCloud CLI:
 
-```
+```bash
 $ anycloud config add
 Name for new Deploy Config: staging
 Pick Credential to use:
