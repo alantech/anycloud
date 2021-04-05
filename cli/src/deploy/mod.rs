@@ -29,14 +29,14 @@ const UNAUTHORIZED_OPERATION: &str =
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct AWSCredentials {
+pub struct AWSCredential {
   accessKeyId: String,
   secretAccessKey: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct GCPCredentials {
+pub struct GCPCredential {
   privateKey: String,
   clientEmail: String,
   projectId: String,
@@ -44,7 +44,7 @@ pub struct GCPCredentials {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct AzureCredentials {
+pub struct AzureCredential {
   applicationId: String,
   secret: String,
   subscriptionId: String,
@@ -53,23 +53,23 @@ pub struct AzureCredentials {
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 #[serde(untagged)]
-pub enum Credentials {
-  GCP(GCPCredentials),
-  AWS(AWSCredentials),
-  Azure(AzureCredentials),
+pub enum CloudCredential {
+  GCP(GCPCredential),
+  AWS(AWSCredential),
+  Azure(AzureCredential),
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-pub struct CredentialsProfile {
-  credentials: Credentials,
+pub struct Credential {
+  credential: CloudCredential,
   cloudProvider: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-pub struct DeployProfile {
-  credentialProfile: Option<String>,
+pub struct DeployConfig {
+  credentialName: String,
   region: String,
   vmType: String,
 }
@@ -77,7 +77,7 @@ pub struct DeployProfile {
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Config {
-  credentials: Credentials,
+  credential: CloudCredential,
   region: String,
   cloudProvider: String,
   vmType: String,
@@ -142,8 +142,8 @@ pub async fn add_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        CredentialsProfile {
-          credentials: Credentials::AWS(AWSCredentials {
+        Credential {
+          credential: CloudCredential::AWS(AWSCredential {
             accessKeyId: access_key,
             secretAccessKey: secret,
           }),
@@ -166,8 +166,8 @@ pub async fn add_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        CredentialsProfile {
-          credentials: Credentials::GCP(GCPCredentials {
+        Credential {
+          credential: CloudCredential::GCP(GCPCredential {
             privateKey: private_key,
             clientEmail: client_email,
             projectId: project_id,
@@ -195,8 +195,8 @@ pub async fn add_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        CredentialsProfile {
-          credentials: Credentials::Azure(AzureCredentials {
+        Credential {
+          credential: CloudCredential::Azure(AzureCredential {
             applicationId: application_id,
             subscriptionId: subscription_id,
             directoryId: directory_id,
@@ -212,7 +212,7 @@ pub async fn add_cred() {
   println!("Successfully created \"{}\" Credential", name);
 }
 
-async fn update_cred_file(credentials: HashMap<String, CredentialsProfile>) {
+async fn update_cred_file(credentials: HashMap<String, Credential>) {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CREDENTIALS_FILE);
   // Sets the option to create a new file, or open it if it already exists.
@@ -233,7 +233,7 @@ async fn update_cred_file(credentials: HashMap<String, CredentialsProfile>) {
   }
 }
 
-async fn update_anycloud_file(deploy_configs: HashMap<String, Vec<DeployProfile>>) {
+async fn update_anycloud_file(deploy_configs: HashMap<String, Vec<DeployConfig>>) {
   let home = std::env::var("PWD").unwrap();
   let file_name = &format!("{}/{}", home, ANYCLOUD_FILE);
   // Sets the option to create a new file, or open it if it already exists.
@@ -269,8 +269,8 @@ pub async fn edit_cred() {
   let name = &cred_options[selection];
   let cred = credentials.get(name).unwrap();
   let cred_name = name.to_string();
-  match &cred.credentials {
-    Credentials::AWS(cred) => {
+  match &cred.credential {
+    CloudCredential::AWS(cred) => {
       let access_key: String = Input::new()
         .with_prompt("AWS Access Key ID")
         .with_initial_text(cred.accessKeyId.to_string())
@@ -283,8 +283,8 @@ pub async fn edit_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        CredentialsProfile {
-          credentials: Credentials::AWS(AWSCredentials {
+        Credential {
+          credential: CloudCredential::AWS(AWSCredential {
             accessKeyId: access_key,
             secretAccessKey: secret,
           }),
@@ -292,7 +292,7 @@ pub async fn edit_cred() {
         },
       );
     }
-    Credentials::GCP(cred) => {
+    CloudCredential::GCP(cred) => {
       let client_email: String = Input::new()
         .with_prompt("GCP Client Email")
         .with_initial_text(cred.clientEmail.to_string())
@@ -310,8 +310,8 @@ pub async fn edit_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        CredentialsProfile {
-          credentials: Credentials::GCP(GCPCredentials {
+        Credential {
+          credential: CloudCredential::GCP(GCPCredential {
             privateKey: private_key,
             clientEmail: client_email,
             projectId: project_id,
@@ -320,7 +320,7 @@ pub async fn edit_cred() {
         },
       );
     }
-    Credentials::Azure(cred) => {
+    CloudCredential::Azure(cred) => {
       let application_id: String = Input::new()
         .with_prompt("Azure Application ID")
         .with_initial_text(cred.applicationId.to_string())
@@ -343,8 +343,8 @@ pub async fn edit_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        CredentialsProfile {
-          credentials: Credentials::Azure(AzureCredentials {
+        Credential {
+          credential: CloudCredential::Azure(AzureCredential {
             applicationId: application_id,
             subscriptionId: subscription_id,
             directoryId: directory_id,
@@ -405,17 +405,17 @@ pub async fn list_creds() {
     for (cred_name, cred) in credentials.into_iter() {
       println!("\n{}", cred_name);
       println!("{}", (0..cred_name.len()).map(|_| "-").collect::<String>());
-      match cred.credentials {
-        Credentials::AWS(credential) => {
+      match cred.credential {
+        CloudCredential::AWS(credential) => {
           println!("AWS Access Key ID: {}", credential.accessKeyId);
           println!("AWS Secret Access Key: {}", credential.secretAccessKey);
         }
-        Credentials::GCP(credential) => {
+        CloudCredential::GCP(credential) => {
           println!("GCP Project ID: {}", credential.projectId);
           println!("GCP Client Email: {}", credential.clientEmail);
           println!("GCP Private Key: {}", credential.privateKey);
         }
-        Credentials::Azure(credential) => {
+        CloudCredential::Azure(credential) => {
           println!("Azure Application ID: {}", credential.applicationId);
           println!("Azure Directory ID: {}", credential.directoryId);
           println!("Azure Subscription ID: {}", credential.subscriptionId);
@@ -445,22 +445,17 @@ pub async fn add_deploy_config() {
     .unwrap();
   let mut cloud_configs = Vec::new();
   let options = creds.keys().cloned().collect::<Vec<String>>();
+  if options.len() == 0 {
+    prompt_new_cred(false).await
+  }
   loop {
-    let cred = if creds.len() > 1 {
-      let selection = Select::new()
-        .items(&options)
-        .with_prompt("Pick Credential to use")
-        .default(0)
-        .interact()
-        .unwrap();
-      Some(options[selection].to_string())
-    } else {
-      if creds.len() == 0 {
-        prompt_new_cred(false).await
-      }
-      // use default, or only, credential
-      None
-    };
+    let selection = Select::new()
+      .items(&options)
+      .with_prompt("Pick Credential to use")
+      .default(0)
+      .interact()
+      .unwrap();
+    let cred = options[selection].to_string();
     // TODO validate these fields?
     let region: String = Input::new()
       .with_prompt("Region name")
@@ -470,8 +465,8 @@ pub async fn add_deploy_config() {
       .with_prompt("Virtual machine type")
       .interact_text()
       .unwrap();
-    cloud_configs.push(DeployProfile {
-      credentialProfile: cred,
+    cloud_configs.push(DeployConfig {
+      credentialName: cred,
       vmType: vm_type,
       region,
     });
@@ -503,24 +498,21 @@ pub async fn edit_deploy_config() {
     .unwrap();
   let config_name = config_names[selection].to_string();
   let creds = get_creds().await;
-  let cloud_configs: &Vec<DeployProfile> = deploy_configs.get(&config_name).unwrap();
+  let cloud_configs: &Vec<DeployConfig> = deploy_configs.get(&config_name).unwrap();
   let mut new_cloud_configs = Vec::new();
   let cred_options = creds.keys().cloned().collect::<Vec<String>>();
   for config in cloud_configs {
-    let cred = match &config.credentialProfile {
-      // more than one credential so can't use default behavior
-      Some(cred) => {
-        let index = cred_options.iter().position(|r| r == cred).unwrap();
-        let selection = Select::new()
-          .items(&cred_options)
-          .with_prompt("Pick Credential to use")
-          .default(index)
-          .interact()
-          .unwrap();
-        Some(cred_options[selection].to_string())
-      }
-      None => None,
-    };
+    let index = cred_options
+      .iter()
+      .position(|r| r == &config.credentialName)
+      .unwrap();
+    let selection = Select::new()
+      .items(&cred_options)
+      .with_prompt("Pick Credential to use")
+      .default(index)
+      .interact()
+      .unwrap();
+    let cred = cred_options[selection].to_string();
     let region: String = Input::new()
       .with_prompt("Region name")
       .with_initial_text(config.region.to_string())
@@ -531,8 +523,8 @@ pub async fn edit_deploy_config() {
       .with_initial_text(config.vmType.to_string())
       .interact_text()
       .unwrap();
-    new_cloud_configs.push(DeployProfile {
-      credentialProfile: cred,
+    new_cloud_configs.push(DeployConfig {
+      credentialName: cred,
       vmType: vm_type,
       region,
     });
@@ -563,29 +555,17 @@ pub async fn remove_deploy_config() {
 pub async fn list_deploy_configs() {
   let mut table = AsciiTable::default();
   table.max_width = 140;
-  let creds = get_creds().await;
   let configs = get_deploy_configs().await;
   if configs.len() == 0 {
     prompt_new_config().await;
   }
-  let def_cred = &creds.keys().cloned().collect::<Vec<String>>()[0];
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for (name, config) in &mut configs.iter() {
     for (i, c) in config.iter().enumerate() {
       if i == 0 {
-        data.push(vec![
-          name,
-          c.credentialProfile.as_ref().unwrap_or(def_cred),
-          &c.region,
-          &c.vmType,
-        ])
+        data.push(vec![name, &c.credentialName, &c.region, &c.vmType])
       } else {
-        data.push(vec![
-          &"",
-          c.credentialProfile.as_ref().unwrap_or(def_cred),
-          &c.region,
-          &c.vmType,
-        ])
+        data.push(vec![&"", &c.credentialName, &c.region, &c.vmType])
       };
     }
   }
@@ -622,22 +602,28 @@ pub async fn list_deploy_configs() {
   }
 }
 
-async fn get_creds() -> HashMap<String, CredentialsProfile> {
+async fn get_creds() -> HashMap<String, Credential> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CREDENTIALS_FILE);
   let file = OpenOptions::new().read(true).open(file_name);
   if let Err(_) = file {
+    println!("file error");
     return HashMap::new();
   }
   let reader = BufReader::new(file.unwrap());
   let creds = serde_json::from_reader(reader);
-  if let Err(_) = creds {
-    return HashMap::new();
+  if let Err(err) = creds {
+    error!(
+      ErrorType::InvalidCredentialsFile,
+      "Failed to read from {}. Error: {}", CREDENTIALS_FILE, err
+    )
+    .await;
+    std::process::exit(1);
   }
   creds.unwrap()
 }
 
-async fn get_deploy_configs() -> HashMap<String, Vec<DeployProfile>> {
+async fn get_deploy_configs() -> HashMap<String, Vec<DeployConfig>> {
   let home = std::env::var("PWD").unwrap();
   let file_name = &format!("{}/{}", home, ANYCLOUD_FILE);
   let file = OpenOptions::new().read(true).open(file_name);
@@ -646,8 +632,13 @@ async fn get_deploy_configs() -> HashMap<String, Vec<DeployProfile>> {
   }
   let reader = BufReader::new(file.unwrap());
   let config = serde_json::from_reader(reader);
-  if let Err(_) = config {
-    return HashMap::new();
+  if let Err(err) = config {
+    error!(
+      ErrorType::InvalidAnycloudFile,
+      "Failed to read from {}. Error: {}", ANYCLOUD_FILE, err
+    )
+    .await;
+    std::process::exit(1);
   }
   config.unwrap()
 }
@@ -666,52 +657,26 @@ fn get_url() -> &'static str {
 
 pub async fn get_config() -> HashMap<String, Vec<Config>> {
   let anycloud_prof = get_deploy_configs().await;
-  let cred_profs = get_creds().await;
-  if cred_profs.len() == 0 {
+  let creds = get_creds().await;
+  if creds.len() == 0 {
     prompt_new_cred(true).await;
   }
   if anycloud_prof.len() == 0 {
     prompt_new_config().await;
   }
   let mut all_configs = HashMap::new();
-  for (deploy_profile_name, deploy_profiles) in anycloud_prof.into_iter() {
+  for (deploy_name, deploy_configs) in anycloud_prof.into_iter() {
     let mut configs = Vec::new();
-    for profile in deploy_profiles {
-      let cred_prof_name = match profile.credentialProfile {
-        None => {
-          if cred_profs.len() != 1 {
-            let err = format!(
-              "No credential profile specified in deploy config {} when more than one \
-              credential profile exists in {}.",
-              deploy_profile_name, CREDENTIALS_FILE
-            );
-            error!(ErrorType::InvalidDefaultCredentialAlias, "{}", err).await;
-            std::process::exit(1);
-          }
-          cred_profs.keys().next().unwrap().to_string()
-        }
-        Some(key) => key,
-      };
-      match cred_profs.get(&cred_prof_name) {
-        Some(credentials) => {
-          configs.push(Config {
-            credentials: credentials.credentials.clone(),
-            cloudProvider: credentials.cloudProvider.to_string(),
-            region: profile.region,
-            vmType: profile.vmType,
-          });
-        }
-        None => {
-          let err = format!(
-            "Credentials {} for deploy config {} not found in {}",
-            cred_prof_name, deploy_profile_name, CREDENTIALS_FILE
-          );
-          error!(ErrorType::InvalidCredentialAlias, "{}", err).await;
-          std::process::exit(1);
-        }
-      }
+    for deploy_config in deploy_configs {
+      let cred = creds.get(&deploy_config.credentialName).unwrap();
+      configs.push(Config {
+        credential: cred.credential.clone(),
+        cloudProvider: cred.cloudProvider.to_string(),
+        region: deploy_config.region,
+        vmType: deploy_config.vmType,
+      });
     }
-    all_configs.insert(deploy_profile_name, configs);
+    all_configs.insert(deploy_name, configs);
   }
   all_configs
 }
@@ -766,15 +731,16 @@ pub async fn client_error(err_code: ErrorType, message: &str) {
   let _resp = post_v1("clientError", body).await;
 }
 
-pub async fn terminate(cluster_id: &str) {
+pub async fn terminate(cluster_id: String) {
+  let sp = ProgressBar::new_spinner();
+  sp.enable_steady_tick(10);
+  sp.set_message(&format!("Terminating app {} if it exists", cluster_id));
+  CLUSTER_ID.set(cluster_id.to_string()).unwrap();
   let body = json!({
     "deployConfig": get_config().await,
     "clusterId": cluster_id,
     "accessToken": get_token(),
   });
-  let sp = ProgressBar::new_spinner();
-  sp.enable_steady_tick(10);
-  sp.set_message(&format!("Terminating app {} if it exists", cluster_id));
   let resp = post_v1("terminate", body).await;
   let res = match resp {
     Ok(_) => format!("Terminated app {} successfully!", cluster_id),
@@ -795,10 +761,43 @@ pub async fn terminate(cluster_id: &str) {
   sp.finish_with_message(&res);
 }
 
-pub async fn new(body: Value) {
+pub async fn new(
+  agz_b64: String,
+  anycloud_params: Option<(String, String)>,
+  env_b64: Option<String>,
+) {
+  let config = get_config().await;
+  let config_names = config.keys().cloned().collect::<Vec<String>>();
+  if config_names.len() == 0 {
+    prompt_new_config().await;
+  }
+  let selection = Select::new()
+    .items(&config_names)
+    .with_prompt("Pick Deploy Config for App")
+    .default(0)
+    .interact()
+    .unwrap();
+  let deploy_config = &config_names[selection];
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message("Creating new app");
+  let config = get_config().await;
+  let mut body = json!({
+    "deployName": deploy_config,
+    "deployConfig": config,
+    "agzB64": agz_b64,
+    "alanVersion": format!("v{}", ALAN_VERSION),
+    "accessToken": get_token(),
+    "osName": std::env::consts::OS,
+  });
+  let mut_body = body.as_object_mut().unwrap();
+  if let Some(anycloud_params) = anycloud_params {
+    mut_body.insert(format!("DockerfileB64"), json!(anycloud_params.0));
+    mut_body.insert(format!("appTarGzB64"), json!(anycloud_params.1));
+  }
+  if let Some(env_b64) = env_b64 {
+    mut_body.insert(format!("envB64"), json!(env_b64));
+  }
   let resp = post_v1("new", body).await;
   let res = match resp {
     Ok(res) => format!("Created app with id {} successfully!", res),
@@ -816,10 +815,33 @@ pub async fn new(body: Value) {
   sp.finish_with_message(&res);
 }
 
-pub async fn upgrade(body: Value) {
+pub async fn upgrade(
+  cluster_id: String,
+  agz_b64: String,
+  anycloud_params: Option<(String, String)>,
+  env_b64: Option<String>,
+) {
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message("Upgrading existing app");
+  let config = get_config().await;
+  CLUSTER_ID.set(cluster_id.to_string()).unwrap();
+  let mut body = json!({
+    "clusterId": cluster_id,
+    "deployConfig": config,
+    "agzB64": agz_b64,
+    "alanVersion": format!("v{}", ALAN_VERSION),
+    "accessToken": get_token(),
+    "osName": std::env::consts::OS,
+  });
+  let mut_body = body.as_object_mut().unwrap();
+  if let Some(anycloud_params) = anycloud_params {
+    mut_body.insert(format!("DockerfileB64"), json!(anycloud_params.0));
+    mut_body.insert(format!("appTarGzB64"), json!(anycloud_params.1));
+  }
+  if let Some(env_b64) = env_b64 {
+    mut_body.insert(format!("envB64"), json!(env_b64));
+  }
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
     Ok(_) => format!("Upgraded app successfully!"),
