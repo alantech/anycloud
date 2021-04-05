@@ -145,7 +145,7 @@ pub async fn main() {
       .about("Manage Deploy Configs used by apps from the anycloud.json in the current directory")
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .subcommand(SubCommand::with_name("add")
-        .about("Add a new Deploy Config to the anycloud.json in the current directory")
+        .about("Add a new Deploy Config to the anycloud.json in the current directory and creates the file if it doesn't exist.")
       )
       .subcommand(SubCommand::with_name("list")
         .about("List all the Deploy Configs from the anycloud.json in the current directory")

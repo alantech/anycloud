@@ -7,7 +7,6 @@ use once_cell::sync::OnceCell;
 use serde_json::{json, Value};
 use tokio::time::{sleep, Duration};
 
-use crate::deploy::client_error;
 use crate::http::CLIENT;
 use crate::logger::ErrorType;
 

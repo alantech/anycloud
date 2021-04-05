@@ -2,7 +2,7 @@ use dialoguer::{Confirm, Input, Select};
 use hyper::{Request, StatusCode};
 use indicatif::ProgressBar;
 use serde::{Deserialize, Serialize};
-use serde_json::{from_reader, from_str, json, to_writer_pretty, Value};
+use serde_json::{json, Value};
 
 use std::collections::{HashMap, HashSet};
 use std::fmt::Display;
@@ -223,7 +223,7 @@ async fn update_cred_file(credentials: HashMap<String, CredentialsProfile>) {
     .truncate(true)
     .open(file_name);
   let writer = BufWriter::new(file.unwrap());
-  if let Err(err) = to_writer_pretty(writer, &credentials) {
+  if let Err(err) = serde_json::to_writer_pretty(writer, &credentials) {
     error!(
       ErrorType::InvalidCredentialsFile,
       "Failed to write to {}. Error: {}", CREDENTIALS_FILE, err
@@ -244,7 +244,7 @@ async fn update_anycloud_file(deploy_configs: HashMap<String, Vec<DeployProfile>
     .truncate(true)
     .open(file_name);
   let writer = BufWriter::new(file.unwrap());
-  if let Err(err) = to_writer_pretty(writer, &deploy_configs) {
+  if let Err(err) = serde_json::to_writer_pretty(writer, &deploy_configs) {
     error!(
       ErrorType::InvalidAnycloudFile,
       "Failed to write to {}. Error: {}", ANYCLOUD_FILE, err
@@ -365,6 +365,8 @@ pub async fn prompt_new_cred() {
   let prompt = "No Credentials have been created. Let's create one?";
   if Confirm::new().with_prompt(prompt).interact().unwrap() {
     add_cred().await;
+  } else {
+    std::process::exit(0);
   }
 }
 
@@ -373,6 +375,8 @@ pub async fn prompt_new_config() {
   let prompt = "No Deploy Configs have been created. Let's create one?";
   if Confirm::new().with_prompt(prompt).interact().unwrap() {
     add_deploy_config().await;
+  } else {
+    std::process::exit(0);
   }
 }
 
@@ -380,7 +384,8 @@ pub async fn remove_cred() {
   let mut creds = get_creds().await;
   let cred_options = creds.keys().cloned().collect::<Vec<String>>();
   if cred_options.len() == 0 {
-    prompt_new_cred().await
+    prompt_new_cred().await;
+    std::process::exit(0);
   };
   let selection = Select::new()
     .items(&cred_options)
@@ -628,7 +633,7 @@ async fn get_creds() -> HashMap<String, CredentialsProfile> {
     return HashMap::new();
   }
   let reader = BufReader::new(file.unwrap());
-  let creds = from_reader(reader);
+  let creds = serde_json::from_reader(reader);
   if let Err(_) = creds {
     return HashMap::new();
   }
@@ -643,7 +648,7 @@ async fn get_deploy_configs() -> HashMap<String, Vec<DeployProfile>> {
     return HashMap::new();
   }
   let reader = BufReader::new(file.unwrap());
-  let config = from_reader(reader);
+  let config = serde_json::from_reader(reader);
   if let Err(_) = config {
     return HashMap::new();
   }
@@ -870,7 +875,7 @@ pub async fn info() {
       std::process::exit(1);
     }
   };
-  let mut apps: Vec<App> = from_str(resp).unwrap();
+  let mut apps: Vec<App> = serde_json::from_str(resp).unwrap();
 
   if apps.len() == 0 {
     println!("No apps currently deployed");
