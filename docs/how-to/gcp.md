@@ -25,7 +25,7 @@ Successfully created "mystartup-gcp" credential
 
 Define a new `Deploy Config` in the `anycloud.json` project you want to deploy to GCP using the AnyCloud CLI:
 
-```
+```bash
 $ anycloud config add
 Name for new Deploy Config: staging
 Pick Credential to use:
