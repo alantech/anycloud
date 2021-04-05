@@ -29,14 +29,14 @@ const UNAUTHORIZED_OPERATION: &str =
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct AWSCredential {
+pub struct AWSCredentials {
   accessKeyId: String,
   secretAccessKey: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct GCPCredential {
+pub struct GCPCredentials {
   privateKey: String,
   clientEmail: String,
   projectId: String,
@@ -44,7 +44,7 @@ pub struct GCPCredential {
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
-pub struct AzureCredential {
+pub struct AzureCredentials {
   applicationId: String,
   secret: String,
   subscriptionId: String,
@@ -53,16 +53,16 @@ pub struct AzureCredential {
 
 #[derive(Deserialize, Debug, Clone, Serialize)]
 #[serde(untagged)]
-pub enum CloudCredential {
-  GCP(GCPCredential),
-  AWS(AWSCredential),
-  Azure(AzureCredential),
+pub enum CloudCredentials {
+  GCP(GCPCredentials),
+  AWS(AWSCredentials),
+  Azure(AzureCredentials),
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
-pub struct Credential {
-  credential: CloudCredential,
+pub struct Credentials {
+  credential: CloudCredentials,
   cloudProvider: String,
 }
 
@@ -77,7 +77,7 @@ pub struct DeployConfig {
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Config {
-  credential: CloudCredential,
+  credentials: CloudCredentials,
   region: String,
   cloudProvider: String,
   vmType: String,
@@ -142,8 +142,8 @@ pub async fn add_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        Credential {
-          credential: CloudCredential::AWS(AWSCredential {
+        Credentials {
+          credential: CloudCredentials::AWS(AWSCredentials {
             accessKeyId: access_key,
             secretAccessKey: secret,
           }),
@@ -166,8 +166,8 @@ pub async fn add_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        Credential {
-          credential: CloudCredential::GCP(GCPCredential {
+        Credentials {
+          credential: CloudCredentials::GCP(GCPCredentials {
             privateKey: private_key,
             clientEmail: client_email,
             projectId: project_id,
@@ -195,8 +195,8 @@ pub async fn add_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        Credential {
-          credential: CloudCredential::Azure(AzureCredential {
+        Credentials {
+          credential: CloudCredentials::Azure(AzureCredentials {
             applicationId: application_id,
             subscriptionId: subscription_id,
             directoryId: directory_id,
@@ -212,7 +212,7 @@ pub async fn add_cred() {
   println!("Successfully created \"{}\" Credential", name);
 }
 
-async fn update_cred_file(credentials: HashMap<String, Credential>) {
+async fn update_cred_file(credentials: HashMap<String, Credentials>) {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CREDENTIALS_FILE);
   // Sets the option to create a new file, or open it if it already exists.
@@ -270,7 +270,7 @@ pub async fn edit_cred() {
   let cred = credentials.get(name).unwrap();
   let cred_name = name.to_string();
   match &cred.credential {
-    CloudCredential::AWS(cred) => {
+    CloudCredentials::AWS(cred) => {
       let access_key: String = Input::new()
         .with_prompt("AWS Access Key ID")
         .with_initial_text(cred.accessKeyId.to_string())
@@ -283,8 +283,8 @@ pub async fn edit_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        Credential {
-          credential: CloudCredential::AWS(AWSCredential {
+        Credentials {
+          credential: CloudCredentials::AWS(AWSCredentials {
             accessKeyId: access_key,
             secretAccessKey: secret,
           }),
@@ -292,7 +292,7 @@ pub async fn edit_cred() {
         },
       );
     }
-    CloudCredential::GCP(cred) => {
+    CloudCredentials::GCP(cred) => {
       let client_email: String = Input::new()
         .with_prompt("GCP Client Email")
         .with_initial_text(cred.clientEmail.to_string())
@@ -310,8 +310,8 @@ pub async fn edit_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        Credential {
-          credential: CloudCredential::GCP(GCPCredential {
+        Credentials {
+          credential: CloudCredentials::GCP(GCPCredentials {
             privateKey: private_key,
             clientEmail: client_email,
             projectId: project_id,
@@ -320,7 +320,7 @@ pub async fn edit_cred() {
         },
       );
     }
-    CloudCredential::Azure(cred) => {
+    CloudCredentials::Azure(cred) => {
       let application_id: String = Input::new()
         .with_prompt("Azure Application ID")
         .with_initial_text(cred.applicationId.to_string())
@@ -343,8 +343,8 @@ pub async fn edit_cred() {
         .unwrap();
       credentials.insert(
         cred_name,
-        Credential {
-          credential: CloudCredential::Azure(AzureCredential {
+        Credentials {
+          credential: CloudCredentials::Azure(AzureCredentials {
             applicationId: application_id,
             subscriptionId: subscription_id,
             directoryId: directory_id,
@@ -406,16 +406,16 @@ pub async fn list_creds() {
       println!("\n{}", cred_name);
       println!("{}", (0..cred_name.len()).map(|_| "-").collect::<String>());
       match cred.credential {
-        CloudCredential::AWS(credential) => {
+        CloudCredentials::AWS(credential) => {
           println!("AWS Access Key ID: {}", credential.accessKeyId);
           println!("AWS Secret Access Key: {}", credential.secretAccessKey);
         }
-        CloudCredential::GCP(credential) => {
+        CloudCredentials::GCP(credential) => {
           println!("GCP Project ID: {}", credential.projectId);
           println!("GCP Client Email: {}", credential.clientEmail);
           println!("GCP Private Key: {}", credential.privateKey);
         }
-        CloudCredential::Azure(credential) => {
+        CloudCredentials::Azure(credential) => {
           println!("Azure Application ID: {}", credential.applicationId);
           println!("Azure Directory ID: {}", credential.directoryId);
           println!("Azure Subscription ID: {}", credential.subscriptionId);
@@ -602,12 +602,11 @@ pub async fn list_deploy_configs() {
   }
 }
 
-async fn get_creds() -> HashMap<String, Credential> {
+async fn get_creds() -> HashMap<String, Credentials> {
   let home = std::env::var("HOME").unwrap();
   let file_name = &format!("{}/{}", home, CREDENTIALS_FILE);
   let file = OpenOptions::new().read(true).open(file_name);
   if let Err(_) = file {
-    println!("file error");
     return HashMap::new();
   }
   let reader = BufReader::new(file.unwrap());
@@ -670,7 +669,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
     for deploy_config in deploy_configs {
       let cred = creds.get(&deploy_config.credentialName).unwrap();
       configs.push(Config {
-        credential: cred.credential.clone(),
+        credentials: cred.credential.clone(),
         cloudProvider: cred.cloudProvider.to_string(),
         region: deploy_config.region,
         vmType: deploy_config.vmType,
