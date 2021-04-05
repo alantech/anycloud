@@ -62,14 +62,14 @@ pub enum CloudCredentials {
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
 pub struct Credentials {
-  credential: CloudCredentials,
+  credentials: CloudCredentials,
   cloudProvider: String,
 }
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Serialize)]
 pub struct DeployConfig {
-  credentialName: String,
+  credentialsName: String,
   region: String,
   vmType: String,
 }
@@ -143,7 +143,7 @@ pub async fn add_cred() {
       credentials.insert(
         cred_name,
         Credentials {
-          credential: CloudCredentials::AWS(AWSCredentials {
+          credentials: CloudCredentials::AWS(AWSCredentials {
             accessKeyId: access_key,
             secretAccessKey: secret,
           }),
@@ -167,7 +167,7 @@ pub async fn add_cred() {
       credentials.insert(
         cred_name,
         Credentials {
-          credential: CloudCredentials::GCP(GCPCredentials {
+          credentials: CloudCredentials::GCP(GCPCredentials {
             privateKey: private_key,
             clientEmail: client_email,
             projectId: project_id,
@@ -196,7 +196,7 @@ pub async fn add_cred() {
       credentials.insert(
         cred_name,
         Credentials {
-          credential: CloudCredentials::Azure(AzureCredentials {
+          credentials: CloudCredentials::Azure(AzureCredentials {
             applicationId: application_id,
             subscriptionId: subscription_id,
             directoryId: directory_id,
@@ -269,7 +269,7 @@ pub async fn edit_cred() {
   let name = &cred_options[selection];
   let cred = credentials.get(name).unwrap();
   let cred_name = name.to_string();
-  match &cred.credential {
+  match &cred.credentials {
     CloudCredentials::AWS(cred) => {
       let access_key: String = Input::new()
         .with_prompt("AWS Access Key ID")
@@ -284,7 +284,7 @@ pub async fn edit_cred() {
       credentials.insert(
         cred_name,
         Credentials {
-          credential: CloudCredentials::AWS(AWSCredentials {
+          credentials: CloudCredentials::AWS(AWSCredentials {
             accessKeyId: access_key,
             secretAccessKey: secret,
           }),
@@ -311,7 +311,7 @@ pub async fn edit_cred() {
       credentials.insert(
         cred_name,
         Credentials {
-          credential: CloudCredentials::GCP(GCPCredentials {
+          credentials: CloudCredentials::GCP(GCPCredentials {
             privateKey: private_key,
             clientEmail: client_email,
             projectId: project_id,
@@ -344,7 +344,7 @@ pub async fn edit_cred() {
       credentials.insert(
         cred_name,
         Credentials {
-          credential: CloudCredentials::Azure(AzureCredentials {
+          credentials: CloudCredentials::Azure(AzureCredentials {
             applicationId: application_id,
             subscriptionId: subscription_id,
             directoryId: directory_id,
@@ -405,7 +405,7 @@ pub async fn list_creds() {
     for (cred_name, cred) in credentials.into_iter() {
       println!("\n{}", cred_name);
       println!("{}", (0..cred_name.len()).map(|_| "-").collect::<String>());
-      match cred.credential {
+      match cred.credentials {
         CloudCredentials::AWS(credential) => {
           println!("AWS Access Key ID: {}", credential.accessKeyId);
           println!("AWS Secret Access Key: {}", credential.secretAccessKey);
@@ -466,7 +466,7 @@ pub async fn add_deploy_config() {
       .interact_text()
       .unwrap();
     cloud_configs.push(DeployConfig {
-      credentialName: cred,
+      credentialsName: cred,
       vmType: vm_type,
       region,
     });
@@ -504,7 +504,7 @@ pub async fn edit_deploy_config() {
   for config in cloud_configs {
     let index = cred_options
       .iter()
-      .position(|r| r == &config.credentialName)
+      .position(|r| r == &config.credentialsName)
       .unwrap();
     let selection = Select::new()
       .items(&cred_options)
@@ -524,7 +524,7 @@ pub async fn edit_deploy_config() {
       .interact_text()
       .unwrap();
     new_cloud_configs.push(DeployConfig {
-      credentialName: cred,
+      credentialsName: cred,
       vmType: vm_type,
       region,
     });
@@ -563,9 +563,9 @@ pub async fn list_deploy_configs() {
   for (name, config) in &mut configs.iter() {
     for (i, c) in config.iter().enumerate() {
       if i == 0 {
-        data.push(vec![name, &c.credentialName, &c.region, &c.vmType])
+        data.push(vec![name, &c.credentialsName, &c.region, &c.vmType])
       } else {
-        data.push(vec![&"", &c.credentialName, &c.region, &c.vmType])
+        data.push(vec![&"", &c.credentialsName, &c.region, &c.vmType])
       };
     }
   }
@@ -667,9 +667,9 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
   for (deploy_name, deploy_configs) in anycloud_prof.into_iter() {
     let mut configs = Vec::new();
     for deploy_config in deploy_configs {
-      let cred = creds.get(&deploy_config.credentialName).unwrap();
+      let cred = creds.get(&deploy_config.credentialsName).unwrap();
       configs.push(Config {
-        credentials: cred.credential.clone(),
+        credentials: cred.credentials.clone(),
         cloudProvider: cred.cloudProvider.to_string(),
         region: deploy_config.region,
         vmType: deploy_config.vmType,
