@@ -9,6 +9,7 @@ use tokio::time::{sleep, Duration};
 
 use crate::deploy::client_error;
 use crate::http::CLIENT;
+use crate::logger::ErrorKind;
 
 const CODE_URL: &'static str = "https://github.com/login/device/code";
 const CLIENT_ID: &'static str = "f6e1ede88556627925d6";
@@ -107,7 +108,7 @@ async fn generate_token() {
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {
         error!(
-          113,
+          ErrorKind::AuthFailed as u8,
           "Authentication failed. Please try again. Err: {}", error
         )
         .await;

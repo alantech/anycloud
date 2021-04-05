@@ -1,6 +1,24 @@
+#[repr(u8)]
+pub enum ErrorKind {
+  InvalidPwd = 100,
+  NoEnvFile = 101,
+  GitChanges = 102,
+  NoGit = 103,
+  DeleteTmpAppTar = 104,
+  InvalidDefaultAnycloudAlias = 105,
+  DeployNotFound = 106,
+  NoCredentialsFile = 107,
+  InvalidCredentialsFile = 108,
+  NoAnycloudFile = 109,
+  InvalidAnycloudFile = 110,
+  InvalidDefaultCredentialAlias = 111,
+  InvalidCredentialAlias = 112,
+  AuthFailed = 113,
+}
+
 #[macro_export]
 macro_rules! error {
-  ($errCode:tt, $($message:tt)+) => {async{
+  ($errCode:expr, $($message:tt)+) => {async{
       eprintln!($($message)+);
       client_error($errCode, &format!($($message)+)).await;
   }};

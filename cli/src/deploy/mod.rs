@@ -12,6 +12,7 @@ use std::path::Path;
 use ascii_table::{AsciiTable, Column};
 
 use crate::http::CLIENT;
+use crate::logger::ErrorKind;
 use crate::oauth::{clear_token, get_token};
 use crate::CLUSTER_ID;
 
@@ -114,7 +115,7 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let file = File::open(path);
   if let Err(err) = file {
     error!(
-      107,
+      ErrorKind::NoCredentialsFile as u8,
       "Cannot access credentials at {}. Error: {}", file_name, err
     )
     .await;
@@ -124,7 +125,11 @@ async fn get_cred_profiles() -> HashMap<String, CredentialsProfile> {
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    error!(108, "Invalid credentials. Error: {}", err).await;
+    error!(
+      ErrorKind::InvalidCredentialsFile as u8,
+      "Invalid credentials. Error: {}", err
+    )
+    .await;
     eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
@@ -138,7 +143,7 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let file = File::open(path);
   if let Err(err) = file {
     error!(
-      109,
+      ErrorKind::NoAnycloudFile as u8,
       "Cannot access deploy config at {}. Error: {}", file_name, err
     )
     .await;
@@ -148,7 +153,11 @@ async fn get_deploy_profile() -> HashMap<String, Vec<DeployProfile>> {
   let reader = BufReader::new(file.unwrap());
   let config = from_reader(reader);
   if let Err(err) = config {
-    error!(110, "Invalid deploy config. Error: {}", err).await;
+    error!(
+      ErrorKind::InvalidAnycloudFile as u8,
+      "Invalid deploy config. Error: {}", err
+    )
+    .await;
     eprintln!("{}", CONFIG_SETUP); // Hint
     std::process::exit(1);
   }
@@ -182,7 +191,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
               credential profile exists in {}.",
               deploy_profile_name, CREDENTIALS_FILE
             );
-            error!(111, "{}", err).await;
+            error!(ErrorKind::InvalidDefaultCredentialAlias as u8, "{}", err).await;
             std::process::exit(1);
           }
           cred_profs.keys().next().unwrap().to_string()
@@ -203,7 +212,7 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
             "Credentials {} for deploy config {} not found in {}",
             cred_prof_name, deploy_profile_name, CREDENTIALS_FILE
           );
-          error!(112, "{}", err).await;
+          error!(ErrorKind::InvalidCredentialAlias as u8, "{}", err).await;
           std::process::exit(1);
         }
       }
