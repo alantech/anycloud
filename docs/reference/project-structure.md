@@ -12,7 +12,7 @@ Deploying an AnyCloud `App` requires a [`Dockerfile`](https://docs.docker.com/en
 
 AnyCloud `Deploy Configs` are stored in an `anycloud.json` within the project directory, next to your `Dockerfile`, and configured using the CLI subcommands under `anycloud config`. Each `Deploy Config` consists of a name, or alias, to refer to it when creating or updating `Apps`. A `Deploy Config` consists of one or multiple of the following configurations: region, virtual machine type and an existing [`Credentials`](credentials.md) name or alias.
 
-```
+```bash
 $ anycloud config add
 Name for new Deploy Config: staging
 Pick Credential to use:

@@ -6,7 +6,7 @@ AnyCloud supports managing multiple cloud `Credentials` via the `anycloud creden
 
 An AWS Credential consists of an `accessKeyId` and `secretAccessKey` from an IAM user with an [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home*/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess) policy attached.
 
-```
+```bash
 $ anycloud credential add
 Pick cloud provider for the new Credential:
 > AWS
@@ -22,7 +22,7 @@ Successfully created "mystartup-aws" Credential
 
 A GCP Credential consists of an `privateKey` and `clientEmail` that come from a service account with the [`Compute Engine Admin`](https://cloud.google.com/compute/docs/access/iam*compute.admin) role and the `projectId` in which the service account is contained.
 
-```
+```bash
 $ anycloud credential add
 Pick cloud provider for the new Credential:
   AWS
@@ -39,7 +39,7 @@ Successfully created "mystartup-gcp" Credential
 
 An Azure Credential consists of the `directoryId` that belongs to the [Azure Active Directory](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-whatis), the `applicationId` and `secret` of the [application and service principal](https://docs.microsoft.com/en-us/azure/active-directory/develop/app-objects-and-service-principals), and the `subscriptionId` of the [billing subscription](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-subscriptions-associated-directory).
 
-```
+```bash
 $ anycloud credential add
 Pick cloud provider for the new Credential:
   AWS
