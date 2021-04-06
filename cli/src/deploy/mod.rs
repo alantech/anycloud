@@ -11,6 +11,7 @@ use std::io::{BufReader, BufWriter};
 
 use ascii_table::{AsciiTable, Column};
 
+use crate::deploy;
 use crate::http::CLIENT;
 use crate::logger::ErrorType;
 use crate::oauth::{clear_token, get_token};
