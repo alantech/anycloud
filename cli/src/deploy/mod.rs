@@ -1,6 +1,7 @@
 use dialoguer::{console::style, theme::ColorfulTheme, Confirm, Input, Select};
 use hyper::{Request, StatusCode};
 use indicatif::ProgressBar;
+use names::{Generator, Name};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -23,7 +24,7 @@ const REQUEST_TIMEOUT: &str =
 const FORBIDDEN_OPERATION: &str =
   "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://docs.anycloudapp.com/";
-const NAME_CONFLICT: &str = "Another application with same app ID already exists.";
+const NAME_CONFLICT: &str = "Another application with same App ID already exists.";
 const UNAUTHORIZED_OPERATION: &str =
   "Invalid AnyCloud authentication credentials. Please retry and you will be asked to reauthenticate.";
 
@@ -125,7 +126,7 @@ pub async fn add_cred() -> String {
         Ok(())
       }
     })
-    .with_initial_text(cloud.to_lowercase())
+    .default(cloud.to_lowercase())
     .interact_text()
     .unwrap();
   let name = cred_name.to_string();
@@ -453,7 +454,7 @@ pub async fn add_deploy_config() {
         Ok(())
       }
     })
-    .with_initial_text("staging")
+    .default("staging".to_string())
     .interact_text()
     .unwrap();
   let mut cloud_configs = Vec::new();
@@ -819,14 +820,21 @@ pub async fn new(
     .interact()
     .unwrap();
   let deploy_config = &config_names[selection];
-  let config = get_config().await;
+  let mut generator = Generator::with_naming(Name::Numbered);
+  let app_id = Input::with_theme(&ColorfulTheme::default())
+    .with_prompt("App name")
+    .default(generator.next().unwrap())
+    .interact_text()
+    .unwrap();
+  let styled_app_id = style(&app_id).bold();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message("Creating new App");
+  sp.set_message(&format!("Creating new App {}", styled_app_id));
   let mut body = json!({
     "deployName": deploy_config,
     "deployConfig": config,
     "agzB64": agz_b64,
+    "appId": app_id,
     "alanVersion": format!("v{}", ALAN_VERSION),
     "accessToken": get_token(),
     "osName": std::env::consts::OS,
@@ -841,11 +849,14 @@ pub async fn new(
   }
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(res) => format!("Created App {} successfully!", style(res).bold()),
+    Ok(_) => format!("Created App {} successfully!", styled_app_id),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("Failed to create a new App. Error: {}", NAME_CONFLICT),
+      PostV1Error::Conflict => format!(
+        "Failed to create App {}. Error: {}",
+        styled_app_id, NAME_CONFLICT
+      ),
       PostV1Error::Unauthorized => {
         clear_token();
         format!("{}", UNAUTHORIZED_OPERATION)
@@ -871,10 +882,11 @@ pub async fn upgrade(
     .unwrap();
   let cluster_id = ids[selection];
   CLUSTER_ID.set(cluster_id.to_string()).unwrap();
+  let styled_cluster_id = style(cluster_id).bold();
   let config = get_config().await;
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!("Upgrading {}", style(cluster_id).bold()));
+  sp.set_message(&format!("Upgrading App {}", styled_cluster_id));
   let mut body = json!({
     "clusterId": cluster_id,
     "deployConfig": config,
@@ -893,7 +905,7 @@ pub async fn upgrade(
   }
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded App successfully!"),
+    Ok(_) => format!("Upgraded App {} successfully!", styled_cluster_id),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),

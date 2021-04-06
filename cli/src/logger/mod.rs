@@ -5,6 +5,7 @@ pub enum ErrorType {
   GitChanges = 102,
   NoGit = 103,
   DeleteTmpAppTar = 104,
+  NoDockerFile = 105,
   InvalidCredentialsFile = 108,
   InvalidAnycloudFile = 110,
   AuthFailed = 113,

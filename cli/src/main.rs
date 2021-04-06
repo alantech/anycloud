@@ -16,9 +16,17 @@ async fn get_dockerfile_b64() -> String {
   let pwd = env::current_dir();
   match pwd {
     Ok(pwd) => {
-      let dockerfile = read(format!("{}/Dockerfile", pwd.display()))
-        .expect(&format!("No Dockerfile in {}", pwd.display()));
-      return base64::encode(dockerfile);
+      let dockerfile = read(format!("{}/Dockerfile", pwd.display()));
+      if let Err(_) = dockerfile {
+        error!(
+          ErrorType::NoDockerFile,
+          "No Dockerfile at {}",
+          pwd.display()
+        )
+        .await;
+        std::process::exit(1);
+      }
+      return base64::encode(dockerfile.unwrap());
     }
     Err(_) => {
       error!(
@@ -41,7 +49,7 @@ async fn get_env_file_b64(env_file_path: String) -> String {
         Err(_) => {
           error!(
             ErrorType::NoEnvFile,
-            "No environment file in {}/{}",
+            "No environment file at {}/{}",
             pwd.display(),
             env_file_path
           )
@@ -123,7 +131,6 @@ pub async fn main() {
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
       .about("Deploys your repository to a new App with a Deploy Config from anycloud.json")
-      .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional App ID'")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
     )
     .subcommand(SubCommand::with_name("info")
