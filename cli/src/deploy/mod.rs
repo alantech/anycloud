@@ -819,10 +819,10 @@ pub async fn new(
     .interact()
     .unwrap();
   let deploy_config = &config_names[selection];
+  let config = get_config().await;
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message("Creating new App");
-  let config = get_config().await;
   let mut body = json!({
     "deployName": deploy_config,
     "deployConfig": config,
@@ -871,10 +871,10 @@ pub async fn upgrade(
     .unwrap();
   let cluster_id = ids[selection];
   CLUSTER_ID.set(cluster_id.to_string()).unwrap();
+  let config = get_config().await;
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message(&format!("Upgrading {}", style(cluster_id).bold()));
-  let config = get_config().await;
   let mut body = json!({
     "clusterId": cluster_id,
     "deployConfig": config,
@@ -909,12 +909,14 @@ pub async fn upgrade(
 }
 
 async fn get_apps(status: bool) -> Vec<App> {
+  let config = get_config().await;
+  let token = get_token();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message("Gathering information about Apps deployed");
   let body = json!({
-    "deployConfig": get_config().await,
-    "accessToken": get_token(),
+    "deployConfig": config,
+    "accessToken": token,
     "status": status,
   });
   let response = post_v1("info", body).await;

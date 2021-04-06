@@ -130,7 +130,7 @@ pub async fn main() {
       .about("Displays all the Apps deployed with the Deploy Configs from anycloud.json")
     )
     .subcommand(SubCommand::with_name("terminate")
-      .about("Terminate an app hosted in one of the Deploy Configs from anycloud.json")
+      .about("Terminate an App hosted in one of the Deploy Configs from anycloud.json")
     )
     .subcommand(SubCommand::with_name("upgrade")
       .about("Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json")
