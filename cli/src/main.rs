@@ -152,20 +152,20 @@ pub async fn main() {
         .about("Remove an existing Deploy Config from the anycloud.json in the current directory")
       )
     )
-    .subcommand(SubCommand::with_name("credential")
+    .subcommand(SubCommand::with_name("credentials")
       .about("Manage all Credentials used by Deploy Configs from the credentials file at ~/.anycloud/credentials.json")
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .subcommand(SubCommand::with_name("add")
-        .about("Add a new Credential")
+        .about("Add a new Credentials")
       )
       .subcommand(SubCommand::with_name("list")
         .about("List all the available Credentials")
       )
       .subcommand(SubCommand::with_name("edit")
-        .about("Edit an existing Credential")
+        .about("Edit an existing Credentials")
       )
       .subcommand(SubCommand::with_name("remove")
-        .about("Remove an existing Credential")
+        .about("Remove an existing Credentials")
       )
     );
 
@@ -202,7 +202,7 @@ pub async fn main() {
       .await;
     }
     ("info", _) => deploy::info().await,
-    ("credential", Some(sub_matches)) => {
+    ("credentials", Some(sub_matches)) => {
       match sub_matches.subcommand() {
         ("add", _) => {
           deploy::add_cred().await;

@@ -10,18 +10,18 @@ In this tutorial we will deploy the [sample express Node.js HTTP server](https:/
 
 3) Enable programmatic access for that IAM user, and attach the built-in [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy to it as described [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console).
 
-4) Take the `accessKeyId` and `secretAccessKey` from step 2 and create an AWS [`Credential`](credential.md) in AnyCloud. You will need to pick a name or alias for the `Credential`. The initial value will be `aws`. In this example, we will call it `aws-personal`.
+4) Take the `accessKeyId` and `secretAccessKey` from step 2 and create an AWS `Credentials` in AnyCloud. You will need to pick a name or alias for the `Credentials`. The initial value will be `aws`. In this example, we will call it `aws-personal`.
 
 ```bash
-$ anycloud credential add
-Pick cloud provider for the new Credential:
+$ anycloud credentials add
+Pick cloud provider for the new Credentials:
 > AWS
   GCP
   Azure
-Name for new Credential: aws-personal
+Name for new Credentials: aws-personal
 AWS Access Key ID: ******************
 AWS Secret Access Key: ******************
-Successfully created "mystartup-aws" Credential
+Successfully created mystartup-aws Credentials
 ```
 
 ## Configure your project
@@ -78,7 +78,7 @@ $ curl localhost:8088
 
 Which should return `Hello World!`
 
-6) Use the AnyCloud CLI to create an `anycloud.json` file in the project directory and define a `Deploy Config`. You will need to pick a name or alias for the `Deploy Config`. The initial value will be `staging`. Since there is only `Credential`, the CLI will default to that for your new `Deploy Config`.
+6) Use the AnyCloud CLI to create an `anycloud.json` file in the project directory and define a `Deploy Config`. You will need to pick a name or alias for the `Deploy Config`. The initial value will be `staging`. Since there is only `Credentials`, the CLI will default to that for your new `Deploy Config`.
 
 ```bash
 $ anycloud config add
@@ -86,7 +86,7 @@ Name for new Deploy Config: staging
 Region name: us-west-1
 Virtual Machine Type: t2.medium
 Do you want to add another region to this Deploy Config? n
-Successfully created "staging" Credential
+Successfully created "staging" Credentials
 ```
 
 7) Make sure all of the changes in the git repo are committed or they won't be deployed.

@@ -263,7 +263,7 @@ pub async fn edit_cred() {
   }
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&cred_options)
-    .with_prompt("Pick Credential to edit")
+    .with_prompt("Pick Credentials to edit")
     .default(0)
     .interact()
     .unwrap();
@@ -357,10 +357,10 @@ pub async fn edit_cred() {
     }
   }
   update_cred_file(credentials).await;
-  println!("Successfully edited {} Credential", style(name).bold());
+  println!("Successfully edited {} Credentials", style(name).bold());
 }
 
-// prompt the user to create a deploy credential if none exists
+// prompt the user to create a deploy credentials if none exists
 pub async fn prompt_add_cred(exit_on_done: bool) -> String {
   let prompt = "No Credentials have been created. Let's create one?";
   if Confirm::with_theme(&ColorfulTheme::default())
@@ -399,7 +399,7 @@ pub async fn remove_cred() {
   };
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&cred_options)
-    .with_prompt("Pick Credential to remove")
+    .with_prompt("Pick Credentials to remove")
     .default(0)
     .interact()
     .unwrap();
@@ -407,7 +407,7 @@ pub async fn remove_cred() {
   creds.remove(cred_name).unwrap();
   update_cred_file(creds).await;
   println!(
-    "Successfully removed {} Credential",
+    "Successfully removed {} Credentials",
     style(cred_name).bold()
   );
 }
@@ -462,11 +462,11 @@ pub async fn add_deploy_config() {
   }
   let mut options = creds.keys().cloned().collect::<Vec<String>>();
   let new_cred_idx = options.len();
-  options.push("Create new Credential".to_string());
+  options.push("Create new Credentials".to_string());
   loop {
     let selection = Select::with_theme(&ColorfulTheme::default())
       .items(&options)
-      .with_prompt("Pick Credential to use")
+      .with_prompt("Pick Credentials to use")
       .default(0)
       .interact()
       .unwrap();
@@ -531,7 +531,7 @@ pub async fn edit_deploy_config() {
       .unwrap();
     let selection = Select::with_theme(&ColorfulTheme::default())
       .items(&cred_options)
-      .with_prompt("Pick Credential to use")
+      .with_prompt("Pick Credentials to use")
       .default(index)
       .interact()
       .unwrap();
@@ -606,7 +606,7 @@ pub async fn list_deploy_configs() {
   table.columns.insert(0, column);
 
   let column = Column {
-    header: "Credential Name".into(),
+    header: "Credentials Name".into(),
     ..Column::default()
   };
   table.columns.insert(1, column);
