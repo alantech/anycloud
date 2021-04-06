@@ -7,9 +7,7 @@ pub enum ErrorType {
   DeleteTmpAppTar = 104,
   InvalidDefaultAnycloudAlias = 105,
   DeployNotFound = 106,
-  NoCredentialsFile = 107,
   InvalidCredentialsFile = 108,
-  NoAnycloudFile = 109,
   InvalidAnycloudFile = 110,
   InvalidDefaultCredentialAlias = 111,
   InvalidCredentialAlias = 112,
@@ -29,7 +27,7 @@ pub enum ErrorType {
 macro_rules! error {
   ($errCode:expr, $($message:tt)+) => {async{
       eprintln!($($message)+);
-      client_error($errCode, &format!($($message)+)).await;
+      crate::deploy::client_error($errCode, &format!($($message)+)).await;
   }};
   (metadata: $metadata:tt, $errCode:tt, $($message:tt)+) => {async{
     let value = json!($metadata);

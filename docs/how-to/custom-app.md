@@ -2,7 +2,7 @@
 
 To create a new AnyCloud app with a custom name simply pass the optional `-a`, or `--app-id` parameter.
 
-```
+```bash
 $ anycloud new <deploy-name> -a <app-id>
 ▇ Creating new app
 
