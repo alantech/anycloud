@@ -909,12 +909,14 @@ pub async fn upgrade(
 }
 
 async fn get_apps(status: bool) -> Vec<App> {
+  let config = get_config().await;
+  let token = get_token();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message("Gathering information about Apps deployed");
   let body = json!({
-    "deployConfig": get_config().await,
-    "accessToken": get_token(),
+    "deployConfig": config,
+    "accessToken": token,
     "status": status,
   });
   let response = post_v1("info", body).await;
