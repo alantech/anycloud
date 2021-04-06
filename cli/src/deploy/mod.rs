@@ -23,7 +23,7 @@ const REQUEST_TIMEOUT: &str =
 const FORBIDDEN_OPERATION: &str =
   "Please review your credentials. Make sure you have follow all the \
   configuration steps: https://docs.anycloudapp.com/";
-const NAME_CONFLICT: &str = "Another application with same app ID already exists.";
+const NAME_CONFLICT: &str = "Another application with same App ID already exists.";
 const UNAUTHORIZED_OPERATION: &str =
   "Invalid AnyCloud authentication credentials. Please retry and you will be asked to reauthenticate.";
 
@@ -125,7 +125,7 @@ pub async fn add_cred() -> String {
         Ok(())
       }
     })
-    .with_initial_text(cloud.to_lowercase())
+    .default(cloud.to_lowercase())
     .interact_text()
     .unwrap();
   let name = cred_name.to_string();
@@ -453,7 +453,7 @@ pub async fn add_deploy_config() {
         Ok(())
       }
     })
-    .with_initial_text("staging")
+    .default("staging".into())
     .interact_text()
     .unwrap();
   let mut cloud_configs = Vec::new();
@@ -819,7 +819,10 @@ pub async fn new(
     .interact()
     .unwrap();
   let deploy_config = &config_names[selection];
-  let config = get_config().await;
+  let app_id: std::io::Result<String> = Input::with_theme(&ColorfulTheme::default())
+    .with_prompt("Optional App name")
+    .allow_empty(true)
+    .interact_text();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
   sp.set_message("Creating new App");
@@ -832,6 +835,9 @@ pub async fn new(
     "osName": std::env::consts::OS,
   });
   let mut_body = body.as_object_mut().unwrap();
+  if let Ok(app_id) = app_id {
+    mut_body.insert(format!("appId"), json!(app_id));
+  }
   if let Some(anycloud_params) = anycloud_params {
     mut_body.insert(format!("DockerfileB64"), json!(anycloud_params.0));
     mut_body.insert(format!("appTarGzB64"), json!(anycloud_params.1));
@@ -871,10 +877,11 @@ pub async fn upgrade(
     .unwrap();
   let cluster_id = ids[selection];
   CLUSTER_ID.set(cluster_id.to_string()).unwrap();
+  let styled_cluster_id = style(cluster_id).bold();
   let config = get_config().await;
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!("Upgrading {}", style(cluster_id).bold()));
+  sp.set_message(&format!("Upgrading App {}", styled_cluster_id));
   let mut body = json!({
     "clusterId": cluster_id,
     "deployConfig": config,
@@ -893,7 +900,7 @@ pub async fn upgrade(
   }
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded App successfully!"),
+    Ok(_) => format!("Upgraded App {} successfully!", styled_cluster_id),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
