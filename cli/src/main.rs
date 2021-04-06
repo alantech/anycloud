@@ -206,7 +206,7 @@ pub async fn main() {
       match sub_matches.subcommand() {
         ("add", _) => {
           deploy::add_cred().await;
-        },
+        }
         ("edit", _) => deploy::edit_cred().await,
         ("list", _) => deploy::list_creds().await,
         ("remove", _) => deploy::remove_cred().await,
