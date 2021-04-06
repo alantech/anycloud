@@ -820,12 +820,12 @@ pub async fn new(
     .unwrap();
   let deploy_config = &config_names[selection];
   let app_id: std::io::Result<String> = Input::with_theme(&ColorfulTheme::default())
-    .with_prompt("App name")
+    .with_prompt("Optional App name")
     .allow_empty(true)
     .interact_text();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!("Creating new App"));
+  sp.set_message("Creating new App");
   let mut body = json!({
     "deployName": deploy_config,
     "deployConfig": config,
@@ -851,7 +851,7 @@ pub async fn new(
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("Failed to create App. Error: {}", NAME_CONFLICT),
+      PostV1Error::Conflict => format!("Failed to create a new App. Error: {}", NAME_CONFLICT),
       PostV1Error::Unauthorized => {
         clear_token();
         format!("{}", UNAUTHORIZED_OPERATION)
