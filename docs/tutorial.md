@@ -21,7 +21,7 @@ Pick cloud provider for the new Credentials:
 Name for new Credentials: aws-personal
 AWS Access Key ID: ******************
 AWS Secret Access Key: ******************
-Successfully created mystartup-aws Credentials
+Successfully created "mystartup-aws" Credentials
 ```
 
 ## Configure your project
