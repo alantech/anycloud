@@ -1,7 +1,6 @@
 use dialoguer::{console::style, theme::ColorfulTheme, Confirm, Input, Select};
 use hyper::{Request, StatusCode};
 use indicatif::ProgressBar;
-use names::{Generator, Name};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -454,7 +453,7 @@ pub async fn add_deploy_config() {
         Ok(())
       }
     })
-    .default("staging".to_string())
+    .default("staging".into())
     .interact_text()
     .unwrap();
   let mut cloud_configs = Vec::new();
@@ -820,26 +819,25 @@ pub async fn new(
     .interact()
     .unwrap();
   let deploy_config = &config_names[selection];
-  let mut generator = Generator::with_naming(Name::Numbered);
-  let app_id = Input::with_theme(&ColorfulTheme::default())
+  let app_id: std::io::Result<String> = Input::with_theme(&ColorfulTheme::default())
     .with_prompt("App name")
-    .default(generator.next().unwrap())
-    .interact_text()
-    .unwrap();
-  let styled_app_id = style(&app_id).bold();
+    .allow_empty(true)
+    .interact_text();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!("Creating new App {}", styled_app_id));
+  sp.set_message(&format!("Creating new App"));
   let mut body = json!({
     "deployName": deploy_config,
     "deployConfig": config,
     "agzB64": agz_b64,
-    "appId": app_id,
     "alanVersion": format!("v{}", ALAN_VERSION),
     "accessToken": get_token(),
     "osName": std::env::consts::OS,
   });
   let mut_body = body.as_object_mut().unwrap();
+  if let Ok(app_id) = app_id {
+    mut_body.insert(format!("appId"), json!(app_id));
+  }
   if let Some(anycloud_params) = anycloud_params {
     mut_body.insert(format!("DockerfileB64"), json!(anycloud_params.0));
     mut_body.insert(format!("appTarGzB64"), json!(anycloud_params.1));
@@ -849,14 +847,11 @@ pub async fn new(
   }
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(_) => format!("Created App {} successfully!", styled_app_id),
+    Ok(res) => format!("Created App {} successfully!", style(res).bold()),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!(
-        "Failed to create App {}. Error: {}",
-        styled_app_id, NAME_CONFLICT
-      ),
+      PostV1Error::Conflict => format!("Failed to create App. Error: {}", NAME_CONFLICT),
       PostV1Error::Unauthorized => {
         clear_token();
         format!("{}", UNAUTHORIZED_OPERATION)
