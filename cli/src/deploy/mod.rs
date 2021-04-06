@@ -106,7 +106,7 @@ pub enum PostV1Error {
 const ANYCLOUD_FILE: &str = "anycloud.json";
 const CREDENTIALS_FILE: &str = ".anycloud/credentials.json";
 
-pub async fn add_cred() {
+pub async fn add_cred() -> String {
   let mut credentials = get_creds().await;
   let clouds = vec!["AWS", "GCP", "Azure"];
   let selection = Select::with_theme(&ColorfulTheme::default())
@@ -209,7 +209,8 @@ pub async fn add_cred() {
     _ => {}
   }
   update_cred_file(credentials).await;
-  println!("Successfully created {} Credential", style(name).bold());
+  println!("Successfully created {} Credential", style(&name).bold());
+  name
 }
 
 async fn update_cred_file(credentials: HashMap<String, Credentials>) {
@@ -258,7 +259,7 @@ pub async fn edit_cred() {
   let mut credentials = get_creds().await;
   let cred_options = credentials.keys().cloned().collect::<Vec<String>>();
   if cred_options.len() == 0 {
-    prompt_new_cred(true).await;
+    prompt_add_cred(true).await;
   }
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&cred_options)
@@ -360,24 +361,25 @@ pub async fn edit_cred() {
 }
 
 // prompt the user to create a deploy credential if none exists
-pub async fn prompt_new_cred(exit_on_done: bool) {
+pub async fn prompt_add_cred(exit_on_done: bool) -> String {
   let prompt = "No Credentials have been created. Let's create one?";
   if Confirm::with_theme(&ColorfulTheme::default())
     .with_prompt(prompt)
     .interact()
     .unwrap()
   {
-    add_cred().await;
+    let cred = add_cred().await;
     if exit_on_done {
       std::process::exit(0)
-    };
+    }
+    cred
   } else {
     std::process::exit(0);
   }
 }
 
 // prompt the user to create a deploy config if none exists
-pub async fn prompt_new_config() {
+pub async fn prompt_add_config() {
   let prompt = "No Deploy Configs have been created. Let's create one?";
   if Confirm::with_theme(&ColorfulTheme::default())
     .with_prompt(prompt)
@@ -393,7 +395,7 @@ pub async fn remove_cred() {
   let mut creds = get_creds().await;
   let cred_options = creds.keys().cloned().collect::<Vec<String>>();
   if cred_options.len() == 0 {
-    prompt_new_cred(true).await;
+    prompt_add_cred(true).await;
   };
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&cred_options)
@@ -435,7 +437,7 @@ pub async fn list_creds() {
       }
     }
   } else {
-    prompt_new_cred(true).await
+    prompt_add_cred(true).await;
   }
 }
 
@@ -456,9 +458,11 @@ pub async fn add_deploy_config() {
     .unwrap();
   let mut cloud_configs = Vec::new();
   if creds.len() == 0 {
-    prompt_new_cred(false).await
+    prompt_add_cred(false).await;
   }
-  let options = creds.keys().cloned().collect::<Vec<String>>();
+  let mut options = creds.keys().cloned().collect::<Vec<String>>();
+  let new_cred_idx = options.len();
+  options.push("Create new Credential".to_string());
   loop {
     let selection = Select::with_theme(&ColorfulTheme::default())
       .items(&options)
@@ -466,7 +470,11 @@ pub async fn add_deploy_config() {
       .default(0)
       .interact()
       .unwrap();
-    let cred = options[selection].to_string();
+    let cred = if selection == new_cred_idx {
+      add_cred().await
+    } else {
+      options[selection].to_string()
+    };
     // TODO validate these fields?
     let region: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Region name")
@@ -503,7 +511,7 @@ pub async fn edit_deploy_config() {
   let mut deploy_configs = get_deploy_configs().await;
   let config_names = deploy_configs.keys().cloned().collect::<Vec<String>>();
   if config_names.len() == 0 {
-    prompt_new_config().await;
+    prompt_add_config().await;
   }
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&config_names)
@@ -556,7 +564,7 @@ pub async fn remove_deploy_config() {
   let mut deploy_configs = get_deploy_configs().await;
   let config_names = deploy_configs.keys().cloned().collect::<Vec<String>>();
   if config_names.len() == 0 {
-    prompt_new_config().await;
+    prompt_add_config().await;
   }
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&config_names)
@@ -578,7 +586,7 @@ pub async fn list_deploy_configs() {
   table.max_width = 140;
   let configs = get_deploy_configs().await;
   if configs.len() == 0 {
-    prompt_new_config().await;
+    prompt_add_config().await;
   }
   let mut data: Vec<Vec<&dyn Display>> = vec![];
   for (name, config) in &mut configs.iter() {
@@ -679,10 +687,10 @@ pub async fn get_config() -> HashMap<String, Vec<Config>> {
   let anycloud_prof = get_deploy_configs().await;
   let creds = get_creds().await;
   if creds.len() == 0 {
-    prompt_new_cred(true).await;
+    prompt_add_cred(true).await;
   }
   if anycloud_prof.len() == 0 {
-    prompt_new_config().await;
+    prompt_add_config().await;
   }
   let mut all_configs = HashMap::new();
   for (deploy_name, deploy_configs) in anycloud_prof.into_iter() {
@@ -802,7 +810,7 @@ pub async fn new(
   let config = get_config().await;
   let config_names = config.keys().cloned().collect::<Vec<String>>();
   if config_names.len() == 0 {
-    prompt_new_config().await;
+    prompt_add_config().await;
   }
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&config_names)
