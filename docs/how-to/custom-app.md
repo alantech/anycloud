@@ -8,4 +8,4 @@ $ anycloud new -a <app-id>
 
 ```
 
-Remember if the provided app ID is already defined you will not be able to create the new app.
+Remember if the provided app ID is already in use you will not be able to create a new app.
