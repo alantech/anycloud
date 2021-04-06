@@ -756,7 +756,7 @@ pub async fn terminate() {
   let ids = apps.iter().map(|a| a.id.as_str()).collect::<Vec<&str>>();
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&ids)
-    .with_prompt("Pick App to upgrade")
+    .with_prompt("Pick App to terminate")
     .default(0)
     .interact()
     .unwrap();
