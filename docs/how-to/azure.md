@@ -10,20 +10,20 @@
 
 4) To be able to use Anycloud with Azure you will need to manage your subscription resource provider registration as described [here](https://docs.microsoft.com/en-us/azure/azure-resource-manager/templates/error-register-resource-provider#solution-3---azure-portal). You will need to register: `Microsoft.Compute`, `Microsoft.Network`, `Microsoft.Storage` and `Microsoft.Security`.
 
-5) Add a new `Credential` by taking the values from the previous steps. You will need to pick a name or alias for the `Credential`. The initial value will be `azure`. In this example, we will call it `mystartup-azure`.
+5) Add a new `Credentials` by taking the values from the previous steps. You will need to pick a name or alias for the `Credentials`. The initial value will be `azure`. In this example, we will call it `mystartup-azure`.
 
 ```bash
-$ anycloud credential add
-Pick cloud provider for the new Credential:
+$ anycloud credentials add
+Pick cloud provider for the new Credentials:
   AWS
   GCP
 > Azure
-Credential Name: mystartup-azure
+Credentials Name: mystartup-azure
 Azure Application ID: ********-****-****-****-************
 Azure Directory ID: ********-****-****-****-************
 Azure Subscription ID: ********-****-****-****-************
 Azure Secret: **********************************
-Successfully created "mystartup-gcp" Credential
+Successfully created "mystartup-gcp" Credentials
 ```
 
 ## **Configure your project**
@@ -33,7 +33,7 @@ Define a new `Deploy Config` in the `anycloud.json` project you want to deploy t
 ```bash
 $ anycloud config add
 Name for new Deploy Config: staging
-Pick Credential to use:
+Pick Credentials to use:
 > mystartup-azure
 Region name: westus2
 Virtual Machine Type: Standard_B1ls

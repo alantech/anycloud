@@ -1,16 +1,12 @@
-#[repr(u8)]
+#[repr(u64)]
 pub enum ErrorType {
   InvalidPwd = 100,
   NoEnvFile = 101,
   GitChanges = 102,
   NoGit = 103,
   DeleteTmpAppTar = 104,
-  InvalidDefaultAnycloudAlias = 105,
-  DeployNotFound = 106,
   InvalidCredentialsFile = 108,
   InvalidAnycloudFile = 110,
-  InvalidDefaultCredentialAlias = 111,
-  InvalidCredentialAlias = 112,
   AuthFailed = 113,
   NoDnsVms = 114,
   PostStats = 115,

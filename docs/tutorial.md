@@ -10,18 +10,18 @@ In this tutorial we will deploy the [sample express Node.js HTTP server](https:/
 
 3) Enable programmatic access for that IAM user, and attach the built-in [`AmazonEC2FullAccess`](https://console.aws.amazon.com/iam/home#/policies/arn%3Aaws%3Aiam%3A%3Aaws%3Apolicy%2FAmazonEC2FullAccess)policy to it as described [here](https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies_manage-attach-detach.html#add-policies-console).
 
-4) Take the `accessKeyId` and `secretAccessKey` from step 2 and create an AWS [`Credential`](credential.md) in AnyCloud. You will need to pick a name or alias for the `Credential`. The initial value will be `aws`. In this example, we will call it `aws-personal`.
+4) Take the `accessKeyId` and `secretAccessKey` from step 2 and create an AWS `Credentials` in AnyCloud. You will need to pick a name or alias for the `Credentials`. The initial value will be `aws`. In this example, we will call it `aws-personal`.
 
 ```bash
-$ anycloud credential add
-Pick cloud provider for the new Credential:
+$ anycloud credentials add
+Pick cloud provider for the new Credentials:
 > AWS
   GCP
   Azure
-Name for new Credential: aws-personal
+Name for new Credentials: aws-personal
 AWS Access Key ID: ******************
 AWS Secret Access Key: ******************
-Successfully created "mystartup-aws" Credential
+Successfully created "mystartup-aws" Credentials
 ```
 
 ## Configure your project
@@ -78,7 +78,7 @@ $ curl localhost:8088
 
 Which should return `Hello World!`
 
-6) Use the AnyCloud CLI to create an `anycloud.json` file in the project directory and define a `Deploy Config`. You will need to pick a name or alias for the `Deploy Config`. The initial value will be `staging`. Since there is only `Credential`, the CLI will default to that for your new `Deploy Config`.
+6) Use the AnyCloud CLI to create an `anycloud.json` file in the project directory and define a `Deploy Config`. You will need to pick a name or alias for the `Deploy Config`. The initial value will be `staging`. Since there is only `Credentials`, the CLI will default to that for your new `Deploy Config`.
 
 ```bash
 $ anycloud config add
@@ -86,35 +86,35 @@ Name for new Deploy Config: staging
 Region name: us-west-1
 Virtual Machine Type: t2.medium
 Do you want to add another region to this Deploy Config? n
-Successfully created "staging" Credential
+Successfully created "staging" Credentials
 ```
 
 7) Make sure all of the changes in the git repo are committed or they won't be deployed.
 
-## Deploy an app
+## Deploy an App
 
 1) Make sure you [installed the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
 
 ```bash
 $ anycloud new staging
-▇ Creating new app
+▇ Creating new App
 ```
 
-It might take a few minutes for your app to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random app name for you, but [a custom app name can be used](how-to/custom-app.md).
+It might take a few minutes for your App to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random App name for you, but [a custom app name can be used](how-to/custom-app.md).
 
-2) Check the status of your application:
+2) Check the status of your App:
 
 ```bash
 $ anycloud info
-Status of all apps deployed:
+Apps deployed:
 
 ┌────────────────┬───────────────────────────────────────┬───────────────┬──────┬────────┐
-│ App Id         │ Url                                   │ Deploy Config │ Size │ Status │
+│ App ID         │ Url                                   │ Deploy Config │ Size │ Status │
 ├────────────────┼───────────────────────────────────────┼───────────────┼──────┼────────┤
 │ crimson-tick-5 │ https://crimson-tick-5.alandeploy.com │ staging       │ 1    │ up     │
 └────────────────┴───────────────────────────────────────┴───────────────┴──────┴────────┘
 
-Deployment configurations used:
+Deploy Configs used:
 
 ┌───────────────┬───────────┬───────────┐
 │ Deploy Config │ Region    │ VM Type   │
@@ -124,7 +124,7 @@ Deployment configurations used:
 
 ```
 
-3) The `size` of your app represents the number of virtual machines used to back your app. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud app!
+3) The `size` of your App represents the number of virtual machines used to back your App. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud App!
 
 ```bash
 $ curl https://crimson-tick-5.anycloudapp.com
@@ -132,7 +132,7 @@ $ curl https://crimson-tick-5.anycloudapp.com
 
 Which should return `Hello World!`
 
-4) Terminate your AnyCloud app when you no longer need it
+4) Terminate your AnyCloud App when you no longer need it
 
 ```bash
 anycloud terminate crimson-tick-5

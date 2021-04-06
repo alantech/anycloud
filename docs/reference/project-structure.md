@@ -15,7 +15,7 @@ AnyCloud `Deploy Configs` are stored in an `anycloud.json` within the project di
 ```bash
 $ anycloud config add
 Name for new Deploy Config: staging
-Pick Credential to use:
+Pick Credentials to use:
 > mystartup-aws
 Region name: us-west-1
 Virtual Machine Type: t2.medium
@@ -24,7 +24,7 @@ Successfully created "staging" Deploy Config
 
 $ anycloud config add
 Name for new Deploy Config: production
-Pick Credential to use:
+Pick Credentials to use:
 > mystartup-aws
 Region name: us-west-1
 Virtual Machine Type: t2.xlarge
@@ -51,13 +51,13 @@ The resulting `anycloud.json` contains two `Deploy Config`s called `staging` and
     "cloudProvider": "AWS",
     "region": "us-west-1",
     "vmType": "t2.medium",
-    "credential": "mystartup-aws"
+    "credentialsName": "mystartup-aws"
   }],
   "production": [{
     "cloudProvider": "AWS",
     "region": "us-west-1",
     "vmType": "t2.xlarge",
-    "credential": "mystartup-aws"
+    "credentialsName": "mystartup-aws"
   }]
 }
 ```

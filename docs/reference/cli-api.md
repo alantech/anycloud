@@ -14,59 +14,56 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    help         Prints this message or the help of the given subcommand(s)
-    info         Displays all the apps deployed with the deploy config from anycloud.json
-    new          Deploys your repository to a new app with one of the deploy configs from anycloud.json
-    terminate    Terminate an app with the provided id hosted in one of the deploy configs at anycloud.json
-    upgrade      Deploys your repository to an existing app hosted in one of the deploy configs at anycloud.json
+    config         Manage Deploy Configs used by Apps from the anycloud.json in the current directory
+    credentials    Manage all Credentials used by Deploy Configs from the credentials file at
+                   ~/.anycloud/credentials.json
+    help           Prints this message or the help of the given subcommand(s)
+    info           Displays all the Apps deployed with the Deploy Configs from anycloud.json
+    new            Deploys your repository to a new App with a Deploy Config from anycloud.json
+    terminate      Terminate an App hosted in one of the Deploy Configs from anycloud.json
+    upgrade        Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json
 ```
 
 ## new
 
 ```
 $ anycloud help new
-Deploys your repository to a new app with one of the deploy configs from anycloud.json
+Deploys your repository to a new App with a Deploy Config from anycloud.json
 
 USAGE:
-    anycloud new [OPTIONS] <DEPLOY_NAME>
+    anycloud new [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -a, --app-id <APP_ID>    Specifies an optional application identifier
-    -e, --env-file=<ENV_FILE> Specifies an optional environment file
-
-ARGS:
-    <DEPLOY_NAME>    Specifies the name of the deploy config to use
+    -a, --app-id <APP_ID>        Specifies an optional App ID
+    -e, --env-file <ENV_FILE>    Specifies an optional environment file
 ```
 
 ## upgrade
 
 ```
 $ anycloud help upgrade
-Deploys your repository to an existing app hosted in one of the deploy configs at anycloud.json
+Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json
 
 USAGE:
-    anycloud upgrade <APP_ID>
+    anycloud upgrade [OPTIONS]
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
 OPTIONS:
-    -e, --env-file=<ENV_FILE> Specifies an optional environment file
-
-ARGS:
-    <APP_ID>    Specifies the alan app to upgrade
+    -e, --env-file <ENV_FILE>    Specifies an optional environment file relative path
 ```
 
 ## info
 
 ```
 $ anycloud help info
-Displays all the apps deployed with the deploy config from anycloud.json
+Displays all the Apps deployed with the Deploy Configs from anycloud.json
 
 USAGE:
     anycloud info
@@ -80,15 +77,55 @@ FLAGS:
 
 ```
 $ anycloud help terminate
-Terminate an app with the provided id hosted in one of the deploy configs at anycloud.json
+Terminate an App hosted in one of the Deploy Configs from anycloud.json
 
 USAGE:
-    anycloud terminate <APP_ID>
+    anycloud terminate
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+```
+
+## credentials
+
+```
+$ anycloud help credentials
+Manage all Credentials used by Deploy Configs from the credentials file at ~/.anycloud/credentials.json
+
+USAGE:
+    anycloud credentials <SUBCOMMAND>
 
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
 
-ARGS:
-    <APP_ID>    Specifies the alan app to terminate
+SUBCOMMANDS:
+    add       Add a new Credentials
+    edit      Edit an existing Credentials
+    help      Prints this message or the help of the given subcommand(s)
+    list      List all the available Credentials
+    remove    Remove an existing Credentials
+```
+
+## config
+
+```
+$ anycloud help config
+Manage Deploy Configs used by Apps from the anycloud.json in the current directory
+
+USAGE:
+    anycloud config <SUBCOMMAND>
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    add       Add a new Deploy Config to the anycloud.json in the current directory and creates the file if it
+              doesn't exist.
+    edit      Edit an existing Deploy Config from the anycloud.json in the current directory
+    help      Prints this message or the help of the given subcommand(s)
+    list      List all the Deploy Configs from the anycloud.json in the current directory
+    remove    Remove an existing Deploy Config from the anycloud.json in the current directory
 ```
