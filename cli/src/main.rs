@@ -4,12 +4,10 @@ use std::process::Command;
 
 use base64;
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
-use serde_json::json;
 
 use anycloud::deploy;
 use anycloud::logger::ErrorType;
-use anycloud::oauth::{authenticate, get_token};
-use anycloud::CLUSTER_ID;
+use anycloud::oauth::authenticate;
 
 #[macro_use]
 extern crate anycloud;
@@ -124,25 +122,22 @@ pub async fn main() {
     .about(desc)
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
-      .about("Deploys your repository to a new app with a deploy profile from anycloud.json")
-      .arg_from_usage("-p --deploy-profile=[DEPLOY_PROFILE] 'Specifies the name of a deploy profile from anycloud.json. Required if there are multiple profiles'")
-      .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional application identifier'")
+      .about("Deploys your repository to a new App with a Deploy Config from anycloud.json")
+      .arg_from_usage("-a, --app-id=[APP_ID] 'Specifies an optional App ID'")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
     )
     .subcommand(SubCommand::with_name("info")
-      .about("Displays all the apps deployed with the deploy profiles from anycloud.json")
+      .about("Displays all the Apps deployed with the Deploy Configs from anycloud.json")
     )
     .subcommand(SubCommand::with_name("terminate")
-      .about("Terminate an app with the provided ID hosted in one of the deploy profiles from anycloud.json")
-      .arg_from_usage("<APP_ID> 'Specifies the alan app to terminate'")
+      .about("Terminate an app hosted in one of the Deploy Configs from anycloud.json")
     )
     .subcommand(SubCommand::with_name("upgrade")
-      .about("Deploys your repository to an existing app hosted in one of the deploy profiles from anycloud.json")
-      .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
+      .about("Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     )
     .subcommand(SubCommand::with_name("config")
-      .about("Manage Deploy Configs used by apps from the anycloud.json in the current directory")
+      .about("Manage Deploy Configs used by Apps from the anycloud.json in the current directory")
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .subcommand(SubCommand::with_name("add")
         .about("Add a new Deploy Config to the anycloud.json in the current directory and creates the file if it doesn't exist.")
@@ -157,20 +152,20 @@ pub async fn main() {
         .about("Remove an existing Deploy Config from the anycloud.json in the current directory")
       )
     )
-    .subcommand(SubCommand::with_name("credential")
+    .subcommand(SubCommand::with_name("credentials")
       .about("Manage all Credentials used by Deploy Configs from the credentials file at ~/.anycloud/credentials.json")
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .subcommand(SubCommand::with_name("add")
-        .about("Add a new Credential")
+        .about("Add a new Credentials")
       )
       .subcommand(SubCommand::with_name("list")
         .about("List all the available Credentials")
       )
       .subcommand(SubCommand::with_name("edit")
-        .about("Edit an existing Credential")
+        .about("Edit an existing Credentials")
       )
       .subcommand(SubCommand::with_name("remove")
-        .about("Remove an existing Credential")
+        .about("Remove an existing Credentials")
       )
     );
 
@@ -178,84 +173,40 @@ pub async fn main() {
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new", Some(matches)) => {
-      let config = deploy::get_config().await;
-      let profile = match matches.value_of("deploy-profile") {
-        None => {
-          if config.len() != 1 {
-            let err = format!(
-              "No deploy profile from anycloud.json specified when more than one \
-              profile exists.",
-            );
-            error!(ErrorType::InvalidDefaultAnycloudAlias, "{}", err).await;
-            std::process::exit(1);
-          }
-          config.keys().next().unwrap().to_string()
-        }
-        Some(key) => key.to_string(),
+      let dockerfile_b64 = get_dockerfile_b64().await;
+      let app_tar_gz_b64 = get_app_tar_gz_b64().await;
+      let env_b64 = match matches.value_of("env-file") {
+        Some(env_file) => Some(get_env_file_b64(env_file.to_string()).await),
+        None => None,
       };
-      if !config.contains_key(&profile) {
-        error!(
-          ErrorType::DeployNotFound,
-          "Deploy name provided is not defined in anycloud.json"
-        )
-        .await;
-        std::process::exit(1);
-      }
-      let app_id = matches.value_of("app-id");
-      let env_file = matches.value_of("env-file");
-      let mut body = json!({
-        "deployConfig": config,
-        "deployName": profile,
-        "agzB64": anycloud_agz,
-        "DockerfileB64": get_dockerfile_b64().await,
-        "appTarGzB64": get_app_tar_gz_b64().await,
-        "appId": app_id,
-        "alanVersion": format!("v{}", deploy::ALAN_VERSION),
-        "osName": std::env::consts::OS,
-        "accessToken": get_token(),
-      });
-      if let Some(env_file) = env_file {
-        body.as_object_mut().unwrap().insert(
-          format!("envB64"),
-          json!(get_env_file_b64(env_file.to_string()).await),
-        );
-      }
-      deploy::new(body).await;
+      deploy::new(
+        anycloud_agz,
+        Some((dockerfile_b64, app_tar_gz_b64)),
+        env_b64,
+      )
+      .await;
     }
-    ("terminate", Some(matches)) => {
-      let cluster_id = matches.value_of("APP_ID").unwrap();
-      CLUSTER_ID.set(String::from(cluster_id)).unwrap();
-      deploy::terminate(cluster_id).await;
-    }
+    ("terminate", _) => deploy::terminate().await,
     ("upgrade", Some(matches)) => {
-      let config = deploy::get_config().await;
-      let cluster_id = matches.value_of("APP_ID").unwrap();
-      CLUSTER_ID.set(String::from(cluster_id)).unwrap();
-      let env_file = matches.value_of("env-file");
-      let mut body = json!({
-        "clusterId": cluster_id,
-        "deployConfig": config,
-        "agzB64": anycloud_agz,
-        "DockerfileB64": get_dockerfile_b64().await,
-        "appTarGzB64": get_app_tar_gz_b64().await,
-        "alanVersion": format!("v{}", deploy::ALAN_VERSION),
-        "accessToken": get_token(),
-        "osName": std::env::consts::OS,
-      });
-      if let Some(env_file) = env_file {
-        body.as_object_mut().unwrap().insert(
-          format!("envB64"),
-          json!(get_env_file_b64(env_file.to_string()).await),
-        );
-      }
-      deploy::upgrade(body).await;
+      let dockerfile_b64 = get_dockerfile_b64().await;
+      let app_tar_gz_b64 = get_app_tar_gz_b64().await;
+      let env_b64 = match matches.value_of("env-file") {
+        Some(env_file) => Some(get_env_file_b64(env_file.to_string()).await),
+        None => None,
+      };
+      deploy::upgrade(
+        anycloud_agz,
+        Some((dockerfile_b64, app_tar_gz_b64)),
+        env_b64,
+      )
+      .await;
     }
-    ("info", _) => {
-      deploy::info().await;
-    }
-    ("credential", Some(sub_matches)) => {
+    ("info", _) => deploy::info().await,
+    ("credentials", Some(sub_matches)) => {
       match sub_matches.subcommand() {
-        ("add", _) => deploy::add_cred().await,
+        ("add", _) => {
+          deploy::add_cred().await;
+        }
         ("edit", _) => deploy::edit_cred().await,
         ("list", _) => deploy::list_creds().await,
         ("remove", _) => deploy::remove_cred().await,
