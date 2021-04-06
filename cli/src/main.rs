@@ -130,12 +130,10 @@ pub async fn main() {
       .about("Displays all the apps deployed with the Deploy Configs from anycloud.json")
     )
     .subcommand(SubCommand::with_name("terminate")
-      .about("Terminate an app with the provided ID hosted in one of the Deploy Configs from anycloud.json")
-      .arg_from_usage("<APP_ID> 'Specifies the alan app to terminate'")
+      .about("Terminate an app hosted in one of the Deploy Configs from anycloud.json")
     )
     .subcommand(SubCommand::with_name("upgrade")
       .about("Deploys your repository to an existing app hosted in one of the Deploy Configs from anycloud.json")
-      .arg_from_usage("<APP_ID> 'Specifies the alan app to upgrade'")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
     )
     .subcommand(SubCommand::with_name("config")
@@ -188,29 +186,22 @@ pub async fn main() {
       )
       .await;
     }
-    ("terminate", Some(matches)) => {
-      let cluster_id = matches.value_of("APP_ID").unwrap().to_string();
-      deploy::terminate(cluster_id).await;
-    }
+    ("terminate", _) => deploy::terminate().await,
     ("upgrade", Some(matches)) => {
       let dockerfile_b64 = get_dockerfile_b64().await;
       let app_tar_gz_b64 = get_app_tar_gz_b64().await;
-      let cluster_id = matches.value_of("APP_ID").unwrap().to_string();
       let env_b64 = match matches.value_of("env-file") {
         Some(env_file) => Some(get_env_file_b64(env_file.to_string()).await),
         None => None,
       };
       deploy::upgrade(
-        cluster_id,
         anycloud_agz,
         Some((dockerfile_b64, app_tar_gz_b64)),
         env_b64,
       )
       .await;
     }
-    ("info", _) => {
-      deploy::info().await;
-    }
+    ("info", _) => deploy::info().await,
     ("credential", Some(sub_matches)) => {
       match sub_matches.subcommand() {
         ("add", _) => deploy::add_cred().await,

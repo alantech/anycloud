@@ -751,15 +751,21 @@ pub async fn client_error(err_code: ErrorType, message: &str) {
   let _resp = post_v1("clientError", body).await;
 }
 
-pub async fn terminate(cluster_id: String) {
-  let styled_cluster_id = style(&cluster_id).bold();
+pub async fn terminate() {
+  let apps = get_apps().await;
+  let ids = apps.iter().map(|a| a.id.as_str()).collect::<Vec<&str>>();
+  let selection = Select::with_theme(&ColorfulTheme::default())
+    .items(&ids)
+    .with_prompt("Pick App to upgrade")
+    .default(0)
+    .interact()
+    .unwrap();
+  let cluster_id = &ids[selection];
+  CLUSTER_ID.set(cluster_id.to_string()).unwrap();
+  let styled_cluster_id = style(cluster_id).bold();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!(
-    "Terminating app {} if it exists",
-    styled_cluster_id
-  ));
-  CLUSTER_ID.set(cluster_id.to_string()).unwrap();
+  sp.set_message(&format!("Terminating app {}", styled_cluster_id));
   let body = json!({
     "deployConfig": get_config().await,
     "clusterId": cluster_id,
@@ -843,16 +849,24 @@ pub async fn new(
 }
 
 pub async fn upgrade(
-  cluster_id: String,
   agz_b64: String,
   anycloud_params: Option<(String, String)>,
   env_b64: Option<String>,
 ) {
+  let apps = get_apps().await;
+  let ids = apps.iter().map(|a| a.id.as_str()).collect::<Vec<&str>>();
+  let selection = Select::with_theme(&ColorfulTheme::default())
+    .items(&ids)
+    .with_prompt("Pick App to upgrade")
+    .default(0)
+    .interact()
+    .unwrap();
+  let cluster_id = ids[selection];
+  CLUSTER_ID.set(cluster_id.to_string()).unwrap();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message("Upgrading existing app");
+  sp.set_message(&format!("Upgrading {}", style(cluster_id).bold()));
   let config = get_config().await;
-  CLUSTER_ID.set(cluster_id.to_string()).unwrap();
   let mut body = json!({
     "clusterId": cluster_id,
     "deployConfig": config,
@@ -886,7 +900,7 @@ pub async fn upgrade(
   sp.finish_with_message(&res);
 }
 
-pub async fn info() {
+async fn get_apps() -> Vec<App> {
   let body = json!({
     "deployConfig": get_config().await,
     "accessToken": get_token(),
@@ -919,12 +933,16 @@ pub async fn info() {
       std::process::exit(1);
     }
   };
-  let mut apps: Vec<App> = serde_json::from_str(resp).unwrap();
-
+  let apps: Vec<App> = serde_json::from_str(resp).unwrap();
   if apps.len() == 0 {
     println!("No apps currently deployed");
-    return;
+    std::process::exit(0);
   }
+  apps
+}
+
+pub async fn info() {
+  let mut apps = get_apps().await;
 
   let mut clusters = AsciiTable::default();
   clusters.max_width = 140;
