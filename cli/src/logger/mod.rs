@@ -16,17 +16,18 @@ pub enum ErrorType {
   NoDnsPrivateIp = 119,
   ScaleFailed = 120,
   PostFailed = 121,
+  RunAgzFailed = 122,
 }
 
 #[macro_export]
 macro_rules! error {
   ($errCode:expr, $($message:tt)+) => {async{
-      eprintln!($($message)+);
-      crate::deploy::client_error($errCode, &format!($($message)+)).await;
+    eprintln!($($message)+);
+    $crate::deploy::client_error($errCode, &format!($($message)+)).await;
   }};
   (metadata: $metadata:tt, $errCode:tt, $($message:tt)+) => {async{
     let value = json!($metadata);
     eprintln!($($message)+);
-    client_error($errCode, &format!($($message)+)).await;
+    $crate::deploy::client_error($errCode, &format!($($message)+)).await;
   }}
 }
