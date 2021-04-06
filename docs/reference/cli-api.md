@@ -38,7 +38,6 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -a, --app-id <APP_ID>        Specifies an optional App ID
     -e, --env-file <ENV_FILE>    Specifies an optional environment file
 ```
 
