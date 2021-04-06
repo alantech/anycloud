@@ -760,7 +760,7 @@ pub async fn client_error(err_code: ErrorType, message: &str) {
 }
 
 pub async fn terminate() {
-  let apps = get_apps().await;
+  let apps = get_apps(false).await;
   let ids = apps.iter().map(|a| a.id.as_str()).collect::<Vec<&str>>();
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&ids)
@@ -773,7 +773,7 @@ pub async fn terminate() {
   let styled_cluster_id = style(cluster_id).bold();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!("Terminating app {}", styled_cluster_id));
+  sp.set_message(&format!("Terminating App {}", styled_cluster_id));
   let body = json!({
     "deployConfig": get_config().await,
     "clusterId": cluster_id,
@@ -781,12 +781,12 @@ pub async fn terminate() {
   });
   let resp = post_v1("terminate", body).await;
   let res = match resp {
-    Ok(_) => format!("Terminated app {} successfully!", styled_cluster_id),
+    Ok(_) => format!("Terminated App {} successfully!", styled_cluster_id),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
       PostV1Error::Conflict => format!(
-        "Failed to terminate app {}. Error: {}",
+        "Failed to terminate App {}. Error: {}",
         cluster_id, NAME_CONFLICT
       ),
       PostV1Error::Unauthorized => {
@@ -794,7 +794,7 @@ pub async fn terminate() {
         format!("{}", UNAUTHORIZED_OPERATION)
       }
       PostV1Error::Other(err) => format!(
-        "Failed to terminate app {}. Error: {}",
+        "Failed to terminate App {}. Error: {}",
         styled_cluster_id, err
       ),
     },
@@ -821,7 +821,7 @@ pub async fn new(
   let deploy_config = &config_names[selection];
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message("Creating new app");
+  sp.set_message("Creating new App");
   let config = get_config().await;
   let mut body = json!({
     "deployName": deploy_config,
@@ -841,16 +841,16 @@ pub async fn new(
   }
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(res) => format!("Created app {} successfully!", style(res).bold()),
+    Ok(res) => format!("Created App {} successfully!", style(res).bold()),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
-      PostV1Error::Conflict => format!("Failed to create a new app. Error: {}", NAME_CONFLICT),
+      PostV1Error::Conflict => format!("Failed to create a new App. Error: {}", NAME_CONFLICT),
       PostV1Error::Unauthorized => {
         clear_token();
         format!("{}", UNAUTHORIZED_OPERATION)
       }
-      PostV1Error::Other(err) => format!("Failed to create a new app. Error: {}", err),
+      PostV1Error::Other(err) => format!("Failed to create a new App. Error: {}", err),
     },
   };
   sp.finish_with_message(&res);
@@ -861,7 +861,7 @@ pub async fn upgrade(
   anycloud_params: Option<(String, String)>,
   env_b64: Option<String>,
 ) {
-  let apps = get_apps().await;
+  let apps = get_apps(false).await;
   let ids = apps.iter().map(|a| a.id.as_str()).collect::<Vec<&str>>();
   let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&ids)
@@ -893,7 +893,7 @@ pub async fn upgrade(
   }
   let resp = post_v1("upgrade", body).await;
   let res = match resp {
-    Ok(_) => format!("Upgraded app successfully!"),
+    Ok(_) => format!("Upgraded App successfully!"),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
@@ -908,12 +908,17 @@ pub async fn upgrade(
   sp.finish_with_message(&res);
 }
 
-async fn get_apps() -> Vec<App> {
+async fn get_apps(status: bool) -> Vec<App> {
+  let sp = ProgressBar::new_spinner();
+  sp.enable_steady_tick(10);
+  sp.set_message("Gathering information about Apps deployed");
   let body = json!({
     "deployConfig": get_config().await,
     "accessToken": get_token(),
+    "status": status,
   });
   let response = post_v1("info", body).await;
+  sp.finish_and_clear();
   let resp = match &response {
     Ok(resp) => resp,
     Err(err) => {
@@ -926,7 +931,7 @@ async fn get_apps() -> Vec<App> {
         }
         PostV1Error::Conflict => {
           eprintln!(
-            "Displaying status for apps failed with error: {}",
+            "Displaying status for Apps failed with error: {}",
             NAME_CONFLICT
           );
         }
@@ -935,7 +940,7 @@ async fn get_apps() -> Vec<App> {
           eprintln!("{}", UNAUTHORIZED_OPERATION);
         }
         PostV1Error::Other(err) => {
-          eprintln!("Displaying status for apps failed with error: {}", err);
+          eprintln!("Displaying status for Apps failed with error: {}", err);
         }
       }
       std::process::exit(1);
@@ -943,20 +948,20 @@ async fn get_apps() -> Vec<App> {
   };
   let apps: Vec<App> = serde_json::from_str(resp).unwrap();
   if apps.len() == 0 {
-    println!("No apps currently deployed");
+    println!("No Apps currently deployed");
     std::process::exit(0);
   }
   apps
 }
 
 pub async fn info() {
-  let mut apps = get_apps().await;
+  let mut apps = get_apps(true).await;
 
   let mut clusters = AsciiTable::default();
   clusters.max_width = 140;
 
   let column = Column {
-    header: "App Id".into(),
+    header: "App ID".into(),
     ..Column::default()
   };
   clusters.columns.insert(0, column);
@@ -1009,7 +1014,7 @@ pub async fn info() {
     deploy_profiles.insert(&app.deployName);
   }
 
-  println!("Status of all apps deployed:\n");
+  println!("Apps deployed:\n");
   clusters.print(app_data);
 
   let mut profiles = AsciiTable::default();
@@ -1032,6 +1037,6 @@ pub async fn info() {
     ..Column::default()
   };
   profiles.columns.insert(2, column);
-  println!("\nDeployment configurations used:\n");
+  println!("\nDeploy Configs used:\n");
   profiles.print(profile_data);
 }

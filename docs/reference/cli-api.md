@@ -14,21 +14,21 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    config         Manage Deploy Configs used by apps from the anycloud.json in the current directory
+    config         Manage Deploy Configs used by Apps from the anycloud.json in the current directory
     credentials    Manage all Credentials used by Deploy Configs from the credentials file at
                    ~/.anycloud/credentials.json
     help           Prints this message or the help of the given subcommand(s)
-    info           Displays all the apps deployed with the Deploy Configs from anycloud.json
-    new            Deploys your repository to a new app with a Deploy Config from anycloud.json
-    terminate      Terminate an app hosted in one of the Deploy Configs from anycloud.json
-    upgrade        Deploys your repository to an existing app hosted in one of the Deploy Configs from anycloud.json
+    info           Displays all the Apps deployed with the Deploy Configs from anycloud.json
+    new            Deploys your repository to a new App with a Deploy Config from anycloud.json
+    terminate      Terminate an App hosted in one of the Deploy Configs from anycloud.json
+    upgrade        Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json
 ```
 
 ## new
 
 ```
 $ anycloud help new
-Deploys your repository to a new app with a Deploy Config from anycloud.json
+Deploys your repository to a new App with a Deploy Config from anycloud.json
 
 USAGE:
     anycloud new [OPTIONS]
@@ -38,7 +38,7 @@ FLAGS:
     -V, --version    Prints version information
 
 OPTIONS:
-    -a, --app-id <APP_ID>        Specifies an optional application identifier
+    -a, --app-id <APP_ID>        Specifies an optional App ID
     -e, --env-file <ENV_FILE>    Specifies an optional environment file
 ```
 
@@ -46,7 +46,7 @@ OPTIONS:
 
 ```
 $ anycloud help upgrade
-Deploys your repository to an existing app hosted in one of the Deploy Configs from anycloud.json
+Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json
 
 USAGE:
     anycloud upgrade [OPTIONS]
@@ -63,7 +63,7 @@ OPTIONS:
 
 ```
 $ anycloud help info
-Displays all the apps deployed with the Deploy Configs from anycloud.json
+Displays all the Apps deployed with the Deploy Configs from anycloud.json
 
 USAGE:
     anycloud info
@@ -77,7 +77,7 @@ FLAGS:
 
 ```
 $ anycloud help terminate
-Terminate an app hosted in one of the Deploy Configs from anycloud.json
+Terminate an App hosted in one of the Deploy Configs from anycloud.json
 
 USAGE:
     anycloud terminate
@@ -112,7 +112,7 @@ SUBCOMMANDS:
 
 ```
 $ anycloud help config
-Manage Deploy Configs used by apps from the anycloud.json in the current directory
+Manage Deploy Configs used by Apps from the anycloud.json in the current directory
 
 USAGE:
     anycloud config <SUBCOMMAND>

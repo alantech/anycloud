@@ -91,30 +91,30 @@ Successfully created "staging" Credentials
 
 7) Make sure all of the changes in the git repo are committed or they won't be deployed.
 
-## Deploy an app
+## Deploy an App
 
 1) Make sure you [installed the AnyCloud CLI](about.md#cli-installation). Now deploy your Node.js server to your AWS account using the AnyCloud CLI. The only argument required is the value of one of the keys in `anycloud.json` to reference a deploy configuration. We use `staging` which we previously defined:
 
 ```bash
 $ anycloud new staging
-▇ Creating new app
+▇ Creating new App
 ```
 
-It might take a few minutes for your app to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random app name for you, but [a custom app name can be used](how-to/custom-app.md).
+It might take a few minutes for your App to start while the virtual machine is provisioned and upgraded. The AnyCloud CLI will generate a random App name for you, but [a custom app name can be used](how-to/custom-app.md).
 
-2) Check the status of your application:
+2) Check the status of your App:
 
 ```bash
 $ anycloud info
-Status of all apps deployed:
+Apps deployed:
 
 ┌────────────────┬───────────────────────────────────────┬───────────────┬──────┬────────┐
-│ App Id         │ Url                                   │ Deploy Config │ Size │ Status │
+│ App ID         │ Url                                   │ Deploy Config │ Size │ Status │
 ├────────────────┼───────────────────────────────────────┼───────────────┼──────┼────────┤
 │ crimson-tick-5 │ https://crimson-tick-5.alandeploy.com │ staging       │ 1    │ up     │
 └────────────────┴───────────────────────────────────────┴───────────────┴──────┴────────┘
 
-Deployment configurations used:
+Deploy Configs used:
 
 ┌───────────────┬───────────┬───────────┐
 │ Deploy Config │ Region    │ VM Type   │
@@ -124,7 +124,7 @@ Deployment configurations used:
 
 ```
 
-3) The `size` of your app represents the number of virtual machines used to back your app. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud app!
+3) The `size` of your App represents the number of virtual machines used to back your App. Apps scale elastically based on request load automatically. Now `curl` your AnyCloud App!
 
 ```bash
 $ curl https://crimson-tick-5.anycloudapp.com
@@ -132,7 +132,7 @@ $ curl https://crimson-tick-5.anycloudapp.com
 
 Which should return `Hello World!`
 
-4) Terminate your AnyCloud app when you no longer need it
+4) Terminate your AnyCloud App when you no longer need it
 
 ```bash
 anycloud terminate crimson-tick-5
