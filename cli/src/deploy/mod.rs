@@ -1,4 +1,4 @@
-use dialoguer::{Confirm, Input, Select};
+use dialoguer::{console::style, theme::ColorfulTheme, Confirm, Input, Select};
 use hyper::{Request, StatusCode};
 use indicatif::ProgressBar;
 use serde::{Deserialize, Serialize};
@@ -109,14 +109,14 @@ const CREDENTIALS_FILE: &str = ".anycloud/credentials.json";
 pub async fn add_cred() {
   let mut credentials = get_creds().await;
   let clouds = vec!["AWS", "GCP", "Azure"];
-  let selection = Select::new()
+  let selection = Select::with_theme(&ColorfulTheme::default())
     .with_prompt("Pick cloud provider for the new Credential")
     .items(&clouds)
     .default(0)
     .interact()
     .unwrap();
   let cloud = clouds[selection];
-  let cred_name = Input::new()
+  let cred_name = Input::with_theme(&ColorfulTheme::default())
     .with_prompt("Name for new Credential")
     .validate_with(|input: &String| -> Result<(), &str> {
       if credentials.contains_key(input) {
@@ -132,11 +132,11 @@ pub async fn add_cred() {
   match cloud {
     "AWS" => {
       // TODO check ~/.aws/credentials and provide values as default
-      let access_key: String = Input::new()
+      let access_key: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("AWS Access Key ID")
         .interact_text()
         .unwrap();
-      let secret: String = Input::new()
+      let secret: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("AWS Secret Access Key")
         .interact_text()
         .unwrap();
@@ -152,15 +152,15 @@ pub async fn add_cred() {
       );
     }
     "GCP" => {
-      let project_id: String = Input::new()
+      let project_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GCP Project ID")
         .interact_text()
         .unwrap();
-      let client_email: String = Input::new()
+      let client_email: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GCP Client Email")
         .interact_text()
         .unwrap();
-      let private_key: String = Input::new()
+      let private_key: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GCP Private Key")
         .interact_text()
         .unwrap();
@@ -177,19 +177,19 @@ pub async fn add_cred() {
       );
     }
     "Azure" => {
-      let application_id: String = Input::new()
+      let application_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Application ID")
         .interact_text()
         .unwrap();
-      let directory_id: String = Input::new()
+      let directory_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Directory ID")
         .interact_text()
         .unwrap();
-      let subscription_id: String = Input::new()
+      let subscription_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Subscription ID")
         .interact_text()
         .unwrap();
-      let secret: String = Input::new()
+      let secret: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Secret")
         .interact_text()
         .unwrap();
@@ -209,7 +209,7 @@ pub async fn add_cred() {
     _ => {}
   }
   update_cred_file(credentials).await;
-  println!("Successfully created \"{}\" Credential", name);
+  println!("Successfully created {} Credential", style(name).bold());
 }
 
 async fn update_cred_file(credentials: HashMap<String, Credentials>) {
@@ -260,7 +260,7 @@ pub async fn edit_cred() {
   if cred_options.len() == 0 {
     prompt_new_cred(true).await;
   }
-  let selection = Select::new()
+  let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&cred_options)
     .with_prompt("Pick Credential to edit")
     .default(0)
@@ -271,12 +271,12 @@ pub async fn edit_cred() {
   let cred_name = name.to_string();
   match &cred.credentials {
     CloudCredentials::AWS(cred) => {
-      let access_key: String = Input::new()
+      let access_key: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("AWS Access Key ID")
         .with_initial_text(cred.accessKeyId.to_string())
         .interact_text()
         .unwrap();
-      let secret: String = Input::new()
+      let secret: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("AWS Secret Access Key")
         .with_initial_text(cred.secretAccessKey.to_string())
         .interact_text()
@@ -293,17 +293,17 @@ pub async fn edit_cred() {
       );
     }
     CloudCredentials::GCP(cred) => {
-      let client_email: String = Input::new()
+      let client_email: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GCP Client Email")
         .with_initial_text(cred.clientEmail.to_string())
         .interact_text()
         .unwrap();
-      let project_id: String = Input::new()
+      let project_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GCP Project ID")
         .with_initial_text(cred.projectId.to_string())
         .interact_text()
         .unwrap();
-      let private_key: String = Input::new()
+      let private_key: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("GCP Private Key")
         .with_initial_text(cred.privateKey.to_string())
         .interact_text()
@@ -321,22 +321,22 @@ pub async fn edit_cred() {
       );
     }
     CloudCredentials::Azure(cred) => {
-      let application_id: String = Input::new()
+      let application_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Application ID")
         .with_initial_text(cred.applicationId.to_string())
         .interact_text()
         .unwrap();
-      let directory_id: String = Input::new()
+      let directory_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Directory ID")
         .with_initial_text(cred.directoryId.to_owned())
         .interact_text()
         .unwrap();
-      let subscription_id: String = Input::new()
+      let subscription_id: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Subscription ID")
         .with_initial_text(cred.subscriptionId.to_string())
         .interact_text()
         .unwrap();
-      let secret: String = Input::new()
+      let secret: String = Input::with_theme(&ColorfulTheme::default())
         .with_prompt("Azure Secret")
         .with_initial_text(cred.secret.to_string())
         .interact_text()
@@ -356,13 +356,17 @@ pub async fn edit_cred() {
     }
   }
   update_cred_file(credentials).await;
-  println!("Successfully edited \"{}\" Credential", name.to_string());
+  println!("Successfully edited {} Credential", style(name).bold());
 }
 
 // prompt the user to create a deploy credential if none exists
 pub async fn prompt_new_cred(exit_on_done: bool) {
   let prompt = "No Credentials have been created. Let's create one?";
-  if Confirm::new().with_prompt(prompt).interact().unwrap() {
+  if Confirm::with_theme(&ColorfulTheme::default())
+    .with_prompt(prompt)
+    .interact()
+    .unwrap()
+  {
     add_cred().await;
     if exit_on_done {
       std::process::exit(0)
@@ -375,7 +379,11 @@ pub async fn prompt_new_cred(exit_on_done: bool) {
 // prompt the user to create a deploy config if none exists
 pub async fn prompt_new_config() {
   let prompt = "No Deploy Configs have been created. Let's create one?";
-  if Confirm::new().with_prompt(prompt).interact().unwrap() {
+  if Confirm::with_theme(&ColorfulTheme::default())
+    .with_prompt(prompt)
+    .interact()
+    .unwrap()
+  {
     add_deploy_config().await;
   }
   std::process::exit(0);
@@ -387,7 +395,7 @@ pub async fn remove_cred() {
   if cred_options.len() == 0 {
     prompt_new_cred(true).await;
   };
-  let selection = Select::new()
+  let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&cred_options)
     .with_prompt("Pick Credential to remove")
     .default(0)
@@ -396,7 +404,10 @@ pub async fn remove_cred() {
   let cred_name = &cred_options[selection];
   creds.remove(cred_name).unwrap();
   update_cred_file(creds).await;
-  println!("Successfully removed \"{}\" Credential", cred_name);
+  println!(
+    "Successfully removed {} Credential",
+    style(cred_name).bold()
+  );
 }
 
 pub async fn list_creds() {
@@ -431,7 +442,7 @@ pub async fn list_creds() {
 pub async fn add_deploy_config() {
   let mut deploy_configs = get_deploy_configs().await;
   let creds = get_creds().await;
-  let name: String = Input::new()
+  let name: String = Input::with_theme(&ColorfulTheme::default())
     .with_prompt("Name for new Deploy Config")
     .validate_with(|input: &String| -> Result<(), &str> {
       if deploy_configs.contains_key(input) {
@@ -449,7 +460,7 @@ pub async fn add_deploy_config() {
   }
   let options = creds.keys().cloned().collect::<Vec<String>>();
   loop {
-    let selection = Select::new()
+    let selection = Select::with_theme(&ColorfulTheme::default())
       .items(&options)
       .with_prompt("Pick Credential to use")
       .default(0)
@@ -457,11 +468,11 @@ pub async fn add_deploy_config() {
       .unwrap();
     let cred = options[selection].to_string();
     // TODO validate these fields?
-    let region: String = Input::new()
+    let region: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Region name")
       .interact_text()
       .unwrap();
-    let vm_type: String = Input::new()
+    let vm_type: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Virtual machine type")
       .interact_text()
       .unwrap();
@@ -475,13 +486,17 @@ pub async fn add_deploy_config() {
     } else {
       "Do you want to add another region to this Deploy Config?"
     };
-    if !Confirm::new().with_prompt(prompt).interact().unwrap() {
+    if !Confirm::with_theme(&ColorfulTheme::default())
+      .with_prompt(prompt)
+      .interact()
+      .unwrap()
+    {
       break;
     }
   }
   deploy_configs.insert(name.to_string(), cloud_configs);
   update_anycloud_file(deploy_configs).await;
-  println!("Successfully created \"{}\" Deploy Config.", name);
+  println!("Successfully created {} Deploy Config.", style(name).bold());
 }
 
 pub async fn edit_deploy_config() {
@@ -490,7 +505,7 @@ pub async fn edit_deploy_config() {
   if config_names.len() == 0 {
     prompt_new_config().await;
   }
-  let selection = Select::new()
+  let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&config_names)
     .with_prompt("Pick Deploy Config to edit")
     .default(0)
@@ -506,19 +521,19 @@ pub async fn edit_deploy_config() {
       .iter()
       .position(|r| r == &config.credentialsName)
       .unwrap();
-    let selection = Select::new()
+    let selection = Select::with_theme(&ColorfulTheme::default())
       .items(&cred_options)
       .with_prompt("Pick Credential to use")
       .default(index)
       .interact()
       .unwrap();
     let cred = cred_options[selection].to_string();
-    let region: String = Input::new()
+    let region: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Region name")
       .with_initial_text(config.region.to_string())
       .interact_text()
       .unwrap();
-    let vm_type: String = Input::new()
+    let vm_type: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Virtual machine type")
       .with_initial_text(config.vmType.to_string())
       .interact_text()
@@ -531,7 +546,10 @@ pub async fn edit_deploy_config() {
   }
   deploy_configs.insert(config_name.to_string(), new_cloud_configs);
   update_anycloud_file(deploy_configs).await;
-  println!("Successfully edited \"{}\" Deploy Config.", config_name);
+  println!(
+    "Successfully edited {} Deploy Config.",
+    style(config_name).bold()
+  );
 }
 
 pub async fn remove_deploy_config() {
@@ -540,7 +558,7 @@ pub async fn remove_deploy_config() {
   if config_names.len() == 0 {
     prompt_new_config().await;
   }
-  let selection = Select::new()
+  let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&config_names)
     .with_prompt("Pick Deploy Config to remove")
     .default(0)
@@ -549,7 +567,10 @@ pub async fn remove_deploy_config() {
   let config_name = config_names[selection].to_string();
   deploy_configs.remove(&config_name);
   update_anycloud_file(deploy_configs).await;
-  println!("Successfully removed \"{}\" Deploy Config.", config_name);
+  println!(
+    "Successfully removed {} Deploy Config.",
+    style(config_name).bold()
+  );
 }
 
 pub async fn list_deploy_configs() {
@@ -731,9 +752,13 @@ pub async fn client_error(err_code: ErrorType, message: &str) {
 }
 
 pub async fn terminate(cluster_id: String) {
+  let styled_cluster_id = style(&cluster_id).bold();
   let sp = ProgressBar::new_spinner();
   sp.enable_steady_tick(10);
-  sp.set_message(&format!("Terminating app {} if it exists", cluster_id));
+  sp.set_message(&format!(
+    "Terminating app {} if it exists",
+    styled_cluster_id
+  ));
   CLUSTER_ID.set(cluster_id.to_string()).unwrap();
   let body = json!({
     "deployConfig": get_config().await,
@@ -742,7 +767,7 @@ pub async fn terminate(cluster_id: String) {
   });
   let resp = post_v1("terminate", body).await;
   let res = match resp {
-    Ok(_) => format!("Terminated app {} successfully!", cluster_id),
+    Ok(_) => format!("Terminated app {} successfully!", styled_cluster_id),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
@@ -754,7 +779,10 @@ pub async fn terminate(cluster_id: String) {
         clear_token();
         format!("{}", UNAUTHORIZED_OPERATION)
       }
-      PostV1Error::Other(err) => format!("Failed to terminate app {}. Error: {}", cluster_id, err),
+      PostV1Error::Other(err) => format!(
+        "Failed to terminate app {}. Error: {}",
+        styled_cluster_id, err
+      ),
     },
   };
   sp.finish_with_message(&res);
@@ -770,7 +798,7 @@ pub async fn new(
   if config_names.len() == 0 {
     prompt_new_config().await;
   }
-  let selection = Select::new()
+  let selection = Select::with_theme(&ColorfulTheme::default())
     .items(&config_names)
     .with_prompt("Pick Deploy Config for App")
     .default(0)
@@ -799,7 +827,7 @@ pub async fn new(
   }
   let resp = post_v1("new", body).await;
   let res = match resp {
-    Ok(res) => format!("Created app with id {} successfully!", res),
+    Ok(res) => format!("Created app {} successfully!", style(res).bold()),
     Err(err) => match err {
       PostV1Error::Timeout => format!("{}", REQUEST_TIMEOUT),
       PostV1Error::Forbidden => format!("{}", FORBIDDEN_OPERATION),
