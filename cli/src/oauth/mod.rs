@@ -2,10 +2,12 @@ use std::fs::{read_to_string, remove_file, File};
 use std::io::prelude::*;
 use std::path::Path;
 
+use dialoguer::{console::style, theme::ColorfulTheme, Confirm};
 use hyper::Request;
 use once_cell::sync::OnceCell;
 use serde_json::{json, Value};
 use tokio::time::{sleep, Duration};
+use webbrowser;
 
 use crate::http::CLIENT;
 use crate::logger::ErrorType;
@@ -69,12 +71,34 @@ async fn generate_token() {
   let device_code = json["device_code"].as_str().unwrap();
   let verification_uri = json["verification_uri"].as_str().unwrap();
   let user_code = json["user_code"].as_str().unwrap();
+  if !Confirm::with_theme(&ColorfulTheme::default())
+    .with_prompt(format!(
+      "{} to authenticate the AnyCloud CLI via github.com",
+      style("Press Enter").bold(),
+    ))
+    .default(true)
+    .interact()
+    .unwrap()
+  {
+    std::process::exit(0);
+  }
   println!(
-    "Login to AnyCloud via GitHub by copying this one-time code\n
-    {}\n\nand pasting it in the following url:\n
-    {}",
-    user_code, verification_uri
+    "{} First copy your one-time code: {}",
+    style("!").yellow(),
+    style(user_code).bold()
   );
+  if !Confirm::with_theme(&ColorfulTheme::default())
+    .with_prompt(format!(
+      "{} to open github.com in your browser",
+      style("Press Enter").bold(),
+    ))
+    .default(true)
+    .interact()
+    .unwrap()
+    || webbrowser::open(verification_uri).is_err()
+  {
+    std::process::exit(0);
+  }
   let interval = json["interval"].as_u64().unwrap();
   let period = Duration::from_secs(interval + 1);
   let body = json!({
