@@ -157,31 +157,26 @@ pub async fn add_cred() -> String {
   let name = cred_name.to_string();
   match cloud {
     "AWS" => {
-      let (access_key, secret) = match get_aws_cli_creds() {
-        Ok(aws_cli_creds) => {
-          let access_key: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("AWS Access Key ID")
-            .default(aws_cli_creds.default.aws_access_key_id)
-            .interact_text()
-            .unwrap();
-          let secret: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("AWS Secret Access Key")
-            .default(aws_cli_creds.default.aws_secret_access_key)
-            .interact_text()
-            .unwrap();
-          (access_key, secret)
-        }
-        Err(_) => {
-          let access_key: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("AWS Access Key ID")
-            .interact_text()
-            .unwrap();
-          let secret: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("AWS Secret Access Key")
-            .interact_text()
-            .unwrap();
-          (access_key, secret)
-        }
+      let aws_cli_creds = get_aws_cli_creds();
+      let (access_key, secret) = if aws_cli_creds.is_ok()
+        && Confirm::with_theme(&ColorfulTheme::default())
+          .with_prompt("Default AWS CLI credentials found. Do you wish to use those?")
+          .default(true)
+          .interact()
+          .unwrap()
+      {
+        let creds = aws_cli_creds.unwrap().default;
+        (creds.aws_access_key_id, creds.aws_secret_access_key)
+      } else {
+        let access_key: String = Input::with_theme(&ColorfulTheme::default())
+          .with_prompt("AWS Access Key ID")
+          .interact_text()
+          .unwrap();
+        let secret: String = Input::with_theme(&ColorfulTheme::default())
+          .with_prompt("AWS Secret Access Key")
+          .interact_text()
+          .unwrap();
+        (access_key, secret)
       };
       credentials.insert(
         cred_name,
