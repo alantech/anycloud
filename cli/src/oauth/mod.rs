@@ -127,6 +127,17 @@ async fn generate_token() {
       let mut file = File::create(file_name).expect(ERR);
       file.write_all(token.as_bytes()).expect(ERR);
       TOKEN.set(token.to_string()).unwrap();
+      if !Confirm::with_theme(&ColorfulTheme::default())
+        .with_prompt(format!(
+          "Authentication complete. {} to continue...",
+          style("Press Enter").bold(),
+        ))
+        .default(true)
+        .interact()
+        .unwrap()
+      {
+        std::process::exit(0);
+      }
       return;
     } else if let Some(error) = json["error"].as_str() {
       if error != "authorization_pending" {

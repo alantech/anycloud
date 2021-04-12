@@ -2,6 +2,7 @@ use dialoguer::{console::style, theme::ColorfulTheme, Confirm, Input, Select};
 use hyper::{Request, StatusCode};
 use indicatif::ProgressBar;
 use serde::{Deserialize, Serialize};
+use serde_ini;
 use serde_json::{json, Value};
 
 use std::collections::{HashMap, HashSet};
@@ -26,6 +27,17 @@ const FORBIDDEN_OPERATION: &str =
 const NAME_CONFLICT: &str = "Another application with same App ID already exists.";
 const UNAUTHORIZED_OPERATION: &str =
   "Invalid AnyCloud authentication credentials. Please retry and you will be asked to reauthenticate.";
+
+#[derive(Deserialize, Debug, Clone, Serialize)]
+pub struct AWSCLICredentialsFile {
+  default: AWSCLICredentials,
+}
+
+#[derive(Deserialize, Debug, Clone, Serialize)]
+pub struct AWSCLICredentials {
+  aws_access_key_id: String,
+  aws_secret_access_key: String,
+}
 
 #[allow(non_snake_case)]
 #[derive(Deserialize, Debug, Clone, Serialize)]
@@ -106,6 +118,20 @@ pub enum PostV1Error {
 const ANYCLOUD_FILE: &str = "anycloud.json";
 const CREDENTIALS_FILE: &str = ".anycloud/credentials.json";
 
+fn get_aws_cli_creds() -> Result<AWSCLICredentialsFile, String> {
+  let home = std::env::var("HOME").unwrap();
+  let file_name = &format!("{}/.aws/credentials", home);
+  let file = OpenOptions::new().read(true).open(file_name);
+  if let Err(err) = file {
+    return Err(err.to_string());
+  }
+  let reader = BufReader::new(file.unwrap());
+  match serde_ini::from_bufread(reader) {
+    Ok(creds) => Ok(creds),
+    Err(err) => Err(err.to_string()),
+  }
+}
+
 pub async fn add_cred() -> String {
   let mut credentials = get_creds().await;
   let clouds = vec!["AWS", "GCP", "Azure"];
@@ -131,15 +157,27 @@ pub async fn add_cred() -> String {
   let name = cred_name.to_string();
   match cloud {
     "AWS" => {
-      // TODO check ~/.aws/credentials and provide values as default
-      let access_key: String = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("AWS Access Key ID")
-        .interact_text()
-        .unwrap();
-      let secret: String = Input::with_theme(&ColorfulTheme::default())
-        .with_prompt("AWS Secret Access Key")
-        .interact_text()
-        .unwrap();
+      let aws_cli_creds = get_aws_cli_creds();
+      let (access_key, secret) = if aws_cli_creds.is_ok()
+        && Confirm::with_theme(&ColorfulTheme::default())
+          .with_prompt("Default AWS CLI credentials found. Do you wish to use those?")
+          .default(true)
+          .interact()
+          .unwrap()
+      {
+        let creds = aws_cli_creds.unwrap().default;
+        (creds.aws_access_key_id, creds.aws_secret_access_key)
+      } else {
+        let access_key: String = Input::with_theme(&ColorfulTheme::default())
+          .with_prompt("AWS Access Key ID")
+          .interact_text()
+          .unwrap();
+        let secret: String = Input::with_theme(&ColorfulTheme::default())
+          .with_prompt("AWS Secret Access Key")
+          .interact_text()
+          .unwrap();
+        (access_key, secret)
+      };
       credentials.insert(
         cred_name,
         Credentials {
