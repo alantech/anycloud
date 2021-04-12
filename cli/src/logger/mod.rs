@@ -10,7 +10,7 @@ pub enum ErrorType {
   InvalidAnycloudFile = 110,
   AuthFailed = 113,
   NoDnsVms = 114,
-  PostStats = 115,
+  NoStats = 115,
   NoClusterSecret = 116,
   NoDns = 117,
   NoPrivateIp = 118,
