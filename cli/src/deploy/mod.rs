@@ -365,6 +365,7 @@ pub async fn prompt_add_cred(exit_on_done: bool) -> String {
   let prompt = "No Credentials have been created. Let's create one?";
   if Confirm::with_theme(&ColorfulTheme::default())
     .with_prompt(prompt)
+    .default(true)
     .interact()
     .unwrap()
   {
@@ -383,6 +384,7 @@ pub async fn prompt_add_config() {
   let prompt = "No Deploy Configs have been created. Let's create one?";
   if Confirm::with_theme(&ColorfulTheme::default())
     .with_prompt(prompt)
+    .default(true)
     .interact()
     .unwrap()
   {
@@ -496,6 +498,7 @@ pub async fn add_deploy_config() {
     };
     if !Confirm::with_theme(&ColorfulTheme::default())
       .with_prompt(prompt)
+      .default(false)
       .interact()
       .unwrap()
     {

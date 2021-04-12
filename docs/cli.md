@@ -28,20 +28,14 @@ Expand-Archive -Path anycloud-windows.zip -DestinationPath C:\windows
 
 ## Authentication
 
-Authentication in the CLI occurs via GitHub. Copy the code 
+Authentication in the CLI occurs via GitHub. Make sure you are logged in.
 
 ```bash
-Login to AnyCloud via GitHub by copying this one-time code
-
-    705C-0032
-
-and pasting it in the following url:
-
-    https://github.com/login/device
+✔ Press Enter to authenticate the AnyCloud CLI via GitHub
+! First copy your one-time code: 21BD-C2D7
+✔ Press Enter to open github.com in your browser
 ```
-
-Make sure you are logged into Github. Open the provided url and you will see the following screen.
 
 <img src="assets/gh-code.png" width=700 height=600 />
 
-Paste your code, authorize the AnyCloud app and return to the terminal!
+Copy the code, paste it into github.com and authorize the AnyCloud app before returning to the terminal!
