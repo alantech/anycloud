@@ -129,7 +129,8 @@ async fn generate_token() {
       TOKEN.set(token.to_string()).unwrap();
       if !Confirm::with_theme(&ColorfulTheme::default())
         .with_prompt(format!(
-          "Authentication complete. {} to continue...", style("Press Enter").bold(),
+          "Authentication complete. {} to continue...",
+          style("Press Enter").bold(),
         ))
         .default(true)
         .interact()
