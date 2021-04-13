@@ -84,7 +84,7 @@ pub struct DeployConfig {
   credentialsName: String,
   region: String,
   vmType: String,
-  minReplicas: u32,
+  minReplicas: Option<u32>,
   maxReplicas: Option<u32>,
 }
 
@@ -95,7 +95,7 @@ pub struct Config {
   region: String,
   cloudProvider: String,
   vmType: String,
-  minReplicas: u32,
+  minReplicas: Option<u32>,
   maxReplicas: Option<u32>,
 }
 
@@ -528,13 +528,13 @@ pub async fn add_deploy_config() {
       .with_prompt("Virtual machine type")
       .interact_text()
       .unwrap();
+    let min_replicas: Option<u32>;
     let replicas: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Minimum number of replicas")
       .interact_text()
       .unwrap();
-    let min_replicas: u32;
     if let Ok(replicas) = replicas.parse::<u32>() {
-      min_replicas = replicas;
+      min_replicas = Some(replicas);
     } else {
       eprintln!("{} is not a valid number of replicas", replicas);
       std::process::exit(1);
@@ -623,13 +623,13 @@ pub async fn edit_deploy_config() {
       .with_initial_text(config.vmType.to_string())
       .interact_text()
       .unwrap();
+    let min_replicas: Option<u32>;
     let replicas: String = Input::with_theme(&ColorfulTheme::default())
       .with_prompt("Minimum number of replicas")
       .interact_text()
       .unwrap();
-    let min_replicas: u32;
     if let Ok(replicas) = replicas.parse::<u32>() {
-      min_replicas = replicas;
+      min_replicas = Some(replicas);
     } else {
       eprintln!("{} is not a valid number of replicas", replicas);
       std::process::exit(1);
