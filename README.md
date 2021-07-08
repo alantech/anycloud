@@ -12,16 +12,16 @@ AnyCloud takes API credentials from your preferred cloud provider and a `Dockerf
 - [x] Runs in your local dev environment as-is
 - [x] HTTPS support included out of the box
 - [x] Supports multi-region and multi-cloud deployments
-- [ ] In-memory distributed datastore
+- [x] In-memory distributed datastore
 - [ ] Web socket support
 - [ ] Cron job support
 
 
 ## Project Status
 
-- [x] Alpha: We are working with closed set of customers. Drop us a line at hello at anycloudapp dot com if you are interested
-- [ ] Beta: Anyone can sign up. Stable enough for most use-cases
-- [ ] Public: Production-ready for enterprise use-cases
+AnyCloud has been restructured into a pure [Alan application](./alan/anycloud.ln) with the CLI simply being a convenience tool to wrap up your own project the way the `anycloud.ln` application expects it and provide the right arguments to the `alan deploy` command for you.
+
+This means there's "nothing special" about AnyCloud now versus Alan from a technical perspective, but new feature development will be gated on improvements to the language to support those features instead of being developed in parallel.
 
 ## Supported Cloud Providers
 
@@ -30,7 +30,8 @@ AnyCloud is hosted directly in your own account with any of the following cloud 
 - [x] AWS
 - [x] GCP
 - [x] Azure
-- [ ] Digital Ocean
+
+We are not adding any more cloud providers at this time.
 
 ## Documentation
 
