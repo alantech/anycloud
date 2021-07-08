@@ -1,16 +1,65 @@
-use std::collections::HashMap;
 use std::env;
-use std::future::Future;
+use std::fs::File;
+use std::io::prelude::*;
+use std::process::Command;
 
 use clap::{crate_name, crate_version, App, AppSettings, SubCommand};
 
-use anycloud::common::{get_app_tar_gz_b64, get_dockerfile_b64, get_env_file_b64};
-use anycloud::deploy;
-use anycloud::oauth::authenticate;
+fn git_status() {
+  let output = Command::new("git")
+    .arg("status")
+    .arg("--porcelain")
+    .output()
+    .unwrap();
 
-#[tokio::main]
-pub async fn main() {
-  let anycloud_agz = base64::encode(include_bytes!("../alan/anycloud.agz"));
+  let msg = String::from_utf8(output.stdout).unwrap();
+  if msg.contains("M ") {
+    eprintln!("Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg);
+    std::process::exit(1);
+  }
+}
+
+fn git_archive_app_tar(file_path: &str) {
+  let output = Command::new("git")
+    .arg("archive")
+    .arg("--format=tar.gz")
+    .arg("-o")
+    .arg(file_path)
+    .arg("HEAD")
+    .output()
+    .unwrap();
+  if output.status.code().unwrap() != 0 {
+    eprintln!("Your code must be managed by git in order to deploy correctly, please run `git init && git commit -am \"Initial commit\"` and try again.");
+    std::process::exit(output.status.code().unwrap());
+  }
+}
+
+pub fn make_app_tar_gz() {
+  git_status();
+  let file_name = "app.tar.gz";
+  git_archive_app_tar(&file_name);
+}
+
+pub fn make_anycloud_agz() {
+  let anycloud_agz = include_bytes!("../alan/anycloud.agz");
+  let file = File::create("anycloud.agz");
+  let mut file = match file {
+    Ok(file) => file,
+    Err(e) => {
+      eprintln!("Error creating anycloud file. {}", e);
+      std::process::exit(1);
+    },
+  };
+  match file.write_all(anycloud_agz) {
+    Ok(_) => {},
+    Err(e) => {
+      eprintln!("Error writing anycloud file. {}", e);
+      std::process::exit(1);
+    },
+  };
+}
+
+pub fn main() {
   let desc: &str = &format!("{}", env!("CARGO_PKG_DESCRIPTION"));
   let app = App::new(crate_name!())
     .version(crate_version!())
@@ -75,120 +124,105 @@ pub async fn main() {
   let matches = app.get_matches();
   match matches.subcommand() {
     ("new", Some(matches)) => {
-      let non_interactive: bool = matches.values_of("NON_INTERACTIVE").is_some();
-      authenticate(non_interactive).await;
-      new_or_upgrade(
-        anycloud_agz,
-        matches.value_of("env-file"),
-        matches.value_of("app-name"),
-        matches.value_of("config-name"),
-        non_interactive,
-        |anycloud_agz, files_b64, app_name, config_name, non_interactive| async move {
-          deploy::new(
-            anycloud_agz,
-            files_b64,
-            app_name,
-            config_name,
-            non_interactive,
-          )
-          .await
-        },
-      )
-      .await;
+      let mut new_cmd = Command::new("alan");
+      new_cmd.arg("deploy").arg("new");
+      if matches.values_of("NON_INTERACTIVE").is_some() {
+        new_cmd.arg("-n");
+      }
+      if let Some(app_name) = matches.value_of("app-name") {
+        new_cmd.arg("-a").arg(app_name);
+      }
+      if let Some(config_name) = matches.value_of("config-name") {
+        new_cmd.arg("-c").arg(config_name);
+      }
+      make_anycloud_agz();
+      new_cmd.arg("anycloud.agz");
+      make_app_tar_gz();
+      new_cmd.arg("-f");
+      let mut extra_files = "app.tar.gz".to_string();
+      if let Some(env_file) = matches.value_of("env-file") {
+        extra_files = format!("{},{}", extra_files, env_file);
+      }
+      new_cmd.arg(extra_files);
+      new_cmd.status().unwrap();
     }
     ("terminate", Some(matches)) => {
-      let non_interactive: bool = matches.values_of("NON_INTERACTIVE").is_some();
-      authenticate(non_interactive).await;
-      let app_name = matches.value_of("app-name").map(String::from);
-      let config_name = matches.value_of("config-name").map(String::from);
-      deploy::terminate(app_name, config_name, non_interactive).await
+      let mut new_cmd = Command::new("alan");
+      new_cmd.arg("deploy").arg("terminate");
+      if matches.values_of("NON_INTERACTIVE").is_some() {
+        new_cmd.arg("-n");
+      }
+      if let Some(app_name) = matches.value_of("app-name") {
+        new_cmd.arg("-a").arg(app_name);
+      }
+      if let Some(config_name) = matches.value_of("config-name") {
+        new_cmd.arg("-c").arg(config_name);
+      }
+      new_cmd.status().unwrap();
     }
     ("upgrade", Some(matches)) => {
-      let non_interactive: bool = matches.values_of("NON_INTERACTIVE").is_some();
-      authenticate(non_interactive).await;
-      new_or_upgrade(
-        anycloud_agz,
-        matches.value_of("env-file"),
-        matches.value_of("app-name"),
-        matches.value_of("config-name"),
-        non_interactive,
-        |anycloud_agz, files_b64, app_name, config_name, non_interactive| async move {
-          deploy::upgrade(
-            anycloud_agz,
-            files_b64,
-            app_name,
-            config_name,
-            non_interactive,
-          )
-          .await
-        },
-      )
-      .await;
+      let mut new_cmd = Command::new("alan");
+      new_cmd.arg("deploy").arg("upgrade");
+      if matches.values_of("NON_INTERACTIVE").is_some() {
+        new_cmd.arg("-n");
+      }
+      if let Some(app_name) = matches.value_of("app-name") {
+        new_cmd.arg("-a").arg(app_name);
+      }
+      if let Some(config_name) = matches.value_of("config-name") {
+        new_cmd.arg("-c").arg(config_name);
+      }
+      make_anycloud_agz();
+      new_cmd.arg("anycloud.agz");
+      make_app_tar_gz();
+      new_cmd.arg("-f");
+      let mut extra_files = "app.tar.gz".to_string();
+      if let Some(env_file) = matches.value_of("env-file") {
+        extra_files = format!("{},{}", extra_files, env_file);
+      }
+      new_cmd.arg(extra_files);
+      new_cmd.status().unwrap();
     }
     ("list", _) => {
-      authenticate(false).await;
-      deploy::info().await
+      Command::new("alan").arg("deploy").arg("list").status().unwrap();
     }
     ("credentials", Some(sub_matches)) => {
-      authenticate(false).await;
       match sub_matches.subcommand() {
         ("new", _) => {
-          deploy::add_cred(None).await;
+          Command::new("alan").arg("deploy").arg("credentials").arg("new").status().unwrap();
         }
-        ("edit", _) => deploy::edit_cred().await,
-        ("list", _) => deploy::list_creds().await,
-        ("remove", _) => deploy::remove_cred().await,
+        ("edit", _) => {
+          Command::new("alan").arg("deploy").arg("credentials").arg("edit").status().unwrap();
+        },
+        ("list", _) => {
+          Command::new("alan").arg("deploy").arg("credentials").arg("list").status().unwrap();
+        },
+        ("remove", _) => {
+          Command::new("alan").arg("deploy").arg("credentials").arg("remove").status().unwrap();
+        },
         // rely on AppSettings::SubcommandRequiredElseHelp
         _ => {}
       }
     }
     ("config", Some(sub_matches)) => {
-      authenticate(false).await;
       match sub_matches.subcommand() {
-        ("new", _) => deploy::add_deploy_config().await,
-        ("list", _) => deploy::list_deploy_configs().await,
-        ("edit", _) => deploy::edit_deploy_config().await,
-        ("remove", _) => deploy::remove_deploy_config().await,
+        ("new", _) => {
+          Command::new("alan").arg("deploy").arg("config").arg("new").status().unwrap();
+        },
+        ("edit", _) => {
+          Command::new("alan").arg("deploy").arg("config").arg("edit").status().unwrap();
+        },
+        ("list", _) => {
+          Command::new("alan").arg("deploy").arg("config").arg("list").status().unwrap();
+        },
+        ("remove", _) => {
+          Command::new("alan").arg("deploy").arg("config").arg("remove").status().unwrap();
+        },
         // rely on AppSettings::SubcommandRequiredElseHelp
         _ => {}
       }
     }
     // rely on AppSettings::SubcommandRequiredElseHelp
-    _ => {
-      authenticate(false).await;
-    }
+    _ => {}
   }
-}
-
-async fn new_or_upgrade<Callback, CallbackFut>(
-  anycloud_agz: String,
-  env_file: Option<&str>,
-  app_name: Option<&str>,
-  config_name: Option<&str>,
-  non_interactive: bool,
-  deploy_fn: Callback,
-) where
-  Callback:
-    Fn(String, HashMap<String, String>, Option<String>, Option<String>, bool) -> CallbackFut,
-  CallbackFut: Future<Output = ()>,
-{
-  let mut files_b64 = HashMap::new();
-  files_b64.insert("Dockerfile".to_string(), get_dockerfile_b64().await);
-  files_b64.insert("app.tar.gz".to_string(), get_app_tar_gz_b64(true).await);
-  if let Some(env_file) = env_file {
-    files_b64.insert(
-      "anycloud.env".to_string(),
-      get_env_file_b64(env_file.to_string()).await,
-    );
-  }
-  let app_name = app_name.map(String::from);
-  let config_name = config_name.map(String::from);
-  deploy_fn(
-    anycloud_agz,
-    files_b64,
-    app_name,
-    config_name,
-    non_interactive,
-  )
-  .await
 }
