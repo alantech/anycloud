@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::File;
+use std::fs::{File, remove_file};
 use std::io::prelude::*;
 use std::process::Command;
 
@@ -69,46 +69,46 @@ pub fn main() {
     .about(desc)
     .setting(AppSettings::SubcommandRequiredElseHelp)
     .subcommand(SubCommand::with_name("new")
-      .about("Deploys your repository to a new App with a Deploy Config from anycloud.json")
+      .about("Deploys your repository to a new App with a Deploy Config from alandeploy.json")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
       .arg_from_usage("[NON_INTERACTIVE] -n, --non-interactive 'Enables non-interactive CLI mode useful for scripting.'")
       .arg_from_usage("-a, --app-name=[APP_NAME] 'Specifies an optional app name.'")
       .arg_from_usage("-c, --config-name=[CONFIG_NAME] 'Specifies a config name, required only in non-interactive mode.'")
     )
     .subcommand(SubCommand::with_name("list")
-      .about("Displays all the Apps deployed with the Deploy Configs from anycloud.json")
+      .about("Displays all the Apps deployed with the Deploy Configs from alandeploy.json")
     )
     .subcommand(SubCommand::with_name("terminate")
-      .about("Terminate an App hosted in one of the Deploy Configs from anycloud.json")
+      .about("Terminate an App hosted in one of the Deploy Configs from alandeploy.json")
       .arg_from_usage("[NON_INTERACTIVE] -n, --non-interactive 'Enables non-interactive CLI mode useful for scripting.'")
       .arg_from_usage("-a, --app-name=[APP_NAME] 'Specifies an optional app name.'")
       .arg_from_usage("-c, --config-name=[CONFIG_NAME] 'Specifies a config name, required only in non-interactive mode.'")
     )
     .subcommand(SubCommand::with_name("upgrade")
-      .about("Deploys your repository to an existing App hosted in one of the Deploy Configs from anycloud.json")
+      .about("Deploys your repository to an existing App hosted in one of the Deploy Configs from alandeploy.json")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
       .arg_from_usage("[NON_INTERACTIVE] -n, --non-interactive 'Enables non-interactive CLI mode useful for scripting.'")
       .arg_from_usage("-a, --app-name=[APP_NAME] 'Specifies an optional app name.'")
       .arg_from_usage("-c, --config-name=[CONFIG_NAME] 'Specifies a config name, required only in non-interactive mode.'")
     )
     .subcommand(SubCommand::with_name("config")
-      .about("Manage Deploy Configs used by Apps from the anycloud.json in the current directory")
+      .about("Manage Deploy Configs used by Apps from the alandeploy.json in the current directory")
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .subcommand(SubCommand::with_name("new")
-        .about("Add a new Deploy Config to the anycloud.json in the current directory and creates the file if it doesn't exist.")
+        .about("Add a new Deploy Config to the alandeploy.json in the current directory and creates the file if it doesn't exist.")
       )
       .subcommand(SubCommand::with_name("list")
-        .about("List all the Deploy Configs from the anycloud.json in the current directory")
+        .about("List all the Deploy Configs from the alandeploy.json in the current directory")
       )
       .subcommand(SubCommand::with_name("edit")
-        .about("Edit an existing Deploy Config from the anycloud.json in the current directory")
+        .about("Edit an existing Deploy Config from the alandeploy.json in the current directory")
       )
       .subcommand(SubCommand::with_name("remove")
-        .about("Remove an existing Deploy Config from the anycloud.json in the current directory")
+        .about("Remove an existing Deploy Config from the alandeploy.json in the current directory")
       )
     )
     .subcommand(SubCommand::with_name("credentials")
-      .about("Manage all Credentials used by Deploy Configs from the credentials file at ~/.anycloud/credentials.json")
+      .about("Manage all Credentials used by Deploy Configs from the credentials file at ~/.alan/credentials.json")
       .setting(AppSettings::SubcommandRequiredElseHelp)
       .subcommand(SubCommand::with_name("new")
         .about("Add a new Credentials")
@@ -148,6 +148,8 @@ pub fn main() {
       }
       new_cmd.arg(extra_files);
       new_cmd.status().unwrap();
+      remove_file("anycloud.agz").unwrap();
+      remove_file("app.tar.gz").unwrap();
     }
     ("terminate", Some(matches)) => {
       let mut new_cmd = Command::new("alan");
@@ -185,6 +187,8 @@ pub fn main() {
       }
       new_cmd.arg(extra_files);
       new_cmd.status().unwrap();
+      remove_file("anycloud.agz").unwrap();
+      remove_file("app.tar.gz").unwrap();
     }
     ("list", _) => {
       Command::new("alan")

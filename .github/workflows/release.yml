@@ -48,7 +48,6 @@ jobs:
 
     - name: Generate Anycloud tar.gz
       run: |
-        cd cli
         cargo build --release
         cd ./target/release
         tar -czf /tmp/anycloud-ubuntu.tar.gz anycloud
@@ -78,7 +77,6 @@ jobs:
 
     - name: Generate Anycloud zip
       run: |
-        cd cli
         cargo build --release
         cd ..
         Compress-Archive -Path "$(Join-Path (Get-Location).Path '\\cli\\target\\release\\anycloud.exe')" -DestinationPath "$(Join-Path (Get-Location).Path 'anycloud-windows.zip')"
@@ -111,7 +109,6 @@ jobs:
 
     - name: Generate Anycloud tar.gz
       run: |
-        cd cli
         cargo build --release
         cd ./target/release
         gtar -czf /tmp/anycloud-macos.tar.gz anycloud
