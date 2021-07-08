@@ -1,5 +1,5 @@
 use std::env;
-use std::fs::{File, remove_file};
+use std::fs::{remove_file, File};
 use std::io::prelude::*;
 use std::process::Command;
 
