@@ -14,7 +14,10 @@ fn git_status() {
 
   let msg = String::from_utf8(output.stdout).unwrap();
   if msg.contains("M ") {
-    eprintln!("Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}", msg);
+    eprintln!(
+      "Please stash, commit or .gitignore your changes before deploying and try again:\n\n{}",
+      msg
+    );
     std::process::exit(1);
   }
 }
@@ -48,14 +51,14 @@ pub fn make_anycloud_agz() {
     Err(e) => {
       eprintln!("Error creating anycloud file. {}", e);
       std::process::exit(1);
-    },
+    }
   };
   match file.write_all(anycloud_agz) {
-    Ok(_) => {},
+    Ok(_) => {}
     Err(e) => {
       eprintln!("Error writing anycloud file. {}", e);
       std::process::exit(1);
-    },
+    }
   };
 }
 
@@ -184,22 +187,46 @@ pub fn main() {
       new_cmd.status().unwrap();
     }
     ("list", _) => {
-      Command::new("alan").arg("deploy").arg("list").status().unwrap();
+      Command::new("alan")
+        .arg("deploy")
+        .arg("list")
+        .status()
+        .unwrap();
     }
     ("credentials", Some(sub_matches)) => {
       match sub_matches.subcommand() {
         ("new", _) => {
-          Command::new("alan").arg("deploy").arg("credentials").arg("new").status().unwrap();
+          Command::new("alan")
+            .arg("deploy")
+            .arg("credentials")
+            .arg("new")
+            .status()
+            .unwrap();
         }
         ("edit", _) => {
-          Command::new("alan").arg("deploy").arg("credentials").arg("edit").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("credentials")
+            .arg("edit")
+            .status()
+            .unwrap();
+        }
         ("list", _) => {
-          Command::new("alan").arg("deploy").arg("credentials").arg("list").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("credentials")
+            .arg("list")
+            .status()
+            .unwrap();
+        }
         ("remove", _) => {
-          Command::new("alan").arg("deploy").arg("credentials").arg("remove").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("credentials")
+            .arg("remove")
+            .status()
+            .unwrap();
+        }
         // rely on AppSettings::SubcommandRequiredElseHelp
         _ => {}
       }
@@ -207,17 +234,37 @@ pub fn main() {
     ("config", Some(sub_matches)) => {
       match sub_matches.subcommand() {
         ("new", _) => {
-          Command::new("alan").arg("deploy").arg("config").arg("new").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("config")
+            .arg("new")
+            .status()
+            .unwrap();
+        }
         ("edit", _) => {
-          Command::new("alan").arg("deploy").arg("config").arg("edit").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("config")
+            .arg("edit")
+            .status()
+            .unwrap();
+        }
         ("list", _) => {
-          Command::new("alan").arg("deploy").arg("config").arg("list").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("config")
+            .arg("list")
+            .status()
+            .unwrap();
+        }
         ("remove", _) => {
-          Command::new("alan").arg("deploy").arg("config").arg("remove").status().unwrap();
-        },
+          Command::new("alan")
+            .arg("deploy")
+            .arg("config")
+            .arg("remove")
+            .status()
+            .unwrap();
+        }
         // rely on AppSettings::SubcommandRequiredElseHelp
         _ => {}
       }
