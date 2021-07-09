@@ -48,7 +48,7 @@ jobs:
         tar -xzf alan-ubuntu.tar.gz
         sudo mv alan /usr/local/bin/alan
         cd ..
-        rmdir tardir
+        rm -rf tardir
 
     - name: Generate Anycloud tar.gz
       run: |
@@ -81,7 +81,7 @@ jobs:
         Invoke-WebRequest -OutFile alan-windows.zip -Uri https://github.com/alantech/alan/releases/latest/download/alan-windows.zip
         Expand-Archive -Path alan-windows.zip -DestinationPath C:\windows
         cd ..
-        rmdir zipdir
+        rm -rf zipdir
 
     - name: Generate Anycloud zip
       run: |
@@ -117,7 +117,7 @@ jobs:
         sudo mkdir -p /usr/local/bin
         sudo mv alan /usr/local/bin/alan
         cd ..
-        rmdir tardir
+        rm -rf tardir
 
     - name: Generate Anycloud tar.gz
       run: |
