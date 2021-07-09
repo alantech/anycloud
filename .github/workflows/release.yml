@@ -81,7 +81,7 @@ jobs:
         Invoke-WebRequest -OutFile alan-windows.zip -Uri https://github.com/alantech/alan/releases/latest/download/alan-windows.zip
         Expand-Archive -Path alan-windows.zip -DestinationPath C:\windows
         cd ..
-        deltree zipdir
+        rm -r -f zipdir
 
     - name: Generate Anycloud zip
       run: |
