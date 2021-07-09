@@ -42,9 +42,13 @@ jobs:
 
     - name: Acquire alan
       run: |
+        mkdir tardir
+        cd tardir
         wget https://github.com/alantech/alan/releases/latest/download/alan-ubuntu.tar.gz
         tar -xzf alan-ubuntu.tar.gz
         sudo mv alan /usr/local/bin/alan
+        cd ..
+        rmdir tardir
 
     - name: Generate Anycloud tar.gz
       run: |
@@ -72,8 +76,12 @@ jobs:
 
     - name: Acquire alan
       run: |
+        mkdir zipdir
+        cd zipdir
         Invoke-WebRequest -OutFile alan-windows.zip -Uri https://github.com/alantech/alan/releases/latest/download/alan-windows.zip
         Expand-Archive -Path alan-windows.zip -DestinationPath C:\windows
+        cd ..
+        rmdir zipdir
 
     - name: Generate Anycloud zip
       run: |
@@ -102,10 +110,14 @@ jobs:
     - name: Acquire alan
       run: |
         brew install gnu-tar
+        mkdir tardir
+        cd tardir
         curl -OL https://github.com/alantech/alan/releases/latest/download/alan-macos.tar.gz
         gtar -xzf alan-macos.tar.gz
         sudo mkdir -p /usr/local/bin
         sudo mv alan /usr/local/bin/alan
+        cd ..
+        rmdir tardir
 
     - name: Generate Anycloud tar.gz
       run: |
