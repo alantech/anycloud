@@ -86,7 +86,6 @@ jobs:
     - name: Generate Anycloud zip
       run: |
         cargo build --release
-        cd ..
         Compress-Archive -Path "$(Join-Path (Get-Location).Path '\\target\\release\\anycloud.exe')" -DestinationPath "$(Join-Path (Get-Location).Path 'anycloud-windows.zip')"
 
     - name: Upload Anycloud zip
