@@ -72,6 +72,7 @@ pub fn main() {
       .about("Deploys your repository to a new App with a Deploy Config from alandeploy.json")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file'")
       .arg_from_usage("[NON_INTERACTIVE] -n, --non-interactive 'Enables non-interactive CLI mode useful for scripting.'")
+      .arg_from_usage("[NON_HTTP] -h, --non-http 'Enables non-http server deployments.'")
       .arg_from_usage("-a, --app-name=[APP_NAME] 'Specifies an optional app name.'")
       .arg_from_usage("-c, --config-name=[CONFIG_NAME] 'Specifies a config name, required only in non-interactive mode.'")
     )
@@ -88,6 +89,7 @@ pub fn main() {
       .about("Deploys your repository to an existing App hosted in one of the Deploy Configs from alandeploy.json")
       .arg_from_usage("-e, --env-file=[ENV_FILE] 'Specifies an optional environment file relative path'")
       .arg_from_usage("[NON_INTERACTIVE] -n, --non-interactive 'Enables non-interactive CLI mode useful for scripting.'")
+      .arg_from_usage("[NON_HTTP] -h, --non-http 'Enables non-http server deployments.'")
       .arg_from_usage("-a, --app-name=[APP_NAME] 'Specifies an optional app name.'")
       .arg_from_usage("-c, --config-name=[CONFIG_NAME] 'Specifies a config name, required only in non-interactive mode.'")
     )
@@ -132,6 +134,9 @@ pub fn main() {
       if matches.values_of("NON_INTERACTIVE").is_some() {
         new_cmd.arg("-n");
       }
+      if matches.values_of("NON_HTTP").is_some() {
+        new_cmd.arg("-h");
+      }
       if let Some(app_name) = matches.value_of("app-name") {
         new_cmd.arg("-a").arg(app_name);
       }
@@ -170,6 +175,9 @@ pub fn main() {
       new_cmd.arg("deploy").arg("upgrade");
       if matches.values_of("NON_INTERACTIVE").is_some() {
         new_cmd.arg("-n");
+      }
+      if matches.values_of("NON_HTTP").is_some() {
+        new_cmd.arg("-h");
       }
       if let Some(app_name) = matches.value_of("app-name") {
         new_cmd.arg("-a").arg(app_name);
