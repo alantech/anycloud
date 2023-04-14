@@ -1,5 +1,4 @@
 <div align="center">
-  <img src="./assets/anycloud.png" alt="drawing" width="180"/>
   <h1>AnyCloud scales webservers in any cloud provider</h2>
 </div>
 <br/>
